@@ -1,1 +1,2 @@
-from . import test_attachments 
+from . import test_discrepancy
+from . import test_core 

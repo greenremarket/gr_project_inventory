@@ -1,0 +1,4 @@
+xlsxwriter==3.1.9
+
+# Add the odoo dependency
+odoo
