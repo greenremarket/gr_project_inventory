@@ -1,0 +1,112 @@
+name: Odoo CI with Enterprise
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: odoo
+          POSTGRES_PASSWORD: odoo
+          POSTGRES_DB: odoo_test
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v3
+      
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install Odoo dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential wget git python3-dev python3-pip python3-wheel python3-venv \
+          libxslt-dev libzip-dev libldap2-dev libsasl2-dev \
+          python3-setuptools node-less libjpeg-dev zlib1g-dev libpq-dev \
+          libfreetype6-dev liblcms2-dev libwebp-dev libharfbuzz-dev libfribidi-dev libxcb1-dev
+        
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install wheel setuptools
+        pip install psycopg2-binary
+        
+    - name: Download Odoo
+      run: |
+        git clone https://github.com/odoo/odoo.git --depth 1 --branch 17.0 odoo
+        cd odoo
+        pip install -r requirements.txt
+    
+    - name: Clone Enterprise repository
+      if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+      run: |
+        # For private repositories that need authentication
+        git clone https://x-access-token:${{ secrets.ENTERPRISE_TOKEN }}@github.com/odoo/enterprise.git --depth 1 --branch 17.0 enterprise
+    
+    - name: Create mock enterprise for public PRs
+      if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
+      run: |
+        # For public PRs, use a mock enterprise repository with minimal structure
+        mkdir -p enterprise
+        echo "# Mock enterprise module" > enterprise/README.md
+    
+    - name: Clone OCA Report XLSX modules
+      run: |
+        # Create directory for OCA modules
+        mkdir -p OCA
+        
+        # Clone reporting-engine repository which contains report_xlsx and report_xlsx_helper
+        git clone https://github.com/OCA/reporting-engine.git --depth 1 --branch 17.0 OCA/reporting-engine
+    
+    - name: Install Python requirements for XLSX support
+      run: |
+        # Install Python packages needed for report_xlsx modules
+        pip install xlsxwriter openpyxl pandas numpy
+    
+    - name: Setup module directory
+      run: |
+        # Create directory for our custom module
+        mkdir -p custom_addons
+        
+        # Copy our module to the custom addons directory
+        cp -r . custom_addons/gr_project_inventory
+        
+        # Remove directories that shouldn't be in the module
+        rm -rf custom_addons/gr_project_inventory/odoo
+        rm -rf custom_addons/gr_project_inventory/OCA
+        rm -rf custom_addons/gr_project_inventory/enterprise
+        rm -rf custom_addons/gr_project_inventory/custom_addons
+        
+    - name: Run Odoo tests
+      run: |
+        cd odoo
+        # Create a test database
+        createdb -h localhost -p 5432 -U odoo odoo_test
+        
+        # Build addons path including all necessary modules
+        ADDONS_PATH="addons,../enterprise,../OCA/reporting-engine,../custom_addons"
+        
+        # Run Odoo tests for the module
+        python odoo-bin -i base,project,report_xlsx,report_xlsx_helper,stock,stock_barcode,barcodes,gr_project_inventory \
+          --test-enable \
+          --stop-after-init \
+          --addons-path=$ADDONS_PATH \
+          --db_host=localhost \
+          --db_port=5432 \
+          --db_user=odoo \
+          --db_password=odoo \
+          --database=odoo_test \
+          --log-level=test
