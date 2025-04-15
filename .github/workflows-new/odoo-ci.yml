@@ -1,0 +1,79 @@
+name: Odoo CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: odoo
+          POSTGRES_PASSWORD: odoo
+          POSTGRES_DB: odoo_test
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v3
+      
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install Odoo dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential wget python3-dev python3-pip python3-wheel python3-venv \
+          libxslt-dev libzip-dev libldap2-dev libsasl2-dev \
+          python3-setuptools node-less libjpeg-dev zlib1g-dev libpq-dev \
+          libfreetype6-dev liblcms2-dev libwebp-dev libharfbuzz-dev libfribidi-dev libxcb1-dev
+        
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install wheel setuptools
+        pip install psycopg2-binary
+        
+    - name: Download and setup Odoo
+      run: |
+        wget -q https://github.com/odoo/odoo/archive/refs/heads/17.0.zip
+        unzip -q 17.0.zip
+        cd odoo-17.0
+        pip install -r requirements.txt
+        
+    - name: Install module dependencies
+      run: |
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install pytest pytest-odoo
+        
+    - name: Run tests
+      run: |
+        # Set up Odoo configuration
+        mkdir -p ~/.odoo
+        echo "[options]" > ~/.odoo/odoo.conf
+        echo "addons_path = $(pwd),$(pwd)/../odoo-17.0/addons" >> ~/.odoo/odoo.conf
+        echo "db_host = localhost" >> ~/.odoo/odoo.conf
+        echo "db_port = 5432" >> ~/.odoo/odoo.conf
+        echo "db_user = odoo" >> ~/.odoo/odoo.conf
+        echo "db_password = odoo" >> ~/.odoo/odoo.conf
+        echo "db_name = odoo_test" >> ~/.odoo/odoo.conf
+        
+        # Set up PYTHONPATH
+        export PYTHONPATH=$PYTHONPATH:$(pwd)/../odoo-17.0
+        
+        # Create a pytest.ini file
+        echo "[pytest]" > pytest.ini
+        echo "addopts = --odoo-database=odoo_test" >> pytest.ini
+        
+        # Run the tests
+        python -m pytest tests/
