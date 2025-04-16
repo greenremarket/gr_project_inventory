@@ -11,7 +11,7 @@
     'author': 'Morad Igmir',
     'company': 'Green Remarket',
     'website': 'https://greenremarket.fr/',
-    'depends': ['base', 'project', 'report_xlsx', 'report_xlsx_helper', 'stock', 'stock_barcode', 'barcodes'],
+    'depends': ['base', 'project', 'report_xlsx', 'report_xlsx_helper', 'stock', 'barcodes'],
     'data': [
         'security/ir.model.access.csv',
         'reports/discrepancy_report.xml',
