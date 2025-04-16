@@ -25,10 +25,10 @@ jobs:
     - name: Check out repository
       uses: actions/checkout@v3
       
-    - name: Set up Python 3.10
+    - name: Set up Python 3.9
       uses: actions/setup-python@v4
       with:
-        python-version: '3.10'
+        python-version: '3.9'
         
     - name: Install Odoo dependencies
       run: |
@@ -89,7 +89,7 @@ jobs:
         ADDONS_PATH="addons,../OCA/reporting-engine,../custom_addons"
         
         # Run Odoo tests for the module
-        python odoo-bin -i base,project,report_xlsx,report_xlsx_helper,stock,stock_barcode,barcodes,gr_project_inventory \
+        python odoo-bin -i base,project,report_xlsx,report_xlsx_helper,stock,barcodes,gr_project_inventory \
           --test-enable \
           --stop-after-init \
           --addons-path=$ADDONS_PATH \
