@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Each chassis record goes here, referencing the distinct values from the database -->
+        <record id="gr_chassis_laptop" model="gr.chassis">
+            <field name="name">LAPTOP</field>
+        </record>
+        <record id="gr_chassis_desktop" model="gr.chassis">
+            <field name="name">DESKTOP</field>
+        </record>
+        <record id="gr_chassis_all_in_one" model="gr.chassis">
+            <field name="name">ALL IN ONE</field>
+        </record>
+        <record id="gr_chassis_sff" model="gr.chassis">
+            <field name="name">SFF</field>
+        </record>
+        <record id="gr_chassis_mini_tower" model="gr.chassis">
+            <field name="name">MINI TOWER</field>
+        </record>
+        <record id="gr_chassis_midi_tower" model="gr.chassis">
+            <field name="name">MIDI TOWER</field>
+        </record>
+        <record id="gr_chassis_tower" model="gr.chassis">
+            <field name="name">TOWER</field>
+        </record>
+        <record id="gr_chassis_usdt" model="gr.chassis">
+            <field name="name">USDT</field>
+        </record>
+        <record id="gr_chassis_tiny" model="gr.chassis">
+            <field name="name">TINY</field>
+        </record>
+        <record id="gr_chassis_workstation" model="gr.chassis">
+            <field name="name">WORKSTATION</field>
+        </record>
+        <record id="gr_chassis_server" model="gr.chassis">
+            <field name="name">SERVER</field>
+        </record>
+        <record id="gr_chassis_blade" model="gr.chassis">
+            <field name="name">BLADE</field>
+        </record>
+        <record id="gr_chassis_tablet_pc" model="gr.chassis">
+            <field name="name">TABLET PC</field>
+        </record>
+        <record id="gr_chassis_handheld" model="gr.chassis">
+            <field name="name">HANDHELD</field>
+        </record>
+    </data>
+</odoo>

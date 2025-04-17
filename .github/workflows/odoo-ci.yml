@@ -1,0 +1,91 @@
+name: Odoo CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: odoo
+          POSTGRES_PASSWORD: odoo
+          POSTGRES_DB: odoo_test
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v3
+      
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install Odoo system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential wget git python3-dev python3-pip python3-wheel python3-venv \
+          libxslt-dev libzip-dev libldap2-dev libsasl2-dev \
+          python3-setuptools node-less libjpeg-dev zlib1g-dev libpq-dev \
+          libfreetype6-dev liblcms2-dev libwebp-dev libharfbuzz-dev libfribidi-dev libxcb1-dev \
+          postgresql-client
+        
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install wheel setuptools psycopg2-binary phonenumbers
+        
+    - name: Download Odoo 17.0
+      run: |
+        git clone https://github.com/odoo/odoo.git --depth 1 --branch 17.0 odoo
+        cd odoo
+        pip install -r requirements.txt
+    
+    - name: Copy custom module
+      run: |
+        mkdir -p odoo/extra_addons/gr_project_inventory
+        cp -r gr_project_inventory_module/* odoo/extra_addons/gr_project_inventory/
+        
+    - name: Clone OCA Report XLSX modules
+      run: |
+        mkdir -p OCA
+        git clone https://github.com/OCA/reporting-engine.git --depth 1 --branch 17.0 OCA/reporting-engine
+    
+    - name: Install Python requirements for XLSX support
+      run: |
+        pip install xlsxwriter openpyxl pandas numpy
+    
+    - name: Run only your module’s tests
+      run: |
+        cd odoo
+        
+        # Recreate test database
+        PGPASSWORD=odoo psql -h localhost -U odoo -d postgres -c "DROP DATABASE IF EXISTS odoo_test;"
+        PGPASSWORD=odoo psql -h localhost -U odoo -d postgres -c "CREATE DATABASE odoo_test OWNER odoo;"
+        
+        # Build your addons path
+        ADDONS_PATH="addons,extra_addons,../OCA/reporting-engine"
+        
+        # Install dependencies + your module, enable tests but only pick up tests tagged with your module name
+        python odoo-bin \
+          -i base,project,stock,barcodes,report_xlsx,report_xlsx_helper,gr_project_inventory \
+          --addons-path=$ADDONS_PATH \
+          --db_host=localhost \
+          --db_port=5432 \
+          --db_user=odoo \
+          --db_password=odoo \
+          --database=odoo_test \
+          --test-enable \
+          --stop-after-init \
+          --test-tags "/gr_project_inventory" \
+          --log-level=test
+

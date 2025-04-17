@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Barcode Nomenclature -->
+        <record id="internal_inventory_nomenclature" model="barcode.nomenclature">
+            <field name="name">Internal Inventory Nomenclature</field>
+        </record>
+
+        <!-- Barcode Rule for Internal Inventory -->
+        <record id="barcode_rule_internal_inventory" model="barcode.rule">
+            <field name="name">Internal Inventory Asset Tag</field>
+            <field name="sequence">10</field>
+            <field name="barcode_nomenclature_id" ref="internal_inventory_nomenclature"/>
+            <field name="pattern">GI/</field>
+            <field name="type">product</field>
+            <field name="encoding">any</field>
+        </record>
+    </data>
+</odoo> 
