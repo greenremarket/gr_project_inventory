@@ -52,7 +52,7 @@ jobs:
         pip install -r requirements.txt
     
     - name: Copy custom modules to extra_addons
-      run: mkdir -p odoo/extra_addons/gr_project_inventory mkdir -p odoo/extra_addons && cp -r gr_project_inventory_module odoo/extra_addons/mkdir -p odoo/extra_addons && cp -r gr_project_inventory_module odoo/extra_addons/ cp -r gr_project_inventory_module/* odoo/extra_addons/gr_project_inventory/
+      run: mkdir -p odoo/extra_addons/gr_project_inventory && cp -r gr_project_inventory_module/* odoo/extra_addons/gr_project_inventory/
     - name: Clone OCA Report XLSX modules
       run: |
         # Create directory for OCA modules
