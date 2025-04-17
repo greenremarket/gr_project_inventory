@@ -69,13 +69,12 @@ jobs:
         # Create directory for our module
         mkdir -p extra_addons/gr_project_inventory
         
-        # Create a list of files to copy, excluding unwanted directories
+        # Copy files using rsync, excluding unwanted directories
         rsync -av --exclude=".git" --exclude=".github" --exclude="odoo" --exclude="OCA" \
               --exclude="extra_addons" --exclude="custom_addons" --exclude="__pycache__" \
               --exclude="*.pyc" ./ extra_addons/gr_project_inventory/
-        
+    
     - name: Run Odoo tests
-
       run: |
         cd odoo
         
