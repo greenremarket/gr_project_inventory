@@ -80,16 +80,16 @@ jobs:
     - name: Setup module directory
       run: |
         # Create directory for our custom module
-        mkdir -p custom_addons
+        mkdir -p extra_addons
         
         # Copy our module to the custom addons directory
-        cp -r . custom_addons/gr_project_inventory
+        cp -r . extra_addons/gr_project_inventory
         
         # Remove directories that shouldn't be in the module
-        rm -rf custom_addons/gr_project_inventory/odoo
-        rm -rf custom_addons/gr_project_inventory/OCA
-        rm -rf custom_addons/gr_project_inventory/enterprise
-        rm -rf custom_addons/gr_project_inventory/custom_addons
+        rm -rf extra_addons/gr_project_inventory/odoo
+        rm -rf extra_addons/gr_project_inventory/OCA
+        rm -rf extra_addons/gr_project_inventory/enterprise
+        rm -rf extra_addons/gr_project_inventory/extra_addons
         
     - name: Run Odoo tests
       run: |
@@ -100,7 +100,7 @@ jobs:
         PGPASSWORD=odoo psql -h localhost -p 5432 -U odoo -d postgres -c "CREATE DATABASE odoo_test OWNER odoo;"
         
         # Build addons path including all necessary modules
-        ADDONS_PATH="addons,../enterprise,../OCA/reporting-engine,../custom_addons"
+        ADDONS_PATH="addons,../enterprise,../OCA/reporting-engine,../extra_addons"
         
         # Run Odoo tests for the module
         python odoo-bin -i base,project,report_xlsx,report_xlsx_helper,stock,stock_barcode,barcodes,gr_project_inventory \
