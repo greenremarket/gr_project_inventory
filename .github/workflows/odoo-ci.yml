@@ -66,18 +66,16 @@ jobs:
     
     - name: Setup module directory
       run: |
-        # Create directory for our custom module
-        mkdir -p extra_addons
+        # Create directory for our module
+        mkdir -p extra_addons/gr_project_inventory
         
-        # Copy our module to the custom addons directory
-        cp -r . extra_addons/gr_project_inventory
-        
-        # Remove directories that shouldn't be in the module
-        rm -rf extra_addons/gr_project_inventory/odoo
-        rm -rf extra_addons/gr_project_inventory/OCA
-        rm -rf extra_addons/gr_project_inventory/extra_addons
+        # Create a list of files to copy, excluding unwanted directories
+        rsync -av --exclude=".git" --exclude=".github" --exclude="odoo" --exclude="OCA" \
+              --exclude="extra_addons" --exclude="custom_addons" --exclude="__pycache__" \
+              --exclude="*.pyc" ./ extra_addons/gr_project_inventory/
         
     - name: Run Odoo tests
+
       run: |
         cd odoo
         
