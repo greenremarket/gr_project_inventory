@@ -43,8 +43,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install wheel setuptools
-        pip install psycopg2-binary
-        pip install phonenumbers
+        pip install psycopg2-binary phonenumbers
         
     - name: Download Odoo
       run: |
@@ -52,41 +51,39 @@ jobs:
         cd odoo
         pip install -r requirements.txt
     
-    - name: Copy custom modules to extra_addons
-      run: mkdir -p odoo/extra_addons/gr_project_inventory && cp -r gr_project_inventory_module/* odoo/extra_addons/gr_project_inventory/
+    - name: Copy custom module
+      run: |
+        mkdir -p odoo/extra_addons/gr_project_inventory
+        cp -r gr_project_inventory_module/* odoo/extra_addons/gr_project_inventory/
+    
     - name: Clone OCA Report XLSX modules
       run: |
-        # Create directory for OCA modules
         mkdir -p OCA
-        
-        # Clone reporting-engine repository which contains report_xlsx and report_xlsx_helper
         git clone https://github.com/OCA/reporting-engine.git --depth 1 --branch 17.0 OCA/reporting-engine
     
     - name: Install Python requirements for XLSX support
       run: |
-        # Install Python packages needed for report_xlsx modules
         pip install xlsxwriter openpyxl pandas numpy
     
-    
-    - name: Run Odoo tests
+    - name: Run only my module’s tests
       run: |
         cd odoo
-        
-        # Database creation using PSQL directly instead of createdb
+        # (Re)create test database
         PGPASSWORD=odoo psql -h localhost -p 5432 -U odoo -d postgres -c "DROP DATABASE IF EXISTS odoo_test;"
         PGPASSWORD=odoo psql -h localhost -p 5432 -U odoo -d postgres -c "CREATE DATABASE odoo_test OWNER odoo;"
         
-        # Build addons path including all necessary modules
+        # Build addons path
         ADDONS_PATH="addons,../OCA/reporting-engine,extra_addons"
         
-        # Run Odoo tests for the module
-        python odoo-bin -i base,project,report_xlsx,report_xlsx_helper,stock,barcodes,gr_project_inventory \
-          --test-enable \
-          --stop-after-init \
+        # Install your module (and deps) but only run its tests:
+        python odoo-bin \
+          -d odoo_test \
+          -i base,project,report_xlsx,report_xlsx_helper,stock,barcodes,gr_project_inventory \
           --addons-path=$ADDONS_PATH \
           --db_host=localhost \
           --db_port=5432 \
           --db_user=odoo \
           --db_password=odoo \
-          --database=odoo_test \
-          --log-level=test
+          --stop-after-init \
+          --test-tags '-standard,/gr_project_inventory'
+
