@@ -51,6 +51,14 @@ jobs:
         cd odoo
         pip install -r requirements.txt
     
+    - name: Copy custom modules to extra_addons
+      run: mkdir -p odoo/extra_addons && cp -r gr_project_inventory odoo/extra_addons/
+    - name: Copy custom modules to extra_addons
+      run: mkdir -p odoo/extra_addons && cp -r gr_project_inventory odoo/extra_addons/
+    - name: Copy custom modules to extra_addons
+      run: mkdir -p odoo/extra_addons && cp -r gr_project_inventory odoo/extra_addons/
+    - name: Copy custom modules to extra_addons
+      run: mkdir -p odoo/extra_addons && cp -r test_addons/gr_project_inventory odoo/extra_addons/
     - name: Clone OCA Report XLSX modules
       run: |
         # Create directory for OCA modules
@@ -64,15 +72,6 @@ jobs:
         # Install Python packages needed for report_xlsx modules
         pip install xlsxwriter openpyxl pandas numpy
     
-    - name: Setup module directory
-      run: |
-        # Create directory for our module
-        mkdir -p extra_addons/gr_project_inventory
-        
-        # Copy files using rsync, excluding unwanted directories
-        rsync -av --exclude=".git" --exclude=".github" --exclude="odoo" --exclude="OCA" \
-              --exclude="extra_addons" --exclude="custom_addons" --exclude="__pycache__" \
-              --exclude="*.pyc" ./ extra_addons/gr_project_inventory/
     
     - name: Run Odoo tests
       run: |
