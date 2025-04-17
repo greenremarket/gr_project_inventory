@@ -52,11 +52,11 @@ jobs:
         pip install -r requirements.txt
     
     - name: Copy custom modules to extra_addons
-      run: mkdir -p odoo/extra_addons && cp -r gr_project_inventory_module odoo/extra_addons/
+      run: mkdir -p odoo/extra_addons/gr_project_inventory mkdir -p odoo/extra_addons && cp -r gr_project_inventory_module odoo/extra_addons/mkdir -p odoo/extra_addons && cp -r gr_project_inventory_module odoo/extra_addons/ cp -r gr_project_inventory_module/* odoo/extra_addons/gr_project_inventory/
     - name: Copy custom modules to extra_addons
-      run: mkdir -p odoo/extra_addons && cp -r gr_project_inventory_module odoo/extra_addons/
+      run: mkdir -p odoo/extra_addons/gr_project_inventory mkdir -p odoo/extra_addons && cp -r gr_project_inventory_module odoo/extra_addons/mkdir -p odoo/extra_addons && cp -r gr_project_inventory_module odoo/extra_addons/ cp -r gr_project_inventory_module/* odoo/extra_addons/gr_project_inventory/
     - name: Copy custom modules to extra_addons
-      run: mkdir -p odoo/extra_addons && cp -r gr_project_inventory_module odoo/extra_addons/
+      run: mkdir -p odoo/extra_addons/gr_project_inventory mkdir -p odoo/extra_addons && cp -r gr_project_inventory_module odoo/extra_addons/mkdir -p odoo/extra_addons && cp -r gr_project_inventory_module odoo/extra_addons/ cp -r gr_project_inventory_module/* odoo/extra_addons/gr_project_inventory/
     - name: Copy custom modules to extra_addons
       run: mkdir -p odoo/extra_addons && cp -r test_addons/gr_project_inventory odoo/extra_addons/
     - name: Clone OCA Report XLSX modules
