@@ -44,6 +44,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install wheel setuptools
         pip install psycopg2-binary
+        pip install phonenumbers
         
     - name: Download Odoo
       run: |
@@ -76,7 +77,7 @@ jobs:
         PGPASSWORD=odoo psql -h localhost -p 5432 -U odoo -d postgres -c "CREATE DATABASE odoo_test OWNER odoo;"
         
         # Build addons path including all necessary modules
-        ADDONS_PATH="addons,../OCA/reporting-engine,../extra_addons"
+        ADDONS_PATH="addons,../OCA/reporting-engine,extra_addons"
         
         # Run Odoo tests for the module
         python odoo-bin -i base,project,report_xlsx,report_xlsx_helper,stock,barcodes,gr_project_inventory \
