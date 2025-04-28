@@ -10,3 +10,4 @@ access_gr_chassis,gr.chassis,model_gr_chassis,base.group_user,1,1,1,1
 access_gr_product_type,gr.product.type,model_gr_product_type,base.group_user,1,1,1,1
 access_gr_manufacturer,gr.manufacturer,model_gr_manufacturer,base.group_user,1,1,1,1
 access_gr_observation_user,gr.observation user,model_gr_observation,base.group_user,1,1,1,1
+gr_project_inventory_attachment_user,ir.attachment.project.user,base.model_ir_attachment,project.group_project_user,1,0,0,0

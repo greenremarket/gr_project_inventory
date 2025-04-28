@@ -1,0 +1,33 @@
+<t t-name="gr_project_inventory.report_erasure_certificate">
+  <t t-call="web.external_layout">
+    <div class="page">
+      <h2>Certificat d’effacement – Lot <t t-esc="o.lot_name"/></h2>
+      <table class="table table-sm">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Manufacturer</th>
+            <th>Model</th>
+            <th>Disk Size</th>
+            <th>Disk Model</th>
+            <th>Serial</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          <t t-foreach="data['rows']" t-as="row">
+            <tr>
+              <td><t t-esc="row['ProductType']"/></td>
+              <td><t t-esc="row['Manufacturer']"/></td>
+              <td><t t-esc="row['Model']"/></td>
+              <td><t t-esc="row['hd_size']"/></td>
+              <td><t t-esc="row['hd_model']"/></td>
+              <td><t t-esc="row['hd_sn']"/></td>
+              <td><t t-esc="row['ts']"/></td>
+            </tr>
+          </t>
+        </tbody>
+      </table>
+    </div>
+  </t>
+</t>

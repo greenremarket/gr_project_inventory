@@ -1,0 +1,3 @@
+# Backup quotidien à 3h du matin
+0 3 * * * /opt/odoo/test_addons/gr_project_inventory/scripts/backup/backup_to_cloud.sh >> /var/log/odoo/backup_odoo_daily.log 2>&1
+

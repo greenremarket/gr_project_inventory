@@ -23,8 +23,17 @@
         'data/deliverable_data.xml',
         'data/manufacturer_data.xml',
         'data/barcode_nomenclature.xml',
+        # Erasure certificate feature additions:
+        'data/ir_config_parameter.xml',
+        'views/task_erasure_button.xml',
+        'reports/paperformat_erasure.xml',
+        'reports/erasure_certificate.xml',
+        'reports/report_action.xml',
     ],
     'installable': True,
     'application': True,
     'license': 'LGPL-3',
+    'external_dependencies': {
+        'python': ['pymysql>=1.1'],
+    },
 }

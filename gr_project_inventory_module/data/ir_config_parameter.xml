@@ -1,0 +1,22 @@
+<odoo>
+  <record id="param_gr_workbench_host" model="ir.config_parameter">
+    <field name="key">gr.workbench_host</field>
+    <field name="value"></field>
+  </record>
+  <record id="param_gr_workbench_port" model="ir.config_parameter">
+    <field name="key">gr.workbench_port</field>
+    <field name="value"></field>
+  </record>
+  <record id="param_gr_workbench_user" model="ir.config_parameter">
+    <field name="key">gr.workbench_user</field>
+    <field name="value"></field>
+  </record>
+  <record id="param_gr_workbench_pwd" model="ir.config_parameter">
+    <field name="key">gr.workbench_pwd</field>
+    <field name="value"></field>
+  </record>
+  <record id="param_gr_workbench_db" model="ir.config_parameter">
+    <field name="key">gr.workbench_db</field>
+    <field name="value"></field>
+  </record>
+</odoo>
