@@ -27,8 +27,11 @@
         'data/ir_config_parameter.xml',
         'views/task_erasure_button.xml',
         'reports/paperformat_erasure.xml',
-        'reports/erasure_certificate.xml',
         'reports/report_action.xml',
+        'reports/erasure_certificate.xml',
+    ],
+    'qweb': [
+        'reports/erasure_certificate.xml',
     ],
     'installable': True,
     'application': True,
