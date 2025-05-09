@@ -1,56 +1,56 @@
-<odoo>
-    <record id="product_type_laptop" model="gr.product.type">
-        <field name="name">Laptop</field>
-    </record>
-    <record id="product_type_desktop" model="gr.product.type">
-        <field name="name">Desktop</field>
-    </record>
-    <record id="product_type_all_in_one" model="gr.product.type">
-        <field name="name">All In One</field>
-    </record>
-    <record id="product_type_sff" model="gr.product.type">
-        <field name="name">SFF</field>
-    </record>
-    <record id="product_type_mini_tower" model="gr.product.type">
-        <field name="name">Mini Tower</field>
-    </record>
-    <record id="product_type_midi_tower" model="gr.product.type">
-        <field name="name">Midi Tower</field>
-    </record>
-    <record id="product_type_tower" model="gr.product.type">
-        <field name="name">Tower</field>
-    </record>
-    <record id="product_type_usdt" model="gr.product.type">
-        <field name="name">USDT</field>
-    </record>
-    <record id="product_type_tiny" model="gr.product.type">
-        <field name="name">Tiny</field>
-    </record>
-    <record id="product_type_workstation" model="gr.product.type">
-        <field name="name">Workstation</field>
-    </record>
-    <record id="product_type_server" model="gr.product.type">
-        <field name="name">Server</field>
-    </record>
-    <record id="product_type_blade" model="gr.product.type">
-        <field name="name">Blade</field>
-    </record>
-    <record id="product_type_tablet_pc" model="gr.product.type">
-        <field name="name">Tablet PC</field>
-    </record>
-    <record id="product_type_handheld" model="gr.product.type">
-        <field name="name">Handheld</field>
-    </record>
-    <record id="product_type_monitor" model="gr.product.type">
-        <field name="name">Monitor</field>
-    </record>
-    <record id="product_type_printer" model="gr.product.type">
-        <field name="name">Printer</field>
-    </record>
-    <record id="product_type_storage" model="gr.product.type">
-        <field name="name">Storage</field>
-    </record>
-    <record id="product_type_other" model="gr.product.type">
-        <field name="name">Other</field>
-    </record>
+<odoo noupdate="1">
+<record id="product_type_laptop" model="gr.product.type">
+    <field name="name">Laptop</field>
+</record>
+<record id="product_type_desktop" model="gr.product.type">
+    <field name="name">Desktop</field>
+</record>
+<record id="product_type_all_in_one" model="gr.product.type">
+    <field name="name">All In One</field>
+</record>
+<record id="product_type_sff" model="gr.product.type">
+    <field name="name">SFF</field>
+</record>
+<record id="product_type_mini_tower" model="gr.product.type">
+    <field name="name">Mini Tower</field>
+</record>
+<record id="product_type_midi_tower" model="gr.product.type">
+    <field name="name">Midi Tower</field>
+</record>
+<record id="product_type_tower" model="gr.product.type">
+    <field name="name">Tower</field>
+</record>
+<record id="product_type_usdt" model="gr.product.type">
+    <field name="name">USDT</field>
+</record>
+<record id="product_type_tiny" model="gr.product.type">
+    <field name="name">Tiny</field>
+</record>
+<record id="product_type_workstation" model="gr.product.type">
+    <field name="name">Workstation</field>
+</record>
+<record id="product_type_server" model="gr.product.type">
+    <field name="name">Server</field>
+</record>
+<record id="product_type_blade" model="gr.product.type">
+    <field name="name">Blade</field>
+</record>
+<record id="product_type_tablet_pc" model="gr.product.type">
+    <field name="name">Tablet PC</field>
+</record>
+<record id="product_type_handheld" model="gr.product.type">
+    <field name="name">Handheld</field>
+</record>
+<record id="product_type_monitor" model="gr.product.type">
+    <field name="name">Monitor</field>
+</record>
+<record id="product_type_printer" model="gr.product.type">
+    <field name="name">Printer</field>
+</record>
+<record id="product_type_storage" model="gr.product.type">
+    <field name="name">Storage</field>
+</record>
+<record id="product_type_other" model="gr.product.type">
+    <field name="name">Other</field>
+</record>
 </odoo>
