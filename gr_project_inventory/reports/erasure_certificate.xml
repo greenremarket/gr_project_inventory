@@ -1,39 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-  <!-- QWeb template for the Erasure Certificate Report (Odoo 17 best practices)
-       - Wrapped in <odoo> for data loading
-  -->
   <template id="report_erasure_certificate" t-name="gr_project_inventory.report_erasure_certificate">
-  <t t-call="web.external_layout">
-    <main class="page">
-      <h2>Certificat d’effacement – Lot <t t-esc="lot_name"/></h2>
-      <table class="table table-sm">
-        <thead>
-          <tr>
-            <th>Type</th>
-            <th>Manufacturer</th>
-            <th>Model</th>
-            <th>Disk Size</th>
-            <th>Disk Model</th>
-            <th>Serial</th>
-            <th>Timestamp</th>
-          </tr>
-        </thead>
-        <tbody>
-          <t t-foreach="rows" t-as="row">
-            <tr>
-              <td><t t-esc="row.get('ProductType', '-')"/></td>
-              <td><t t-esc="row.get('Manufacturer', '-')"/></td>
-              <td><t t-esc="row.get('Model', '-')"/></td>
-              <td><t t-esc="row.get('hd_size', '-')"/></td>
-              <td><t t-esc="row.get('hd_model', '-')"/></td>
-              <td><t t-esc="row.get('hd_sn', '-')"/></td>
-              <td><t t-esc="row.get('ts', '-')"/></td>
-            </tr>
-          </t>
-        </tbody>
-      </table>
-    </main>
-  </t>
+    <t t-call="web.external_layout">
+      <main class="page">
+        <div style="background-color: #C5E0B4; color: white; padding: 20px; text-align: center;">
+          <h1 style="margin: 0;">CERTIFICAT D'EFFACEMENT</h1>
+        </div>
+        <div style="padding: 20px;">
+          <div style="margin-bottom: 20px;">
+            <h2 style="color: #92D050; border-bottom: 2px solid #92D050; padding-bottom: 10px;">Lot: <t t-esc="lot_name"/></h2>
+          </div>
+          <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <thead>
+              <tr style="background-color: white;">
+                <th style="border: 1px solid #92D050; padding: 10px; text-align: left; color: #92D050; font-weight: bold;">Type</th>
+                <th style="border: 1px solid #92D050; padding: 10px; text-align: left; color: #92D050; font-weight: bold;">Manufacturer</th>
+                <th style="border: 1px solid #92D050; padding: 10px; text-align: left; color: #92D050; font-weight: bold;">Model</th>
+                <th style="border: 1px solid #92D050; padding: 10px; text-align: left; color: #92D050; font-weight: bold;">Disk Size</th>
+                <th style="border: 1px solid #92D050; padding: 10px; text-align: left; color: #92D050; font-weight: bold;">Disk Model</th>
+                <th style="border: 1px solid #92D050; padding: 10px; text-align: left; color: #92D050; font-weight: bold;">Serial</th>
+                <th style="border: 1px solid #92D050; padding: 10px; text-align: left; color: #92D050; font-weight: bold;">Timestamp</th>
+              </tr>
+            </thead>
+            <tbody>
+              <t t-foreach="rows" t-as="row">
+                <tr style="background-color: #E2EFD9;">
+                  <td style="border: 1px solid #92D050; padding: 10px; text-align: left;"><t t-esc="row.get('ProductType', '-')"/></td>
+                  <td style="border: 1px solid #92D050; padding: 10px; text-align: left;"><t t-esc="row.get('Manufacturer', '-')"/></td>
+                  <td style="border: 1px solid #92D050; padding: 10px; text-align: left;"><t t-esc="row.get('Model', '-')"/></td>
+                  <td style="border: 1px solid #92D050; padding: 10px; text-align: left;"><t t-esc="row.get('hd_size', '-')"/></td>
+                  <td style="border: 1px solid #92D050; padding: 10px; text-align: left;"><t t-esc="row.get('hd_model', '-')"/></td>
+                  <td style="border: 1px solid #92D050; padding: 10px; text-align: left;"><t t-esc="row.get('hd_sn', '-')"/></td>
+                  <td style="border: 1px solid #92D050; padding: 10px; text-align: left;"><t t-esc="row.get('ts', '-')"/></td>
+                </tr>
+              </t>
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </t>
   </template>
 </odoo>
