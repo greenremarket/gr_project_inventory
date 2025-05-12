@@ -1,7 +1,7 @@
-<odoo>
-    <record id="seq_gr_internal_inventory_asset_tag" model="ir.sequence">
-        <field name="name">Asset Tag Sequence</field>
-        <field name="code">gr.asset.tag.sequence</field>
-        <field name="padding">6</field>
-    </record>
+<odoo noupdate="1">
+<record id="seq_gr_internal_inventory_asset_tag" model="ir.sequence">
+    <field name="name">Asset Tag Sequence</field>
+    <field name="code">gr.asset.tag.sequence</field>
+    <field name="padding">6</field>
+</record>
 </odoo>

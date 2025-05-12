@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue complète de remplacement (non héritée) -->
+    <record id="project_task_form_view_with_date" model="ir.ui.view">
+        <field name="name">project.task.form.with.date</field>
+        <field name="model">project.task</field>
+        <field name="mode">primary</field>
+        <field name="priority">999</field>
+        <field name="arch" type="xml">
+            <form string="Task">
+                <header>
+                    <field name="stage_id" widget="statusbar" options="{'clickable': '1'}" attrs="{'invisible': [('project_id', '=', False)]}" />
+                    <button name="action_check_discrepancies" type="object" string="Check Discrepancies" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1 class="d-flex flex-row">
+                            <field name="name" class="text-break" placeholder="Task Title..."/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="date_text" string="Date de début (format texte)" attrs="{'invisible': [('id', '=', False)]}"/>
+                            <field name="planned_date_begin" string="Date de début" style="background-color:#FFDD99; font-weight:bold;" widget="datetime"/>
+                            <field name="date_deadline" string="Date de fin"/>
+                            <field name="project_id" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="partner_id" string="Client"/>
+                            <field name="order_giver_id" string="Commanditaire"/>
+                        </group>
+                        <group>
+                            <field name="tag_ids" string="Type d'opération" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                            <field name="lot_name" placeholder="Lot Name"/>
+                            <field name="user_ids" widget="many2many_avatar_user" options="{'no_create': True}"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="description_page" string="Description">
+                            <field name="description" type="html" nolabel="1"/>
+                        </page>
+                        <page string="Internal Inventory" name="internal_inventory">
+                            <div class="alert alert-info text-center" role="status">
+                                <strong>Total Items: <field name="internal_inventory_count" class="oe_inline"/></strong>
+                            </div>
+                            <group>
+                                <field name="internal_inventory_search" placeholder="Search by Serial Number, Asset Tag, or Pallet Number"/>
+                            </group>
+                            <field name="inventory_line_ids" 
+                                   mode="tree" 
+                                   context="{'default_task_id': active_id}"
+                                   editable="bottom"/>
+                        </page>
+                        <page string="Client Inventory" name="client_inventory">
+                            <field name="client_inventory_ids" mode="tree,form" context="{'default_task_id': active_id}"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" groups="base.group_user"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Remplacer l'action 319 pour qu'elle utilise notre vue -->
+    <record id="override_action_319" model="ir.actions.act_window.view">
+        <field name="act_window_id" ref="project.action_view_task"/>
+        <field name="sequence">15</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="project_task_form_view_with_date"/>
+    </record>
+</odoo> 
