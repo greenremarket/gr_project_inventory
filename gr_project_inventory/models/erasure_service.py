@@ -12,16 +12,26 @@ class ErasureService(models.AbstractModel):
     _description = 'Live MySQL bridge to Aiken Workbench'
 
     _SQL = """
-        SELECT u.ProductType, u.Manufacturer, u.Model,
-               d.Size AS hd_size, d.Model AS hd_model,
-               d.Serial AS hd_sn,
-               d.Data AS cert_blob  # No timestamp column in Units_Devices
+        SELECT
+            u.UnitID,
+            u.AssetTag,
+            u.SerialNumber,
+            u.Model,
+            u.ProductType,
+            u.Manufacturer,
+            u.Audited,
+            d.Didx AS hd_idx,
+            d.Model AS hd_model,
+            d.Serial AS hd_sn,
+            d.Size AS hd_size,
+            d.Erased AS erased_flag
         FROM Lots l
         JOIN Units u ON u.LotID = l.LotID
         JOIN Units_Devices d ON d.UnitID = u.UnitID
         WHERE l.Number = %s
           AND d.Category = 'STORAGE'
-          AND d.Refurbished = 0;
+          AND d.Refurbished = 0
+        ORDER BY u.UnitID, d.Didx
     """
 
     def _dsn(self):
@@ -56,20 +66,62 @@ class ErasureService(models.AbstractModel):
         )
 
     def fetch_for_lot(self, lot_no):
+        """
+        Fetches erasure data for a given lot from the Aiken Workbench.
+        Returns a list of dicts ready for the report, with all required fields and error handling.
+        """
         try:
             conn = pymysql.connect(**self._dsn())
             with conn.cursor() as cur:
                 cur.execute(self._SQL, (lot_no,))
-                rows = cur.fetchall()
+                raw_rows = cur.fetchall()
         except pymysql.err.OperationalError as err:
             _logger.error("MySQL unreachable: %s", err)
             raise UserError(_("Cannot reach Workbench database."))
+        except Exception as e:
+            _logger.error("Unexpected error fetching erasure data: %s", str(e), exc_info=True)
+            raise UserError(_("Unexpected error fetching erasure data: %s") % str(e))
         finally:
             try:
                 conn.close()
             except Exception:
                 pass
 
-        if not rows:
+        if not raw_rows:
             raise UserError(_("Lot %s not found in Workbench.") % lot_no)
+
+        rows = []
+        for r in raw_rows:
+            try:
+                # Build Host Machine string robustly
+                asset_tag = r.get('AssetTag') or ''
+                serial_number = r.get('SerialNumber') or ''
+                model = r.get('Model') or ''
+                host_parts = []
+                if asset_tag.strip():
+                    host_parts.append(asset_tag.strip())
+                if serial_number.strip():
+                    host_parts.append(serial_number.strip())
+                host_machine = ', '.join(host_parts)
+                if model.strip():
+                    host_machine = f"{host_machine} - {model.strip()}" if host_machine else model.strip()
+                # Method: Erased flag (1 = 'Zeros', 0 = 'Unknown')
+                method = 'Zeros' if r.get('erased_flag', 0) else 'Unknown'
+                # Compose row for report
+                rows.append({
+                    'host_machine': host_machine,
+                    'hd_idx': r.get('hd_idx', '-'),
+                    'hd_model': r.get('hd_model', '-'),
+                    'hd_sn': r.get('hd_sn', '-'),
+                    'hd_size': r.get('hd_size', '-'),
+                    'erasure_id': r.get('UnitID', '-'),
+                    'method': method,
+                    'timestamp': str(r.get('Audited', '-')),
+                })
+            except Exception as e:
+                _logger.error("Error formatting row for report: %s", str(e), exc_info=True)
+                continue
+
+        if not rows:
+            raise UserError(_("No erasure records found for lot %s.") % lot_no)
         return rows

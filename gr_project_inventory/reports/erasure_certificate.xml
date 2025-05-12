@@ -2,36 +2,43 @@
 <odoo>
   <template id="report_erasure_certificate" t-name="gr_project_inventory.report_erasure_certificate">
     <t t-call="web.external_layout">
+      <t t-override="0" t-name="web.external_layout_header"/>
       <main class="page">
         <div style="background-color: #C5E0B4; color: white; padding: 20px; text-align: center;">
-          <h1 style="margin: 0;">CERTIFICAT D'EFFACEMENT</h1>
+          <h1 style="margin: 0; font-size: 2em;">DATA ERASURE CERTIFICATE - CERTIFICAT D'EFFACEMENT</h1>
         </div>
         <div style="padding: 20px;">
-          <div style="margin-bottom: 20px;">
-            <h2 style="color: #92D050; border-bottom: 2px solid #92D050; padding-bottom: 10px;">Lot: <t t-esc="lot_name"/></h2>
+          <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-weight: bold; font-size: 1.1em;">LOT: <span style="color: #333;"><t t-esc="lot_name"/></span></div>
+            <div style="font-weight: bold; font-size: 1.1em;">CUSTOMER / SUPPLIER: <span style="color: #333;"><t t-esc="customer_name"/></span></div>
+          </div>
+          <div style="margin-bottom: 10px; font-style: italic; font-size: 1em; color: #333;">
+            WE HEREBY CERTIFY that Green Remarket has executed on the drives or devices listed below a software or firmware procedure to securely erase the full storage capacity of the devices. After successful completion of the erasure procedure for every device, an encrypted digital certification containing the same information stated below was stored in our database for eventual auditing.
           </div>
           <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
             <thead>
-              <tr style="background-color: white;">
-                <th style="border: 1px solid #92D050; padding: 10px; text-align: left; color: #92D050; font-weight: bold;">Type</th>
-                <th style="border: 1px solid #92D050; padding: 10px; text-align: left; color: #92D050; font-weight: bold;">Manufacturer</th>
-                <th style="border: 1px solid #92D050; padding: 10px; text-align: left; color: #92D050; font-weight: bold;">Model</th>
-                <th style="border: 1px solid #92D050; padding: 10px; text-align: left; color: #92D050; font-weight: bold;">Disk Size</th>
-                <th style="border: 1px solid #92D050; padding: 10px; text-align: left; color: #92D050; font-weight: bold;">Disk Model</th>
-                <th style="border: 1px solid #92D050; padding: 10px; text-align: left; color: #92D050; font-weight: bold;">Serial</th>
-                <th style="border: 1px solid #92D050; padding: 10px; text-align: left; color: #92D050; font-weight: bold;">Timestamp</th>
+              <tr style="background-color: white; font-size: 12px;">
+                <th style="border: 1px solid #92D050; padding: 6px; text-align: left; color: #92D050; font-weight: bold;">Host Machine (Asset Tag, Serial Number - Model)</th>
+                <th style="border: 1px solid #92D050; padding: 6px; text-align: left; color: #92D050; font-weight: bold;">HD #</th>
+                <th style="border: 1px solid #92D050; padding: 6px; text-align: left; color: #92D050; font-weight: bold;">HD Model</th>
+                <th style="border: 1px solid #92D050; padding: 6px; text-align: left; color: #92D050; font-weight: bold;">HD Serial Number</th>
+                <th style="border: 1px solid #92D050; padding: 6px; text-align: left; color: #92D050; font-weight: bold;">HD Size</th>
+                <th style="border: 1px solid #92D050; padding: 6px; text-align: left; color: #92D050; font-weight: bold;">ErasureID</th>
+                <th style="border: 1px solid #92D050; padding: 6px; text-align: left; color: #92D050; font-weight: bold;">Method</th>
+                <th style="border: 1px solid #92D050; padding: 6px; text-align: left; color: #92D050; font-weight: bold;">TimeStamp</th>
               </tr>
             </thead>
             <tbody>
               <t t-foreach="rows" t-as="row">
-                <tr style="background-color: #E2EFD9;">
-                  <td style="border: 1px solid #92D050; padding: 10px; text-align: left;"><t t-esc="row.get('ProductType', '-')"/></td>
-                  <td style="border: 1px solid #92D050; padding: 10px; text-align: left;"><t t-esc="row.get('Manufacturer', '-')"/></td>
-                  <td style="border: 1px solid #92D050; padding: 10px; text-align: left;"><t t-esc="row.get('Model', '-')"/></td>
-                  <td style="border: 1px solid #92D050; padding: 10px; text-align: left;"><t t-esc="row.get('hd_size', '-')"/></td>
-                  <td style="border: 1px solid #92D050; padding: 10px; text-align: left;"><t t-esc="row.get('hd_model', '-')"/></td>
-                  <td style="border: 1px solid #92D050; padding: 10px; text-align: left;"><t t-esc="row.get('hd_sn', '-')"/></td>
-                  <td style="border: 1px solid #92D050; padding: 10px; text-align: left;"><t t-esc="row.get('ts', '-')"/></td>
+                <tr style="background-color: #E2EFD9; font-size: 10px;">
+                  <td style="border: 1px solid #92D050; padding: 6px; text-align: left;"><t t-esc="row.get('host_machine', '-')"/></td>
+                  <td style="border: 1px solid #92D050; padding: 6px; text-align: left;"><t t-esc="row.get('hd_idx', '-')"/></td>
+                  <td style="border: 1px solid #92D050; padding: 6px; text-align: left;"><t t-esc="row.get('hd_model', '-')"/></td>
+                  <td style="border: 1px solid #92D050; padding: 6px; text-align: left;"><t t-esc="row.get('hd_sn', '-')"/></td>
+                  <td style="border: 1px solid #92D050; padding: 6px; text-align: left;"><t t-esc="row.get('hd_size', '-')"/></td>
+                  <td style="border: 1px solid #92D050; padding: 6px; text-align: left;"><t t-esc="row.get('erasure_id', '-')"/></td>
+                  <td style="border: 1px solid #92D050; padding: 6px; text-align: left;"><t t-esc="row.get('method', '-')"/></td>
+                  <td style="border: 1px solid #92D050; padding: 6px; text-align: left;"><t t-esc="row.get('timestamp', '-')"/></td>
                 </tr>
               </t>
             </tbody>

@@ -1,0 +1,5 @@
+# TODO for gr_project_inventory
+
+- [ ] Find a robust, Odoo 17+ compatible way to hide the header (logo/address) in erasure_certificate.xml while keeping the external_layout container base and all margins/footers intact.
+  - Current attempts with t-call-options and t-override do not work as expected.
+  - Reference: MILESTONE - working erasure certificate (2025-05-12)
