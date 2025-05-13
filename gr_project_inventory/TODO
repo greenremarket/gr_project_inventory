@@ -1,5 +1,50 @@
 # TODO for gr_project_inventory
 
+## Future Migration to Odoo stock.lot (Best Practice)
+
+### Context
+Currently, the module uses a custom lot_id field on ProjectTask (or related models), which may not always reference Odoo's stock.lot. Odoo best practice is to use stock.lot for all inventory and traceability logic.
+
+### Migration Analysis & Recommendations
+- **Advantages of Migrating to stock.lot:**
+  - Native integration with Odoo inventory, traceability, barcode, and reporting.
+  - Less custom code, easier upgrades, more robust data model.
+- **Challenges:**
+  - All code referencing the custom lot_id will need to be updated.
+  - Data migration required for existing records.
+  - Some business logic and UI may need adaptation.
+
+#### Seamless Migration Strategies
+- **Option 1: Full Migration**
+  - Migrate all custom lots to stock.lot records.
+  - Update all foreign keys and business logic to use stock.lot.
+  - Update forms, wizards, and reports to use stock.lot.
+- **Option 2: Hybrid/Fallback Approach**
+  - Keep both custom lot_id and a new stock_lot_id field.
+  - In all logic, use stock_lot_id if set, otherwise fall back to lot_id.
+  - Example: `lot = rec.stock_lot_id or rec.lot_id`
+  - Gradually migrate data and code to stock.lot.
+- **Option 3: Backward-Compatible Accessor**
+  - Add a computed property (e.g., effective_lot) that returns stock_lot_id or lot_id.
+  - Use effective_lot everywhere in logic and reports for a transparent transition.
+
+#### Odoo Best Practice
+- Long-term: migrate everything to stock.lot.
+- Short/medium-term: support both, using fallback logic, and gradually migrate data and code.
+
+#### Testing
+- Add robust tests to verify that all features work with both types of lots during the transition.
+
+#### Summary Table
+| Approach         | Data Migration | Code Refactor | User Impact | Long-term Robustness |
+|------------------|---------------|---------------|-------------|---------------------|
+| Migrate to stock.lot | Required      | Yes           | High        | Best                |
+| Hybrid/Fallback  | Optional      | Minimal       | Minimal     | Good (temporary)    |
+| Accessor Property| None          | Minimal       | None        | Good (temporary)    |
+
+### Action
+- This migration is a candidate for a future major update. For now, continue using the current ProjectTask.lot_id logic for audit reports and all related features.
+
 - [ ] Find a robust, Odoo 17+ compatible way to hide the header (logo/address) in erasure_certificate.xml while keeping the external_layout container base and all margins/footers intact.
   - Current attempts with t-call-options and t-override do not work as expected.
   - Reference: MILESTONE - working erasure certificate (2025-05-12)

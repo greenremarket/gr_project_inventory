@@ -18,6 +18,7 @@
         'reports/internal_inventory_report.xml',
         'views/views.xml',
         'views/res_config_settings_view.xml',
+        'views/audit_report_xlsx_wizard_view.xml',
         'data/product_type_data.xml',
         'data/chassis_data.xml',
         'data/deliverable_data.xml',
@@ -29,6 +30,9 @@
         'reports/paperformat_erasure.xml',
         'reports/report_action.xml',
         'reports/erasure_certificate.xml',
+    ],
+    'report': [
+        'reports/audit_report_xlsx.py',
     ],
     'qweb': [
         'reports/erasure_certificate.xml',

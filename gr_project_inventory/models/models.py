@@ -1079,10 +1079,30 @@ class ProjectTask(models.Model):
     @api.depends('discrepancies_ids', 'discrepancies_ids.discrepancy_type')
     def _compute_discrepancy_counts(self):
         for task in self:
-            extra_items = task.discrepancies_ids.filtered(lambda d: d.discrepancy_type == 'extra')
-            missing_items = task.discrepancies_ids.filtered(lambda d: d.discrepancy_type == 'missing')
-            task.extra_items_count = len(extra_items)
-            task.missing_items_count = len(missing_items)
+            task.extra_items_count = self.env['gr.discrepancy'].search_count([
+                ('task_id', '=', task.id),
+                ('discrepancy_type', '=', 'extra')
+            ])
+            task.missing_items_count = self.env['gr.discrepancy'].search_count([
+                ('task_id', '=', task.id),
+                ('discrepancy_type', '=', 'missing')
+            ])
+            
+    def action_open_audit_xlsx_wizard(self):
+        """
+        Open the Audit XLSX Report wizard with the current task's lot name pre-filled.
+        """
+        self.ensure_one()
+        return {
+            'name': 'Export Audit XLSX Report',
+            'type': 'ir.actions.act_window',
+            'res_model': 'audit.report.xlsx.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_lot_name': self.lot_name or '',
+            }
+        }
 
     temp_attachment_ids = fields.Many2many(
         'ir.attachment',
