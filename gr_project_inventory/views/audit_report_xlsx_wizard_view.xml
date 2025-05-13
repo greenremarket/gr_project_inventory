@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_audit_report_xlsx_wizard_form" model="ir.ui.view">
+        <field name="name">audit.report.xlsx.wizard.form</field>
+        <field name="model">audit.report.xlsx.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Export Audit XLSX Report">
+                <group>
+                    <field name="lot_name" placeholder="e.g. 24A01"/>
+                </group>
+                <footer>
+                    <button name="action_export_xlsx" type="object" string="Export XLSX" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_audit_report_xlsx_wizard" model="ir.actions.act_window">
+        <field name="name">Export Audit XLSX Report</field>
+        <field name="res_model">audit.report.xlsx.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_audit_report_xlsx_wizard"
+              name="Export Audit XLSX Report"
+              parent="project.menu_project_config"
+              action="action_audit_report_xlsx_wizard"
+              sequence="100"/>
+</odoo>

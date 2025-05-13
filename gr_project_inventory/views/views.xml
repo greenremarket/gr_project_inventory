@@ -93,6 +93,7 @@
                 <button name="action_check_discrepancies" type="object" string="Check Discrepancies" class="btn-primary"/>
                 <button name="%(server_action_print_discrepancy_report)d" type="action" string="Print Discrepancy Report" class="btn-secondary"/>
                 <button name="%(server_action_print_internal_inventory_report)d" type="action" string="Print Internal Inventory Report" class="btn-secondary"/>
+                <button name="action_open_audit_xlsx_wizard" type="object" string="Export Audit XLSX" class="btn-primary" icon="fa-file-excel-o"/>
             </xpath>
             <!-- Add Custom Fields -->
             <xpath expr="//form/sheet" position="inside">

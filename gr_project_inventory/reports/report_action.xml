@@ -7,4 +7,11 @@
     <field name="paperformat_id" ref="gr_project_inventory.paperformat_erasure_cert"/>
     <field name="print_report_name">'Certif_Effacement_' + object.lot_name</field>
   </record>
+  <record id="action_audit_report_xlsx" model="ir.actions.report">
+    <field name="name">Audit XLSX Report</field>
+    <field name="model">audit.report.xlsx.wizard</field>
+    <field name="report_type">xlsx</field>
+    <field name="report_name">gr_project_inventory.audit_report_xlsx</field>
+    <field name="print_report_name">'Audit_XLSX_' + (object.lot_name or 'unknown')</field>
+  </record>
 </odoo>
