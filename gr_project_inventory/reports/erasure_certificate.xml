@@ -25,6 +25,7 @@
                 <th style="border: 1px solid #92D050; padding: 6px; text-align: left; color: #92D050; font-weight: bold;">HD Size</th>
                 <th style="border: 1px solid #92D050; padding: 6px; text-align: left; color: #92D050; font-weight: bold;">ErasureID</th>
                 <th style="border: 1px solid #92D050; padding: 6px; text-align: left; color: #92D050; font-weight: bold;">Method</th>
+                <th style="border: 1px solid #92D050; padding: 6px; text-align: left; color: #92D050; font-weight: bold;">Erasure Status</th>
                 <th style="border: 1px solid #92D050; padding: 6px; text-align: left; color: #92D050; font-weight: bold;">TimeStamp</th>
               </tr>
             </thead>
@@ -38,6 +39,7 @@
                   <td style="border: 1px solid #92D050; padding: 6px; text-align: left;"><t t-esc="row.get('hd_size', '-')"/></td>
                   <td style="border: 1px solid #92D050; padding: 6px; text-align: left;"><t t-esc="row.get('erasure_id', '-')"/></td>
                   <td style="border: 1px solid #92D050; padding: 6px; text-align: left;"><t t-esc="row.get('method', '-')"/></td>
+                  <td style="border: 1px solid #92D050; padding: 6px; text-align: left;"><t t-esc="row.get('erasure_status', '-')"/></td>
                   <td style="border: 1px solid #92D050; padding: 6px; text-align: left;"><t t-esc="row.get('timestamp', '-')"/></td>
                 </tr>
               </t>

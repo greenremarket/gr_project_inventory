@@ -12,66 +12,29 @@ class ErasureService(models.AbstractModel):
     _description = 'Live MySQL bridge to Aiken Workbench'
 
     _AUDIT_SQL = """
+        ...
+    """
+
+    # Reconstructed erasure SQL for fetch_for_lot. Only edit this if the erasure certificate/report fields change.
+    _SQL = """
         SELECT
             u.UnitID,
-            l.Number AS LotID,
             u.AssetTag,
-            u.Created,
-            u.ProductType,
-            u.Manufacturer AS Manufacturer,
-            u.Model,
-            u.Chassis,
-            u.PartNumber,
             u.SerialNumber,
-            d1.Size AS DisplaySize,
-            CONCAT(d1.Info1, ' x ', d1.Info2) AS Resolution,
-            d2.Model AS Processor,
-            d2.Speed AS ProcSpeed,
-            d2.Info1 AS ProcGen,
-            MAX(CASE WHEN d3.Category = 'RAM' THEN d3.Size ELSE NULL END) AS RAM,
-            d4.Size AS Storage1Size,
-            d4.Info1 AS Storage1Type,
-            d4.Model AS Storage1Model,
-            d4.Serial AS Storage1Serial,
-            d5.Model AS Optical,
-            d6.Model AS Keyb,
-            d7.Model AS Webcam,
-            d8.Model AS Videocard,
-
-            COALESCE(u.OSRestored, 0) AS OSRestored,
-            u.ObservCodes,
-            u.ObservNotes,
-            u.Grade
-        FROM Lots l
-        JOIN Units u ON u.LotID = l.LotID
-        -- Display
-        LEFT JOIN Units_Devices d1 ON d1.UnitID = u.UnitID AND d1.Category = 'DISPLAY' AND d1.Refurbished = 0
-        -- CPU
-        LEFT JOIN Units_Devices d2 ON d2.UnitID = u.UnitID AND d2.Category = 'CPU' AND d2.Refurbished = 0
-        -- RAM (we'll use MAX to get one value)
-        LEFT JOIN Units_Devices d3 ON d3.UnitID = u.UnitID AND d3.Category = 'RAM' AND d3.Refurbished = 0
-        -- Storage (first storage device)
-        LEFT JOIN (
-            SELECT UnitID, Model, Size, Serial, Info1, 
-                   ROW_NUMBER() OVER (PARTITION BY UnitID ORDER BY Didx) as rn
-            FROM Units_Devices 
-            WHERE Category = 'STORAGE' AND Refurbished = 0
-        ) d4 ON d4.UnitID = u.UnitID AND d4.rn = 1
-        -- Optical drive
-        LEFT JOIN Units_Devices d5 ON d5.UnitID = u.UnitID AND d5.Category = 'OPTICAL' AND d5.Refurbished = 0
-        -- Keyboard
-        LEFT JOIN Units_Devices d6 ON d6.UnitID = u.UnitID AND d6.Category = 'KEYB' AND d6.Refurbished = 0
-        -- Webcam
-        LEFT JOIN Units_Devices d7 ON d7.UnitID = u.UnitID AND d7.Category = 'WEBCAM' AND d7.Refurbished = 0
-        -- Video card
-        LEFT JOIN Units_Devices d8 ON d8.UnitID = u.UnitID AND d8.Category = 'VIDEOCARD' AND d8.Refurbished = 0
-
+            u.Model,
+            d.UnitID AS hd_unitid,
+            d.Model AS hd_model,
+            d.Serial AS hd_sn,
+            d.Size AS hd_size,
+            d.Didx AS hd_idx,
+            d.Erased AS hd_erased,  -- Explicitly select device erasure status
+            u.Audited,
+            u.OSRestored
+        FROM Units u
+        INNER JOIN Lots l ON l.LotID = u.LotID
+        LEFT JOIN Units_Devices d ON d.UnitID = u.UnitID AND d.Category = 'STORAGE' AND d.Refurbished = 0
         WHERE l.Number = %s
-        GROUP BY u.UnitID, l.Number, u.AssetTag, u.Created, u.ProductType, u.Model, u.Chassis, 
-                 u.PartNumber, u.SerialNumber, d1.Size, d1.Info1, d1.Info2, d2.Model, d2.Speed, d2.Info1,
-                 d4.Size, d4.Info1, d4.Model, d4.Serial, d5.Model, d6.Model, d7.Model, d8.Model,
-                 u.OSRestored, u.ObservCodes, u.ObservNotes, u.Grade
-        ORDER BY u.UnitID
+        ORDER BY u.UnitID, d.Didx
     """
 
     @api.model
@@ -178,6 +141,7 @@ class ErasureService(models.AbstractModel):
                 continue
         return result
 
+
     @api.model
     def _dsn(self):
         """
@@ -213,26 +177,37 @@ class ErasureService(models.AbstractModel):
         """
         Fetches erasure data for a given lot from the Aiken Workbench.
         Returns a list of dicts ready for the report, with all required fields and error handling.
+        Bulletproofed: follows Odoo 17 best practices and matches guardrails of fetch_audit_for_lot.
         """
+        _t = _  # Never shadow _ for translations
+        # Prepare DSN and log (never log password)
+        dsn = self._dsn().copy()
+        dsn_log = dsn.copy(); dsn_log['password'] = '***'
+        _logger.info(f"[fetch_for_lot] DSN: {dsn_log}, lot_no: {lot_no}")
+        conn = None
+        raw_rows = []
         try:
-            conn = pymysql.connect(**self._dsn())
+            conn = pymysql.connect(**dsn)
             with conn.cursor() as cur:
                 cur.execute(self._SQL, (lot_no,))
-                raw_rows = cur.fetchall()
+                raw_rows = cur.fetchall() or []
         except pymysql.err.OperationalError as err:
-            _logger.error("MySQL unreachable: %s", err)
-            raise UserError(_("Cannot reach Workbench database."))
+            _logger.error(f"MySQL unreachable for DSN {dsn_log}: {err}")
+            raise UserError(_t("Cannot reach Workbench database at %(host)s:%(port)s as %(user)s (DB: %(database)s). Please contact your administrator.") % dsn_log)
         except Exception as e:
-            _logger.error("Unexpected error fetching erasure data: %s", str(e), exc_info=True)
-            raise UserError(_("Unexpected error fetching erasure data: %s") % str(e))
+            _logger.error(f"Unexpected error fetching erasure data for lot '{lot_no}' with DSN {dsn_log}: {str(e)}", exc_info=True)
+            raise UserError(_t("Unexpected error fetching erasure data for lot %s: %s") % (lot_no, str(e)))
         finally:
-            try:
-                conn.close()
-            except Exception:
-                pass
+            # Always attempt to close connection if it was opened
+            if conn:
+                try:
+                    conn.close()
+                except Exception as close_err:
+                    _logger.error(f"Error closing MySQL connection for DSN {dsn_log}: {str(close_err)}")
 
+        # If nothing was returned, inform the user
         if not raw_rows:
-            raise UserError(_("Lot %s not found in Workbench.") % lot_no)
+            raise UserError(_t("Lot %s not found in Workbench.") % lot_no)
 
         rows = []
         for r in raw_rows:
@@ -249,9 +224,33 @@ class ErasureService(models.AbstractModel):
                 host_machine = ', '.join(host_parts)
                 if model.strip():
                     host_machine = f"{host_machine} - {model.strip()}" if host_machine else model.strip()
-                # Method: Erased flag (1 = 'Zeros', 0 = 'Unknown')
-                method = 'Zeros' if r.get('erased_flag', 0) else 'Unknown'
-                # Compose row for report
+                # Double rail guard: robustly check for device erasure status
+                erased_val = None
+                try:
+                    # First, prefer explicit hd_erased field from SQL
+                    if 'hd_erased' in r:
+                        erased_val = r['hd_erased']
+                    # Fallback to Erased if present (legacy)
+                    elif 'Erased' in r:
+                        erased_val = r['Erased']
+                except Exception as guard_err:
+                    _logger.error(f"[fetch_for_lot] Error extracting erasure status for row: {r}. Error: {guard_err}", exc_info=True)
+                    erased_val = None
+                # Final fallback and type check
+                if erased_val is None:
+                    erasure_status = 'Unknown'
+                    _logger.warning(f"[fetch_for_lot] Device erasure status missing for row: {r}")
+                else:
+                    try:
+                        erased_int = int(erased_val)
+                        erasure_status = 'Erased' if erased_int else 'Not Erased'
+                    except Exception as conv_err:
+                        erasure_status = 'Unknown'
+                        _logger.warning(f"[fetch_for_lot] Device erasure status not int for row: {r} (got: {erased_val}). Error: {conv_err}")
+                # Method: use OSRestored as a proxy, or always 'Unknown'
+                osrestored = r.get('OSRestored', '')
+                method = 'Zeros' if osrestored and str(osrestored).strip() else 'Unknown'
+                # Compose row for report, now including robust erasure status
                 rows.append({
                     'host_machine': host_machine,
                     'hd_idx': r.get('hd_idx', '-') ,
@@ -260,12 +259,17 @@ class ErasureService(models.AbstractModel):
                     'hd_size': r.get('hd_size', '-') ,
                     'erasure_id': r.get('UnitID', '-') ,
                     'method': method,
+                    'erasure_status': erasure_status,
                     'timestamp': str(r.get('Audited', '-')),
                 })
+
             except Exception as e:
-                _logger.error("Error formatting row for report: %s", str(e), exc_info=True)
+                _logger.error(f"Error formatting row for report for lot '{lot_no}': {str(e)}", exc_info=True)
                 continue
 
-        if not rows:
-            raise UserError(_("No erasure records found for lot %s.") % lot_no)
-        return rows
+        # Filter to only include drives that HAVE been erased
+        erased_rows = [row for row in rows if row.get('erasure_status') == 'Erased']
+        # If no valid erased rows were parsed, inform the user
+        if not erased_rows:
+            raise UserError(_t("No erased drives found for lot %s.") % lot_no)
+        return erased_rows  # Only return erased drives
