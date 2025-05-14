@@ -593,7 +593,9 @@ class GrInternalInventory(models.Model):
         # Créer une copie avec les champs voulus vides
         new_record = self.copy({
             'serial_number': False,
-            'asset_tag': False
+            'asset_tag': False,
+            'created_at': fields.Datetime.now(),  # Utiliser la date actuelle
+            'created_by_id': self.env.user.id,   # Utiliser l'utilisateur actuel
         })
         # Pas de retour d'action, la ligne sera ajoutée directement dans la vue tree
         return True
@@ -603,7 +605,9 @@ class GrInternalInventory(models.Model):
         # Créer une copie avec les champs voulus vides
         new_record = self.copy({
             'serial_number': False,
-            'asset_tag': False
+            'asset_tag': False,
+            'created_at': fields.Datetime.now(),  # Utiliser la date actuelle
+            'created_by_id': self.env.user.id,   # Utiliser l'utilisateur actuel
         })
         
         # Retourner une action qui ouvre la vue en mode édition sur la nouvelle ligne
