@@ -100,6 +100,7 @@
                 <group>
                     <field name="partner_id" placeholder="Select Client" string="Client"/>
                     <field name="order_giver_id" placeholder="Select Order Giver" string="Order Giver"/>
+                    <field name="client_destination_name" placeholder="Enter destination client name" string="Client destinataire"/>
                     <field name="lot_name" placeholder="Lot Name"/>
                 </group>
                 <group>
