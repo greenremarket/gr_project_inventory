@@ -1,5 +1,13 @@
 # Greenremarket - Guide de développement
 
+## AVERTISSEMENTS IMPORTANTS - ENVIRONNEMENT DE PRODUCTION
+
+⚠️ **NE JAMAIS** toucher aux éléments suivants en environnement de production :
+
+- Base de données `greenremarket` (utiliser uniquement `greenremarket_test` pour les tests)
+- Répertoire `/opt/odoo/extra_addons/` (utiliser uniquement `/opt/odoo/test_addons/`)
+- Service Odoo principal (seulement `odoo-test`)
+
 ## Environnement de test
 
 ### Mettre à jour un module sur le serveur de test
