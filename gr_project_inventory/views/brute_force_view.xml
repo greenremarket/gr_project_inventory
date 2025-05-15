@@ -26,6 +26,7 @@
                             <field name="project_id" options="{'no_create': True, 'no_open': True}"/>
                             <field name="partner_id" string="Client"/>
                             <field name="order_giver_id" string="Commanditaire"/>
+                            <field name="client_destination_name" string="Client destinataire"/>
                         </group>
                         <group>
                             <field name="tag_ids" string="Type d'opération" widget="many2many_tags" options="{'color_field': 'color'}"/>
@@ -52,6 +53,13 @@
                         </page>
                         <page string="Client Inventory" name="client_inventory">
                             <field name="client_inventory_ids" mode="tree,form" context="{'default_task_id': active_id}"/>
+                        </page>
+                        <page string="Informations complémentaires">
+                            <group>
+                                <field name="contacts" placeholder="Enter contacts information" string="Contacts" widget="textarea"/>
+                                <field name="address" placeholder="Enter address details" string="Address" widget="textarea"/>
+                                <field name="deliverable_ids" widget="many2many_tags" string="Livrables attendus"/>
+                            </group>
                         </page>
                     </notebook>
                 </sheet>
