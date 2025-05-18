@@ -12,7 +12,7 @@ class TestAudit(TransactionCase):
         
         # Mock data for testing
         self.mock_data = [{
-            'lot': 'TEST123',
+            'lot': 'AUDT1',
             'serial': 'SN123',
             'model': 'Test Model',
             'manufacturer': 'Test Manufacturer',
@@ -28,21 +28,21 @@ class TestAudit(TransactionCase):
             'report_type': 'xlsx',
             'report_file': 'gr_project_inventory.audit_report_xlsx',
             'name': 'Audit Report',
-            'data': {'lot_name': 'TEST123', 'lot': 'TEST123'}
+            'data': {'lot_name': 'AUDT1', 'lot': 'AUDT1'}
         }
 
     def test_audit_wizard_creation(self):
         """Test creation of audit report wizard"""
         wizard = self.wizard_model.create({
-            'lot_name': 'TEST123'
+            'lot_name': 'AUDT1'
         })
-        self.assertEqual(wizard.lot_name, 'TEST123')
+        self.assertEqual(wizard.lot_name, 'AUDT1')
 
     def test_audit_database_connection_error(self):
         """Test handling of database connection error"""
         with patch('odoo.addons.gr_project_inventory.models.erasure_service.ErasureService.lot_exists', side_effect=Exception('Database connection failed')):
             wizard = self.wizard_model.create({
-                'lot_name': 'TEST123'
+                'lot_name': 'AUDT1'
             })
             with self.assertRaises(Exception) as cm:
                 wizard.export_xlsx_report()
@@ -54,7 +54,7 @@ class TestAudit(TransactionCase):
              patch('odoo.addons.gr_project_inventory.models.erasure_service.ErasureService.fetch_audit_for_lot', return_value=self.mock_data):
             
             wizard = self.wizard_model.create({
-                'lot_name': 'TEST123'
+                'lot_name': 'AUDT1'
             })
             result = wizard.export_xlsx_report()
             
@@ -69,7 +69,7 @@ class TestAudit(TransactionCase):
              patch('odoo.addons.gr_project_inventory.models.erasure_service.ErasureService.fetch_audit_for_lot', return_value=multiple_devices):
             
             wizard = self.wizard_model.create({
-                'lot_name': 'TEST123'
+                'lot_name': 'AUDT1'
             })
             result = wizard.export_xlsx_report()
             
@@ -83,7 +83,7 @@ class TestAudit(TransactionCase):
              patch('odoo.addons.gr_project_inventory.models.erasure_service.ErasureService.fetch_audit_for_lot', return_value=[]):
             
             wizard = self.wizard_model.create({
-                'lot_name': 'NONEXISTENT'
+                'lot_name': 'NODT1'
             })
             with self.assertRaises(UserError) as cm:
                 wizard.export_xlsx_report()
