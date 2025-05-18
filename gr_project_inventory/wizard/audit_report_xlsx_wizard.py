@@ -42,21 +42,24 @@ class AuditReportXlsxWizard(models.TransientModel):
         if not lot:
             raise UserError('Please enter a valid Lot Name.')
             
-        # Log the report generation for auditing
         _logger.info("Generating Audit XLSX Report for lot: %s", lot)
         
-        # Check if lot exists and get data
         erasure_service = self.env['gr.erasure.service']
         if not erasure_service.lot_exists(lot):
             raise UserError(f'Lot {lot} not found in the database.')
             
-        data = erasure_service.fetch_audit_for_lot(lot)
+        data = erasure_service.fetch_audit_for_lot(lot) # This is the mocked data in tests
         if not data:
             raise UserError(f'No data found for lot {lot}.')
         
-        # Return the report action
-        return self.env.ref('gr_project_inventory.action_audit_report_xlsx').report_action(
-            self, 
-            data={'lot_name': lot, 'lot': lot}  # Pass both for maximum compatibility
-        )
+        # Return the report action dictionary directly
+        report_action_data = {'lot_name': lot, 'lot': lot}
+        return {
+            'type': 'ir.actions.report',
+            'report_name': 'gr_project_inventory.audit_report_xlsx',
+            'report_type': 'xlsx',
+            'data': report_action_data,
+            'context': dict(self.env.context, active_ids=[self.id], active_model=self._name),
+            'display_name': f"Audit Report for Lot {lot}",
+        }
 
