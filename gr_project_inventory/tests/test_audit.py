@@ -10,8 +10,8 @@ class TestAudit(TransactionCase):
         self.wizard_model = self.env['audit.report.xlsx.wizard']
         # self.erasure_service = self.env['gr.erasure.service']  # Not needed for patching at class level
         
-        # Mock data for testing
-        self.mock_data = [{
+        # Store a single mock device data dictionary
+        self.single_mock_device_data = {
             'lot': 'AUDT1',
             'serial': 'SN123',
             'model': 'Test Model',
@@ -19,9 +19,9 @@ class TestAudit(TransactionCase):
             'created': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'osrestored': 'Yes',
             'status': 'Completed'
-        }]
+        }
         
-        # Mock report action
+        # Mock report action (remains for reference, not directly used in assertions causing failure)
         self.report_action = {
             'type': 'ir.actions.report',
             'report_name': 'gr_project_inventory.audit_report_xlsx',
@@ -50,8 +50,10 @@ class TestAudit(TransactionCase):
 
     def test_audit_report_generation(self):
         """Test successful audit report generation"""
+        # Use a list containing the single mock device data
+        mock_data_for_one_device = [self.single_mock_device_data]
         with patch('odoo.addons.gr_project_inventory.models.erasure_service.ErasureService.lot_exists', return_value=True), \
-             patch('odoo.addons.gr_project_inventory.models.erasure_service.ErasureService.fetch_audit_for_lot', return_value=self.mock_data):
+             patch('odoo.addons.gr_project_inventory.models.erasure_service.ErasureService.fetch_audit_for_lot', return_value=mock_data_for_one_device):
             
             wizard = self.wizard_model.create({
                 'lot_name': 'AUDT1'
@@ -64,9 +66,16 @@ class TestAudit(TransactionCase):
 
     def test_audit_report_multiple_devices(self):
         """Test audit report generation with multiple devices"""
-        multiple_devices = self.mock_data * 2
+        # Create a list of two distinct mock device dictionaries
+        mock_device_1 = self.single_mock_device_data.copy()
+        mock_device_2 = self.single_mock_device_data.copy()
+        mock_device_2['serial'] = 'SN456' # Ensure it's a distinct dictionary
+        mock_device_2['created'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S') # Give it a new timestamp too
+        
+        multiple_distinct_devices = [mock_device_1, mock_device_2]
+        
         with patch('odoo.addons.gr_project_inventory.models.erasure_service.ErasureService.lot_exists', return_value=True), \
-             patch('odoo.addons.gr_project_inventory.models.erasure_service.ErasureService.fetch_audit_for_lot', return_value=multiple_devices):
+             patch('odoo.addons.gr_project_inventory.models.erasure_service.ErasureService.fetch_audit_for_lot', return_value=multiple_distinct_devices):
             
             wizard = self.wizard_model.create({
                 'lot_name': 'AUDT1'
