@@ -739,43 +739,6 @@ class GrInternalInventory(models.Model):
             'failed': failed_ids
         }
 
-    @api.constrains('lot_name')
-    def _check_lot_name_alphanumeric(self):
-        for record in self:
-            if record.lot_name:
-                # Vérification de la longueur (doit être STRICTEMENT bloquante)
-                if len(record.lot_name) > 5:
-                    raise ValidationError("ERREUR: Le nom du lot ne doit pas dépasser 5 caractères.")
-                
-                # Vérification des caractères alphanumériques
-                if not re.match(r'^[A-Z0-9]+$', record.lot_name):
-                    raise ValidationError("ERREUR: Le nom du lot ne doit contenir que des caractères alphanumériques (A-Z, 0-9).")
-
-    @api.onchange('lot_name')
-    def _onchange_lot_name_uppercase(self):
-        if self.lot_name:
-            # Convertir en majuscules
-            uppercase_value = self.lot_name.upper()
-            
-            # Vérifier la longueur avant de tronquer
-            if len(uppercase_value) > 5:
-                # Cela affiche un avertissement visuel à l'utilisateur
-                return {
-                    'warning': {
-                        'title': 'Nom du lot trop long',
-                        'message': 'Le nom du lot ne doit pas dépasser 5 caractères. Il sera tronqué à l\'enregistrement.'
-                    }
-                }
-            self.lot_name = uppercase_value
-
-    # Ajouter cette méthode pour intercepter et bloquer au moment de l'écriture
-    def write(self, vals):
-        if 'lot_name' in vals and vals['lot_name']:
-            lot_name = vals['lot_name']
-            if len(lot_name) > 5:
-                raise ValidationError("ERREUR: Le nom du lot ne doit pas dépasser 5 caractères.")
-        return super(GrInternalInventory, self).write(vals)
-
 class GrZebraPrinter(models.Model):
     _name = 'gr.zebra.printer'
     _description = 'Zebra Printer Service'
@@ -1092,6 +1055,46 @@ class ProjectTask(models.Model):
                 ('discrepancy_type', '=', 'missing')
             ])
             
+    @api.constrains('lot_name')
+    def _check_lot_name_alphanumeric(self):
+        for record in self:
+            if record.lot_name:
+                # Vérification de la longueur (doit être STRICTEMENT bloquante)
+                if len(record.lot_name) > 5:
+                    raise ValidationError("ERREUR: Le nom du lot ne doit pas dépasser 5 caractères.")
+                
+                # Vérification des caractères alphanumériques
+                if not re.match(r'^[A-Z0-9]+$', record.lot_name):
+                    raise ValidationError("ERREUR: Le nom du lot ne doit contenir que des caractères alphanumériques (A-Z, 0-9).")
+
+    @api.onchange('lot_name')
+    def _onchange_lot_name_uppercase(self):
+        if self.lot_name:
+            # Convertir en majuscules
+            uppercase_value = self.lot_name.upper()
+            
+            # Vérifier la longueur avant de tronquer
+            if len(uppercase_value) > 5:
+                # Cela affiche un avertissement visuel à l\'utilisateur
+                return {
+                    'warning': {
+                        'title': 'Nom du lot trop long',
+                        'message': "Le nom du lot ne doit pas dépasser 5 caractères. Il sera tronqué à l'enregistrement." # Utilisation de guillemets doubles pour éviter l'échappement
+                    }
+                }
+            self.lot_name = uppercase_value
+
+    def write(self, vals):
+        if 'lot_name' in vals and vals['lot_name']:
+            lot_name_val = vals['lot_name']
+            if isinstance(lot_name_val, str) and len(lot_name_val) > 5:
+                raise ValidationError("ERREUR: Le nom du lot ne doit pas dépasser 5 caractères.")
+            # Gérer les cas où lot_name est explicitement mis à False/None pour l'effacer
+            elif lot_name_val is not False and not isinstance(lot_name_val, str):
+                raise ValidationError("Format de nom de lot invalide.")
+        
+        return super(ProjectTask, self).write(vals)
+
     def action_open_audit_xlsx_wizard(self):
         """
         Open the Audit XLSX Report wizard with the current task's lot name pre-filled.

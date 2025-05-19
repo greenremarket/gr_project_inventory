@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from odoo import models, _
+from odoo import models
+from odoo.tools.translate import _
 from odoo.exceptions import UserError
 import io
 import xlsxwriter
@@ -32,7 +33,11 @@ class AuditReportXLSX(models.AbstractModel):
         _logger = models.logging.getLogger(__name__)
         _logger.info("Generating Audit XLSX report.")
         
-        lot_name = data.get('lot_name', '').strip().upper()
+        # Import translation function locally to avoid scope issues
+        from odoo.tools.translate import _
+        
+        # Accept both lot_name and lot parameters for compatibility
+        lot_name = data.get('lot_name', data.get('lot', '')).strip().upper()
         if not lot_name:
             raise UserError(_('No Lot Name provided for the audit report.'))
 

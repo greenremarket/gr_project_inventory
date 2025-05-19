@@ -29,7 +29,7 @@ class TestDiscrepancyReport(TransactionCase):
         cls.task = cls.env['project.task'].create({
             'name': 'Test Task',
             'project_id': cls.project.id,
-            'lot_name': 'TESTLOT'
+            'lot_name': 'LOTD1'
         })
         print(f"Created task: {cls.task.name}")
 

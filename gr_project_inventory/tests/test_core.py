@@ -32,7 +32,7 @@ class TestProjectInventory(TransactionCase):
         self.task = self.env['project.task'].create({
             'name': 'Test Task',
             'project_id': self.project.id,
-            'lot_name': 'TESTLOT'
+            'lot_name': 'LOTCI'
         })
         
         # Check if product types exist before creating them

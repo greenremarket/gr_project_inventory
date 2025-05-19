@@ -12,7 +12,66 @@ class ErasureService(models.AbstractModel):
     _description = 'Live MySQL bridge to Aiken Workbench'
 
     _AUDIT_SQL = """
-        ...
+        SELECT
+            u.UnitID,
+            l.Number AS LotID,
+            u.AssetTag,
+            u.Created,
+            u.ProductType,
+            u.Manufacturer AS Manufacturer,
+            u.Model,
+            u.Chassis,
+            u.PartNumber,
+            u.SerialNumber,
+            d1.Size AS DisplaySize,
+            CONCAT(d1.Info1, ' x ', d1.Info2) AS Resolution,
+            d2.Model AS Processor,
+            d2.Speed AS ProcSpeed,
+            d2.Info1 AS ProcGen,
+            MAX(CASE WHEN d3.Category = 'RAM' THEN d3.Size ELSE NULL END) AS RAM,
+            d4.Size AS Storage1Size,
+            d4.Info1 AS Storage1Type,
+            d4.Model AS Storage1Model,
+            d4.Serial AS Storage1Serial,
+            d5.Model AS Optical,
+            d6.Model AS Keyb,
+            d7.Model AS Webcam,
+            d8.Model AS Videocard,
+
+            COALESCE(u.OSRestored, 0) AS OSRestored,
+            u.ObservCodes,
+            u.ObservNotes,
+            u.Grade
+        FROM Lots l
+        JOIN Units u ON u.LotID = l.LotID
+        -- Display
+        LEFT JOIN Units_Devices d1 ON d1.UnitID = u.UnitID AND d1.Category = 'DISPLAY' AND d1.Refurbished = 0
+        -- CPU
+        LEFT JOIN Units_Devices d2 ON d2.UnitID = u.UnitID AND d2.Category = 'CPU' AND d2.Refurbished = 0
+        -- RAM (we'll use MAX to get one value)
+        LEFT JOIN Units_Devices d3 ON d3.UnitID = u.UnitID AND d3.Category = 'RAM' AND d3.Refurbished = 0
+        -- Storage (first storage device)
+        LEFT JOIN (
+            SELECT UnitID, Model, Size, Serial, Info1, 
+                   ROW_NUMBER() OVER (PARTITION BY UnitID ORDER BY Didx) as rn
+            FROM Units_Devices 
+            WHERE Category = 'STORAGE' AND Refurbished = 0
+        ) d4 ON d4.UnitID = u.UnitID AND d4.rn = 1
+        -- Optical drive
+        LEFT JOIN Units_Devices d5 ON d5.UnitID = u.UnitID AND d5.Category = 'OPTICAL' AND d5.Refurbished = 0
+        -- Keyboard
+        LEFT JOIN Units_Devices d6 ON d6.UnitID = u.UnitID AND d6.Category = 'KEYB' AND d6.Refurbished = 0
+        -- Webcam
+        LEFT JOIN Units_Devices d7 ON d7.UnitID = u.UnitID AND d7.Category = 'WEBCAM' AND d7.Refurbished = 0
+        -- Video card
+        LEFT JOIN Units_Devices d8 ON d8.UnitID = u.UnitID AND d8.Category = 'VIDEOCARD' AND d8.Refurbished = 0
+
+        WHERE l.Number = %s
+        GROUP BY u.UnitID, l.Number, u.AssetTag, u.Created, u.ProductType, u.Model, u.Chassis, 
+                 u.PartNumber, u.SerialNumber, d1.Size, d1.Info1, d1.Info2, d2.Model, d2.Speed, d2.Info1,
+                 d4.Size, d4.Info1, d4.Model, d4.Serial, d5.Model, d6.Model, d7.Model, d8.Model,
+                 u.OSRestored, u.ObservCodes, u.ObservNotes, u.Grade
+        ORDER BY u.UnitID
     """
 
     # Reconstructed erasure SQL for fetch_for_lot. Only edit this if the erasure certificate/report fields change.

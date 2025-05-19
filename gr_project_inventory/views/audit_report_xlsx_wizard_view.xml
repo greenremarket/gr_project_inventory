@@ -9,7 +9,7 @@
                     <field name="lot_name" placeholder="e.g. 24A01"/>
                 </group>
                 <footer>
-                    <button name="action_export_xlsx" type="object" string="Export XLSX" class="btn-primary"/>
+                    <button name="export_xlsx_report" type="object" string="Export XLSX" class="btn-primary"/>
                     <button string="Cancel" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
