@@ -90,14 +90,15 @@ class InternalInventoryReportXLSX(models.AbstractModel):
             sheet.set_column('F:F', 15)  # Manufacturer
             sheet.set_column('G:G', 15)  # Product Type
             sheet.set_column('H:H', 15)  # Pallet Number
-            sheet.set_column('I:I', 2)   # Extra column for full green background
+            sheet.set_column('I:I', 20)  # Observation
+            sheet.set_column('J:J', 2)   # Extra column for full green background
 
             # Set row heights
             sheet.set_row(0, 75)  # Title row height - increased for logo
             sheet.set_row(1, 30)  # Header row height
 
             # Write title - covering full width including extra column
-            sheet.merge_range('A1:I1', "INVENTAIRE ET SORTIE COMPTABLE", title_format)
+            sheet.merge_range('A1:J1', "INVENTAIRE ET SORTIE COMPTABLE", title_format)
 
             # Insert company logo
             company = self.env.company
@@ -121,13 +122,14 @@ class InternalInventoryReportXLSX(models.AbstractModel):
                 'Part Number',
                 'Manufacturer',
                 'Product Type',
-                'Pallet Number'
+                'Pallet Number',
+                'Observation'
             ]
             
             # Write headers with white background and dark green borders/text
             for col, header in enumerate(headers):
                 sheet.write(1, col, header, header_format)
-            sheet.write(1, 8, '', header_format)  # Extra column to extend formatting
+            sheet.write(1, 9, '', header_format)  # Extra column to extend formatting
 
             # Write data starting from row 3
             row = 2
@@ -141,7 +143,8 @@ class InternalInventoryReportXLSX(models.AbstractModel):
                 sheet.write(row, 5, inventory.manufacturer_id.name if inventory.manufacturer_id else '', row_format)
                 sheet.write(row, 6, inventory.product_type_id.name if inventory.product_type_id else '', row_format)
                 sheet.write(row, 7, inventory.pallet_number or '', row_format)
-                sheet.write(row, 8, '', row_format)  # Extra column
+                sheet.write(row, 8, inventory.observation_id.name if inventory.observation_id else '', row_format)
+                sheet.write(row, 9, '', row_format)  # Extra column
                 row += 1
 
         _logger.info("XLSX report generation completed successfully.")
