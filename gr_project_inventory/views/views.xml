@@ -124,7 +124,7 @@
         <field name="view_mode">form</field>
         <field name="view_id" ref="view_task_creation_form"/>
         <field name="target">new</field>
-        <field name="context">{'dialog_size': 'extra-large'}</field>
+        <field name="context">{'dialog_size': 'extra-large', 'default_project_id': 1}</field>
     </record>
 
     <!-- Menu Item for Task Creation -->
