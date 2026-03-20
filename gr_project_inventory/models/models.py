@@ -892,6 +892,20 @@ class GrDiscrepancy(models.Model):
 # Ajouter la classe ProjectTask qui hérite de project.task
 class ProjectTask(models.Model):
     _inherit = 'project.task'
+    # Override project_id to set default to "General" project
+    project_id = fields.Many2one(
+        'project.project',
+        default=lambda self: self._get_default_project(),
+        string='Project'
+    )
+    
+    def _get_default_project(self):
+        """Set default project to 'General' (ID 1)"""
+        general_project = self.env['project.project'].search([
+            ('id', '=', 1)  # General project
+        ], limit=1)
+        return general_project if general_project else False
+
 
     # Champs requis qui ont disparu
     order_giver_id = fields.Many2one(
