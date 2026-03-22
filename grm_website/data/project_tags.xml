@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- PD3E Tag for Operations -->
+        <record id="project_tag_pd3e" model="project.tags">
+            <field name="name">PD3E</field>
+            <field name="color">1</field>
+        </record>
+    </data>
+</odoo>

@@ -4,6 +4,9 @@ from odoo.addons.sale_project.controllers.portal import (
 from odoo import _
 from odoo.http import request
 from odoo.osv.expression import OR, AND
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 BLACKLISTED_SEARCHBAR_INPUTS = {
@@ -67,6 +70,18 @@ class ProjectCustomerPortal(BaseProjectCustomerPortal):
     def _display_project_groupby(self, project):
         """Override to ensure that the project groupby is not displayed."""
         return False
+
+    def _task_get_page_view_values(self, task, access_token, **kwargs):
+        """Override to add documents to the context for portal display."""
+        values = super()._task_get_page_view_values(task, access_token, **kwargs)
+        
+        # Add documents to context so template can access them
+        # Use sudo() here in the controller where it's allowed
+        task_documents = task.sudo().document_ids
+        _logger.info(f"Adding {len(task_documents)} documents to task {task.id} portal context")
+        values['task_documents'] = task_documents
+        
+        return values
 
     def _task_get_searchbar_groupby(self, milestones_allowed, project=False):
         searchbar_groupby = super()._task_get_searchbar_groupby(
@@ -132,22 +147,28 @@ class ProjectCustomerPortal(BaseProjectCustomerPortal):
         return OR(search_domain)
 
     def _get_domain(self):
+        """Return domain for portal tasks: assigned OR follower OR project follower."""
+        commercial_partner_id = request.env.user.partner_id.commercial_partner_id.id
         return (
             [
                 ("project_id.privacy_visibility", "=", "portal"),
                 ("active", "=", True),
-                "|",
+                "|", "|",
+                # Branch 1: User follows the project
                 (
                     "project_id.message_partner_ids",
                     "child_of",
-                    [request.env.user.partner_id.id],
+                    [commercial_partner_id],
                 ),
+                # Branch 2: User follows the task
                 (
                     "message_partner_ids",
                     "child_of",
-                    [request.env.user.partner_id.id],
+                    [commercial_partner_id],
                 ),
-                ("tag_ids.name", "like", "PD3E"),
+                # Branch 3: User is assigned to the task
+                ("user_ids", "in", [request.env.user.id]),
+                # Keep portal access flag requirement
                 ("message_partner_ids.task_portal_ok", "=", True),
             ]
             if request.env.user.partner_id.task_portal_ok

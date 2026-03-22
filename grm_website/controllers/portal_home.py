@@ -14,7 +14,10 @@ class PortalHomeCustom(http.Controller):
             ('move_type', 'in', ('out_invoice', 'out_refund')),
             ('message_partner_ids', 'in', [partner.id]),
         ], limit=5)
-        tasks = request.env['project.task'].search([], limit=10).sudo()
+        tasks = request.env['project.task'].search([
+    ('user_ids', 'in', [user.id]),
+    ('active', '=', True),
+], limit=10).sudo()
         quotes_count = request.env['sale.order'].sudo().search_count([
             ('state', 'in', ['sent']),
             ('partner_id', '=', partner.id)

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="portal_my_task_documents" inherit_id="project.portal_my_task" priority="20">
+        <!-- Replace the hr before task_chat to add documents section -->
+        <xpath expr="//div[@id='task_chat']/preceding-sibling::hr[1]" position="replace">
+            <!-- Show only delivrable documents (with Livrable tag) -->
+            <t t-set="delivrable_docs" t-value="task.document_ids.filtered(lambda d: d.is_delivrable())"/>
+            <div t-if="delivrable_docs" class="row mt-4">
+                <div class="col-12">
+                    <hr/>
+                    <h4>Documents</h4>
+                    <ul class="list-group">
+                        <a class="list-group-item list-group-item-action d-flex align-items-center oe_documents py-1 px-2" 
+                           t-foreach='delivrable_docs' t-as='document' 
+                           t-attf-href="/web/content/#{document.attachment_id.id}?download=true&amp;access_token=#{document.attachment_id.access_token}" 
+                           target="_blank" 
+                           data-no-post-process="">
+                            <div class='oe_document_embedded o_image o_image_small me-2 me-lg-3' 
+                                 t-att-title="document.name" 
+                                 t-att-data-mimetype="document.mimetype" 
+                                 t-attf-data-src="/web/image/#{document.attachment_id.id}/50x40?access_token=#{document.attachment_id.access_token}"/>
+                            <div class='oe_document_name text-truncate'>
+                                <t t-esc='document.name'/>
+                                <small t-if="document.tag_ids" class="text-muted d-block">
+                                    <t t-foreach='document.tag_ids' t-as='tag'>
+                                        <span class="badge bg-secondary me-1" t-esc='tag.name'/>
+                                    </t>
+                                </small>
+                            </div>
+                        </a>
+                    </ul>
+                </div>
+            </div>
+            <!-- Keep the hr for separation -->
+            <hr t-if="not delivrable_docs"/>
+        </xpath>
+    </template>
+</odoo>

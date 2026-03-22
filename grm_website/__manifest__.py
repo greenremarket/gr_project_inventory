@@ -7,6 +7,9 @@
     'license': 'LGPL-3',
     'depends': ['website', 'sale_project', 'sign', 'contacts'],
     'data': [
+        # DATA
+        'data/project_tags.xml',
+        
         # PAGES
         'data/pages/home_page.xml',
         'data/pages/contact_us.xml',

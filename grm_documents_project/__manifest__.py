@@ -12,6 +12,7 @@
         "data/documents_facet_data.xml",
         "data/documents_tag_data.xml",
         "templates/project_portal_project_task_templates.xml",
+        "templates/portal_task_documents.xml",
     ],
     "installable": True,
     "assets": {
