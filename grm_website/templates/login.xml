@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+  <template id="template_login_inherit" inherit_id="website.login_layout" priority="99">
+    <xpath expr="//t" position="replace">
+      <t t-call="website.layout">
+        <section class="custom_grid login-section s_masonry_block o_colored_level" data-vcss="001">
+          <div class="container">
+            <div class="row o_grid_mode" data-row-count="11">
+              <div class="o_grid_item o_colored_level g-col-lg-5 g-height-11 col-lg-5"
+                   style="z-index: 2; grid-area: 1 / 1 / 13 / 7;">
+                <t t-if="'reset_password' in request.httprequest.path">
+                  <h1>Reset Password</h1>
+                </t>
+                <t t-elif="'signup' in request.httprequest.path">
+                  <h1>Create account</h1>
+                </t>
+                <t t-else="">
+                  <h1>Log In</h1>
+                </t>
+                <div class="oe_website_login_container" t-out="0"/>
+              </div>
+              <div class="pad-gird o_grid_item o_grid_item_image text-center o_colored_level g-height-5 g-col-lg-3 col-lg-3"
+                   style="z-index: 1;background-image: none;grid-area: 2 / 10 / 7 / 15;">
+                <img src="/grm_website/static/src/img/login-1.png" alt=""
+                     class="img img-fluid mx-auto rounded o_we_custom_image rounded"/>
+              </div>
+              <div class="hide-mobile pad-gird pad-x rounded-custom bg-white o_grid_item o_grid_item_image text-center o_colored_level g-height-5 g-col-lg-3 col-lg-3"
+                   style="z-index: 1;background-image: none;grid-area: 5 / 13 / 12 / 17;">
+                <img src="/grm_website/static/src/img/login-2.png" alt=""
+                     class="img img-fluid mx-auto o_we_custom_image rounded"/>
+              </div>
+              <div class="hide-mobile pad-girdCustom o_grid_item o_grid_item_image text-center o_colored_level g-height-4 g-col-lg-5 col-lg-5"
+                   style="z-index: 1;background-image: none;grid-area: 7 / 9 / 13 / 13;">
+                <img src="/grm_website/static/src/img/login-3.png" alt=""
+                     class="img img-fluid mx-auto o_we_custom_image rounded"/>
+              </div>
+              <div class="hide-mobile o_grid_item o_grid_item_image text-center o_colored_level g-height-2 g-col-lg-2 col-lg-2"
+                   style="z-index: 3;grid-area: 1 / 9 / 3 / 11;background-image: none;position: relative;top: 80px;">
+                <img src="/grm_website/static/src/img/separator-green.svg" alt=""
+                     class="object-fit-contain img img-fluid o_we_custom_image"/>
+              </div>
+              <div class="hide-mobile o_grid_item o_grid_item_image text-center o_colored_level g-height-2 g-col-lg-1 col-lg-1"
+                   style="background-image: none; z-index: 3; grid-area: 12 / 12 / 10 / 14;position: relative;top: 25px;left: 20px;">
+                <img src="/grm_website/static/src/img/arrow-circle.svg" alt=""
+                     class="arrow-green img img-fluid mx-auto o_we_custom_image object-fit-contain"/>
+              </div>
+            </div>
+          </div>
+        </section>
+      </t>
+    </xpath>
+  </template>
+
+  <template id="template_login_eye" inherit_id="web.login" priority="99">
+    <xpath expr="//input[@id='password']" position="replace">
+      <div class="input-group custom-passoword">
+        <input type="password" placeholder="Password" name="password" id="password"
+               t-attf-class="form-control #{'form-control-sm' if form_small else ''}" required="required"
+               autocomplete="current-password" t-att-autofocus="'autofocus' if login else None" maxlength="4096"/>
+        <button type="button" id="showPass">
+          <i class="fa fa-eye"></i>
+        </button>
+      </div>
+    </xpath>
+  </template>
+
+  <template id="template_reset_password" inherit_id="auth_signup.reset_password" priority="99">
+    <xpath expr="//input[@id='login']" position="attributes">
+      <attribute name="placeholder">Enter your email address</attribute>
+    </xpath>
+  </template>
+</odoo>

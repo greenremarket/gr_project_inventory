@@ -1,0 +1,148 @@
+@media screen and (min-width: 993px) {
+	.hide-desktop {
+		display: none;
+	}
+	.table-responsive:has(.o_portal_my_doc_table) {
+    border-radius: 40px;
+    box-shadow: 1px 1px 9px #ccc;
+    padding: 50px !important;
+	}
+}
+@media screen and (max-width: 992px) {
+	#wrap {
+		padding: 30px 15px 0;
+		.home_title {
+			font-size: 40px !important;
+			line-height: 50px !important;
+		}
+		h1 {
+			font-size: 35px !important;
+		}
+		h2 {
+			font-size: 25px !important;
+		}
+		.custom-secondary {
+	    height: inherit;
+      min-width: 310px;
+		}
+		.s_website_form {
+	    margin: 20px 0;
+		}
+	}
+	#wrapwrap .my_account > .row > div {
+		width: 100% !important;
+	}
+	.my_account {
+		.space-mobile {
+	    padding: 15px !important;
+		}
+		.status-pill span {
+	    display: inline-block !important;
+	    white-space: nowrap;
+		}
+		.card-custom > div {
+		    position: relative;
+		    margin-bottom: 20px;
+		}
+		.card-custom {
+		    padding: 40px 20px;
+		}
+	}
+	.login-section,
+	.my_account {
+		padding: 30px 15px 0;
+	}
+	#top {
+		.navbar-light {
+	    background-color: #fff;
+		}
+		.navbar-toggler-icon {
+	    width: 45px;
+	    height: 45px;
+		}
+		.nav-link.btn {
+	    margin: 0 !important;
+		}
+		#top_menu_collapse_mobile {
+	    background-color: #fff;
+		}
+	}
+	.hide-mobile {
+		display: none !important;
+	}
+	.pad-gird img {
+    width: 100%;
+	}
+	#wrapwrap {
+    overflow-x: hidden;
+	}
+	.mob-100 {
+    width: 100% !important;
+	}
+	#top_menu_collapse_mobile .o_border_contrast {
+    display: none;
+	}
+	.navbar-brand.logo img {
+    height: 130px !important;
+	}
+	.task-blockList, .task-blockList tr, .task-blockList td {
+    display: block;
+	}
+	.o_portal_wrap .o_portal_my_doc_table td,
+	.o_portal_wrap .o_portal_my_doc_table th {
+	    white-space: normal;
+	}
+	.o_portal_navbar .fa-bars {
+    color: #fff !important;
+	}
+	.o_portal_wrap #o_portal_navbar_content {
+    background-color: transparent !important;
+	}
+	.o_portal_wrap .o_portal_my_doc_table td {
+	    max-width: inherit;
+	    border: none;
+	    padding: 0;
+	    text-align: left !important;
+	}
+	.task-blockList tr {
+	    padding: 10px;
+	    border-radius: 10px;
+	    margin: 10px 0;
+	    box-shadow: 1px 1px 9px #ccc;
+	    position: relative;
+	}
+	.o_project_tasks_document {
+    padding: 10px;
+	}
+	.status-pill {
+    margin-bottom: 5px !important;
+    display: inline-block;
+    width: fit-content;
+	}
+	.o_portal_my_doc_table {
+    padding: 2px !important;
+	}
+	.o_project_tasks_document {
+	    padding: 10px;
+	}
+	.task-blockList .download_check {
+	    position: absolute;
+	    right: 20px;
+	    bottom: 20px;
+	}
+
+	.badge {
+	    margin-top: 5px;
+	}
+}
+@media screen and (min-height: 992px) {
+	.custom_grid {
+	  height: calc(100vh - 160px);
+	  display: flex;
+	  align-items: center;
+	}
+	.btn:not(.oe_search_button):hover {
+	  transform: translateY(-5px);
+	  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+	}
+}

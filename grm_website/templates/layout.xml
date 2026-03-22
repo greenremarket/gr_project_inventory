@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+  <template
+          id="template_header_custom"
+          inherit_id="website.template_header_default"
+          name="Header custom"
+          active="True"
+          priority="999"
+  >
+    <xpath expr="//t[@t-call='website.navbar']" position="replace">
+      <t t-call="website.navbar">
+        <t t-set="_navbar_classes" t-valuef="d-none d-lg-block"/>
+        <div id="page-loader" class="page-loader" aria-hidden="false" role="status" aria-label="Chargement de la page">
+          <div class="page-loader__box" aria-hidden="true">
+            <div class="spinner"></div>
+            <div class="page-loader__text">Chargement…</div>
+          </div>
+        </div>
+        <div id="o_main_nav" class="o_main_nav container">
+          <!-- Brand -->
+          <t t-call="website.placeholder_header_brand">
+            <t t-set="_link_class" t-valuef="me-4"/>
+          </t>
+          <!-- Navbar -->
+          <t t-call="website.navbar_nav">
+            <t t-set="_nav_class" t-valuef="me-auto justify-content-center w-100"/>
+            <!-- Menu -->
+            <t t-foreach="website.menu_id.child_id" t-as="submenu">
+              <t t-call="website.submenu">
+                <t t-set="item_class" t-valuef="nav-item"/>
+                <t t-set="link_class" t-valuef="nav-link"/>
+              </t>
+            </t>
+          </t>
+          <!-- Extra elements -->
+          <ul class="navbar-nav align-items-center gap-3 flex-shrink-0 justify-content-end">
+            <!-- Search Bar -->
+            <t t-call="website.placeholder_header_search_box">
+              <t t-set="_layout" t-valuef="modal"/>
+              <t t-set="_input_classes" t-valuef="border border-end-0 p-3"/>
+              <t t-set="_submit_classes" t-valuef="border border-start-0 px-4 bg-o-color-4"/>
+              <t t-set="_button_classes" t-valuef="text-o-color-4 top-search"/>
+            </t>
+            <!-- Sign In -->
+            <t t-call="portal.placeholder_user_sign_in">
+              <t t-set="_link_class" t-valuef="btn btn-secondary"/>
+            </t>
+            <!-- User Dropdown -->
+            <t t-call="portal.user_dropdown">
+              <t t-set="_avatar" t-value="true"/>
+              <t t-set="_user_name" t-value="True"/>
+              <t t-set="_item_class" t-valuef="dropdown avatar_top"/>
+              <t t-set="_link_class" t-valuef="fw-bold"/>
+              <t t-set="_user_name_class" t-valuef="fs-6"/>
+              <t t-set="_dropdown_menu_class" t-valuef="dropdown-menu-end"/>
+            </t>
+            <!-- Call To Action -->
+            <t t-call="website.placeholder_header_call_to_action"/>
+          </ul>
+        </div>
+      </t>
+    </xpath>
+  </template>
+
+  <template id="template_copyright_inherit" inherit_id="web.frontend_layout" priority="99">
+    <xpath expr="//footer[@id='bottom']" position="replace">
+      <footer t-cache="no_footer,no_copyright" t-if="not no_footer" id="bottom">
+        <div class="container py-2">
+          <p class="text-end text-grey mb0">Copyright © 2025 -
+            <a href="/" class="text-o-color-1">Green Remarket.</a>
+          </p>
+        </div>
+      </footer>
+    </xpath>
+  </template>
+
+  <template id="template_header_mobile_inherit" inherit_id="website.template_header_mobile" priority="99">
+    <xpath expr="//div[@id='top_menu_collapse_mobile']/div[2]/ul[1]" position="inside">
+      <t t-set="is_connected" t-value="not user_id._is_public()"/>
+      <t t-if="is_connected">
+        <li class="nav-item">
+          <a href="/my/tasks" class="nav-link">Your Operations</a>
+        </li>
+        <li class="nav-item">
+          <a href="/my/orders" class="nav-link">Your orders</a>
+        </li>
+        <li class="nav-item">
+          <a href="/my/invoices" class="nav-link">Your invoices</a>
+        </li>
+        <li class="nav-item">
+          <a href="/my/security" class="nav-link">Login &amp; Security</a>
+        </li>
+        <li class="nav-item">
+          <a href="/my/account" class="nav-link">Edit Information</a>
+        </li>
+      </t>
+    </xpath>
+  </template>
+</odoo>

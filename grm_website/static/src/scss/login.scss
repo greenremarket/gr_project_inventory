@@ -1,0 +1,47 @@
+.login-section {
+	.oe_login_form,
+	.oe_signup_form,
+	.oe_reset_password_form {
+    max-width: inherit;
+    margin: 20px 0;
+	}
+	label,
+	[value="/web/become"] {
+		display: none;
+	}
+	a {
+    color: #000;
+    font-weight: 700;
+    text-decoration: underline;
+    font-size: 14px;
+	}
+	.oe_login_buttons {
+    padding: 0 !important;
+	}
+}
+[type="submit"],
+.s_website_form_send {
+  font-weight: 700;
+  margin-bottom: 5px;
+  color: #fff;
+}
+.custom-passoword {
+	#showPass {
+	  background-color: transparent;
+	  border: none;
+	  position: absolute;
+	  right: 20px;
+	  top: 15px;
+	  z-index: 9;
+	  color: var(--o-color-5);
+  }
+	#password {
+	    border-radius: 120px;
+	}
+}
+.oe_signup_form label {
+    display: block !important;
+}
+.signup_grm .s_website_form_field {
+    justify-content: start !important;
+}

@@ -1,0 +1,218 @@
+.card-custom {
+  border-radius: 40px;
+  overflow: hidden;
+  box-shadow: 1px 1px 9px #ccc;
+  border: none;
+  padding: 35px 30px;
+}
+h5 {
+	margin-bottom: 0;
+}
+img.card-custom {
+  object-fit: cover;
+}
+.bg-dark-custom {
+  background-color: var(--o-color-2);
+  color: white !important;
+}
+.btn-green {
+  background-color: $primary;
+  color: white;
+  border: none;
+}
+.name_user {
+  overflow: hidden;
+  max-width: 100%;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.status-pill,
+.badge {
+  padding: 5px 15px;
+  border-radius: 999px;
+  font-size: 9px;
+  width: inherit;
+  height: inherit;
+  box-shadow: none !important;
+}
+.paid { background-color: #e2f5e5; color: #4caf50; }
+.late { background-color: #fdeaea; color: #f44336; }
+.in-progress { background-color: #d6ecfb; color: #2196f3; }
+.done { background-color: #e2f5e5; color: #4caf50; }
+
+.circle-icon {
+  width: 69px;
+  height: 69px;
+  border-radius: 50%;
+  background-color: var(--o-color-2);
+}
+.ico-green {
+  width: 40px;
+  height: 40px;
+  border-radius: 7px;
+  background-color: $primary;
+  display: block;
+}
+.text-grey {
+	color: #B3B3B3;
+}
+.w-85 {
+	width: 85%;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+.check-task {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid #1D1D1B;
+  border-radius: 3px;
+  margin-right: 10px;
+}
+.checked-task {
+  opacity:25%;
+}
+.separate_green {
+  position: absolute;
+  right: -30px;
+  top: 160px;
+  width: 100px;
+  z-index: 9;
+}
+.img-accountTop {
+  height: 270px;
+  width: 100%;
+}
+.arrow-green.separate_green {
+  top: 215px;
+}
+.o_portal_wrap .o_portal_my_doc_table td:has(a),
+.o_portal_wrap .o_portal_my_doc_table th:has(a) {
+  color: $secondary !important;
+}
+.form-control-sm,
+.form-control {
+  padding: 15px 27px;
+  color: #212529;
+  border: 1px solid var(--o-border-color);
+  border-radius: 120px;
+}
+.empty_text {
+  text-align: center;
+  color: #ccc;
+  border: 2px dashed #ccc;
+  border-radius: 10px;
+  margin: 20px 0;
+  font-size: 12px;
+  padding: 10px;
+}
+.avatar_top .rounded-circle {
+  width: 43px;
+  height: 43px;
+  border: 3px solid $primary;
+  margin-right: 7px;
+}
+.avatar_top .dropdown-toggle {
+    padding: 10px;
+    box-shadow: none;
+}
+.o_project_tasks_document {
+	.asc .fa-chevron-up {
+	    transform: rotate(180deg);
+	}
+	.fa-chevron-up {
+	    transition: all ease 0.6s;
+	}
+}
+/*Operations*/
+
+#o_portal_navbar_content .btn-secondary {
+    border: none;
+    padding: 5px 10px !important;
+    min-width: 60px;
+    font-size: 14px;
+    color: #fff !important;
+    background-color: $primary !important;
+}
+.o_portal_search_panel .btn-secondary,
+.o_portal_search_panel input {
+    border: 1px solid $primary !important;
+    margin: 0;
+}
+.o_portal_wrap .o_portal_navbar,
+.o_portal.container {
+    border-radius: 40px;
+    box-shadow: 1px 1px 9px #ccc;
+    border: none;
+    padding: 20px !important;
+    background-color: var(--o-color-2);
+    color: white;
+    margin-bottom: 20px;
+    li {
+      color: #fff;
+    }
+}
+.o_portal_wrap th {
+    padding: 10px !important;
+}
+.line-project {
+    padding: 10px 35px;
+    border-radius: 40px;
+}
+a {
+	color: $primary;
+}
+.o_portal_search_panel .form-control {
+    background-color: #fff;
+}
+.download_check .fa-download {
+    font-size: 20px;
+    margin: 7px;
+}
+.download_check * {
+    cursor: pointer;
+}
+.table > :not(caption) > * > * {
+    border-color: #efefef;
+}
+.form-check-input {
+    cursor: pointer;
+    width: 25px;
+    height: 25px;
+    border-color: $secondary;
+}
+.o_portal_sidebar_content {
+    background: $primary;
+    width: 100%;
+    border-radius: 40px;
+    padding: 50px !important;
+    * {
+	    color: #fff !important;
+    }
+}
+
+.o_portal_sale_sidebar,
+.o_project_portal_sidebar {
+		.d-none {
+		    display: none !important;
+		}
+		& > div:first-child {
+			padding-left: 0 !important;
+		}
+}
+.o_portal_search_panel .form-control {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+.o_portal_search_panel .form-control::placeholder {
+    font-size: 11px;
+}
+#unselectedLineErrorMsg {
+	display: none;
+}

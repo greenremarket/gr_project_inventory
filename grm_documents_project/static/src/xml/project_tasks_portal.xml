@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<templates xml:space="preserve">
+    <t t-name="grm_documents_project.portal_tasks_list_header">
+		<div>
+			<div class="mb-3 text-end">
+				<button class="btn btn-secondary">
+					<i class="fa fa-download me-2"></i><t t-esc="btnTxt"/>
+				</button>
+				<br /><span class="error-message text-danger"></span>
+			</div>
+		</div>
+    </t>
+</templates>

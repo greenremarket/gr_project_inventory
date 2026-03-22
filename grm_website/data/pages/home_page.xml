@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+  <record id="website.homepage" model="ir.ui.view">
+    <field name="active">False</field>
+  </record>
+
+  <record id="home_page_template" model="website.page">
+    <field name="url">/</field>
+    <field name="is_published">True</field>
+    <field name="website_indexed" eval="True"/>
+    <field name="name">Green Remarket Home page</field>
+    <field name="type">qweb</field>
+    <field name="key">grm_website.home_page_template</field>
+    <field name="arch" type="xml">
+      <t t-call="website.layout">
+        <div id="wrap" class="oe_structure oe_empty">
+          <section class="custom_grid s_masonry_block o_colored_level" data-vcss="001">
+            <div class="container">
+              <div class="row o_grid_mode" data-row-count="11">
+                <div class="o_grid_item text-center o_colored_level g-col-lg-5 g-height-11 col-lg-5"
+                     style="z-index: 2; grid-area: 1 / 1 / 13 / 6;">
+                  <p class="o_default_snippet_text" style="text-align: left;">
+                    <img src="/grm_website/static/src/img/ico-green.svg" alt=""
+                         class="img img-fluid o_we_custom_image" loading="lazy"/>
+                  </p>
+                  <p class="text-start text-uppercase mb0">The Ecological Recovery</p>
+                  <h1 class="text-start home_title">
+                    Green
+                    <br/>
+                    <span class="text-o-color-1">Remarket</span>.
+                  </h1>
+                  <p class="o_default_snippet_text" style="text-align: left;">
+                    <t t-set="is_connected" t-value="user_id._is_public()"/>
+                    <a t-if="is_connected" class="btn btn-secondary fw-bold custom-secondary" href="/web/login">
+                      Start Now
+                      <i class="fa fa-arrow-right"></i>
+                    </a>
+                    <a t-else="" class="btn btn-secondary fw-bold custom-secondary" href="/my/home">
+                      Start Now
+                      <i class="fa fa-arrow-right"></i>
+                    </a>
+                  </p>
+                </div>
+                <div class="pad-gird o_grid_item o_grid_item_image text-center o_colored_level g-height-5 g-col-lg-3 col-lg-3"
+                     style="z-index: 1;background-image: none;grid-area: 2 / 9 / 8 / 13;">
+                  <img src="/grm_website/static/src/img/home-2.png" alt=""
+                       class="img img-fluid mx-auto rounded o_we_custom_image rounded"/>
+                </div>
+                <div class="hide-mobile pad-gird o_grid_item o_grid_item_image text-center o_colored_level g-height-5 g-col-lg-3 col-lg-3"
+                     style="z-index: 1;background-image: none;grid-area: 3 / 13 / 9 / 17;">
+                  <img src="/grm_website/static/src/img/home-3.png" alt=""
+                       class="img img-fluid mx-auto o_we_custom_image rounded"/>
+                </div>
+                <div class="hide-mobile pad-girdCustom2 o_grid_item o_grid_item_image text-center o_colored_level g-height-4 g-col-lg-5 col-lg-5"
+                     style="z-index: 1;background-image: none;grid-area: 8 / 8 / 13 / 14;">
+                  <img src="/grm_website/static/src/img/home-1.png" alt=""
+                       class="img img-fluid mx-auto o_we_custom_image rounded"/>
+                </div>
+                <div class="hide-mobile o_grid_item o_grid_item_image text-center o_colored_level g-height-2 g-col-lg-2 col-lg-2"
+                     style="z-index: 3;grid-area: 7 / 11 / 9 / 15;background-image: none;position: relative;top: 40px;">
+                  <img src="/grm_website/static/src/img/separator-green.svg" alt=""
+                       class="object-fit-contain img img-fluid o_we_custom_image"/>
+                </div>
+                <div class="hide-mobile o_grid_item o_grid_item_image text-center o_colored_level g-height-2 g-col-lg-1 col-lg-1"
+                     style="background-image: none; z-index: 3; grid-area: 3 / 12 / 1 / 14;">
+                  <img src="/grm_website/static/src/img/arrow-circle.svg" alt=""
+                       class="arrow-green img img-fluid mx-auto o_we_custom_image object-fit-contain"/>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </t>
+    </field>
+  </record>
+</odoo>

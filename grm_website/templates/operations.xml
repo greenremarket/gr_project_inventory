@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+  <template id="operation_portal_task" inherit_id="project.portal_tasks_list">
+    <xpath expr="//t[@t-call='portal.portal_table']" position="replace">
+      <t t-if="grouped_tasks">
+        <t t-call="portal.portal_table">
+          <thead class="hide-mobile">
+            <tr>
+              <!-- Allows overrides in modules -->
+              <t t-set="group_by_in_header_list" t-value="['priority', 'status', 'project', 'stage', 'milestone']"></t>
+              <t t-set="number_of_header" t-value="8"></t>
+              <!-- Computes the right colspan once and use it everywhere -->
+              <t t-set="grouped_tasks_colspan"
+                 t-value="100"></t>
+              <th data-sort="operation">Operation N°</th>
+              <th data-sort="deee">Operations DEEE</th>
+              <th class="text-center" data-sort="status">Status</th>
+              <th class="text-center" data-sort="deadline">Deadline</th>
+              <th t-if="groupby != 'stage'" class="text-end" data-sort="stage">Stage</th>
+              <th class="text-end"></th>
+            </tr>
+          </thead>
+          <t t-foreach="grouped_tasks" t-as="tasks">
+            <tbody t-if="tasks" class="project-line">
+              <tr t-if="not groupby == 'none'" class="bg-light">
+                <th t-attf-colspan="{{grouped_tasks_colspan}}">
+                  <!-- This div is necessary for documents_project_sale -->
+                  <div name="project_name" class="w-100">
+                    <span t-if="groupby == 'stage'" t-attf-colspan="{{grouped_tasks_colspan}}">
+                      <span class="text-truncate" t-field="tasks[0].sudo().stage_id.name"/>
+                    </span>
+                    <span t-if="groupby == 'status'" t-attf-colspan="{{grouped_tasks_colspan}}">
+                      <span class="text-truncate" t-field="tasks[0].sudo().state"/>
+                    </span>
+                    <span t-if="groupby == 'customer'" t-attf-colspan="{{grouped_tasks_colspan}}">
+                      <span t-if="tasks[0].sudo().partner_id"
+                            class="text-truncate"
+                            t-field="tasks[0].sudo().partner_id.name"/>
+                      <span t-else="">No Customer</span>
+                    </span>
+                  </div>
+                </th>
+              </tr>
+            </tbody>
+            <tbody t-if="tasks" class="task-blockList">
+              <tr>
+                <td class="text-end" colspan="99">
+                  <div class="d-flex align-items-center justify-content-end">
+                    <label t-att-for="'all_' + str(tasks[0].sudo().project_id.id)" style="cursor: pointer;">Select all
+                    </label>
+                    <input t-att-id="'all_' + str(tasks[0].sudo().project_id.id)" name="select_all" type="checkbox"
+                           class="o_portal_task_checkbox form-check-input ms-2 select_all"/>
+                  </div>
+                </td>
+              </tr>
+              <t t-foreach="tasks" t-as="task">
+                <tr class="shortable">
+                  <td class="text-start hide-mobile">
+                    #
+                    <span t-esc="task.id"/>
+                  </td>
+                  <td>
+                    <a t-attf-href="/my/#{task_url}/#{task.id}?{{ keep_query() }}">
+                      <span t-att-title="task.name" t-field="task.name"/>
+                      <span t-foreach="task.tag_ids" t-as="tag" class="status-pill late" t-out="tag.name"/>
+                    </a>
+                  </td>
+                  <td class="align-middle text-center">
+                    <span t-attf-class="status-pill #{'paid' if task.state == '1_done' else 'late' if task.state == '1_canceled' else 'bg-warning' if task.state == '02_changes_requested' else 'done' if task.state == '03_approved' else 'in-progress'}">
+                      <t t-esc="dict(task.fields_get(allfields=['state'])['state']['selection'])[task.state]"/>
+                    </span>
+                  </td>
+                  <td class="text-center">
+                    <span t-esc="task.date_deadline" t-options='{"widget": "date"}'/>
+                  </td>
+                  <td t-if="groupby != 'stage'" class="text-end lh-1">
+                    <span t-attf-class="badge #{'text-bg-success' if task.stage_id.fold else 'text-bg-primary'} fw-normal o_text_overflow"
+                          t-attf-title="#{task.stage_id.name}" t-esc="task.stage_id.name"/>
+                  </td>
+                  <td class="text-end download_check">
+                    <label t-att-for="task.id">
+                      <i class="fa fa-download"></i>
+                    </label>
+                    <input type="checkbox" class="o_portal_task_checkbox form-check-input" t-att-value="task.id"
+                           t-att-data-task-id="task.id" t-att-data-task-name="task.name" t-att-id="task.id"/>
+                  </td>
+                </tr>
+              </t>
+            </tbody>
+          </t>
+        </t>
+      </t>
+    </xpath>
+  </template>
+
+  <template id="portal_my_task_user" inherit_id="project.portal_my_task">
+    <xpath expr="//div[@t-if='task.user_ids']" position="replace">
+      <div>
+        <strong class="mb-4 mt-3 name_user">
+          <t t-esc="user.name"/>
+        </strong>
+        <div t-if="user.street" class="d-flex">
+          <i class="fa fa-map-marker me-2"></i>
+          <p class="lead">
+            <t t-esc="user.street or ''"/>
+            <br/>
+            <t t-esc="user.zip or ''"/>
+            <t t-esc="user.city or ''"/>
+            <br/>
+            <t t-esc="user.country_id.name or ''"/>
+          </p>
+        </div>
+        <div t-if="user.phone" class="d-flex">
+          <i class="fa fa-phone me-2"></i>
+          <p class="lead">
+            <t t-esc="user.phone or ''"/>
+          </p>
+        </div>
+        <div t-if="user.email" class="d-flex">
+          <i class="fa fa-envelope me-2"></i>
+          <p class="lead">
+            <t t-esc="user.email"/>
+          </p>
+        </div>
+      </div>
+    </xpath>
+  </template>
+</odoo>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+	<template id="portal_tasks_list" inherit_id="project.portal_tasks_list">
+		<xpath expr="//t[@t-call='portal.portal_table']" position="before">
+			<span id="unselectedLineErrorMsg">Select at least one line.</span>
+		</xpath>
+		<xpath expr="//t[@t-call='portal.portal_table']" position="inside">
+			<t t-set="classes" t-value="'o_project_tasks_document'" />
+		</xpath>
+	</template>
+
+	<template id="portal_my_task" inherit_id="project.portal_my_task">
+		<div id="card_header" position="inside">
+			<input type="hidden" id="task_id" t-att-value="task.id" />
+		</div>
+	</template>
+</odoo>

@@ -1,0 +1,23 @@
+$o-website-values-palettes: (
+  (
+    "color-palettes-name": "grm-color",
+  ),
+);
+
+$o-selected-color-palettes-names: append($o-selected-color-palettes-names, "grm-color");
+
+$o-color-palettes-compatibility-indexes: (
+  1: "grm-color",
+);
+$o-color-palettes: map-merge(
+  $o-color-palettes,
+  (
+    "grm-color": (
+      "o-color-1": #A4C73C,
+      "o-color-2": #1D1D1B,
+      'o-color-3': #ECF0F1,
+      'o-color-4': #FFFFFF,
+      'o-color-5': #212529,
+    ),
+  ),
+);
