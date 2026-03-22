@@ -37,3 +37,26 @@ env/
 # Database
 *.db
 *.sqlite3
+
+# Local Odoo reproduction environment
+.venv_odoo/
+odoo/
+enterprise/
+OCA/
+account_ebics_repo/
+account_reconcile_repo/
+bank_statement_import_repo/
+l10n_france_repo/
+odoo_data/
+repro_dump/
+
+# One-off artifacts
+*.exe
+*.sql
+investigate_db.py
+
+# Session planning docs (local reference only)
+CONTAINERIZATION_PLAN.md
+LOCAL_REPRODUCTION_REPORT.md
+PROD_HANDOFF_PLAN.md
+DIAGNOSTIC.md
