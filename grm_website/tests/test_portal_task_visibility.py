@@ -8,10 +8,11 @@ This module tests that portal users can see tasks based on:
 4. Having task_portal_ok flag on their partner
 """
 
-from odoo.tests import TransactionCase
+from odoo.tests import TransactionCase, tagged
 from odoo.exceptions import AccessError
 
 
+@tagged('-at_install', 'post_install')
 class TestPortalTaskVisibility(TransactionCase):
     """Test portal task visibility rules."""
 
@@ -42,12 +43,16 @@ class TestPortalTaskVisibility(TransactionCase):
             'groups_id': [(6, 0, [cls.env.ref('base.group_user').id])],
         })
 
-        # Use General project for all tests
-        cls.portal_project = cls.env['project.project'].search([
+        # Create General project for tests (test database is empty)
+        general_project = cls.env['project.project'].search([
             ('name', '=', 'General')
         ], limit=1)
-        if cls.portal_project:
-            cls.portal_project.privacy_visibility = 'portal'
+        if not general_project:
+            general_project = cls.env['project.project'].create({
+                'name': 'General',
+                'privacy_visibility': 'portal',
+            })
+        cls.portal_project = general_project
 
     def test_portal_domain_structure(self):
         """Test that the portal domain includes user_ids condition."""

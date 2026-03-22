@@ -24,6 +24,10 @@
         # VIEWS
         'views/res_partner_views.xml',
     ],
+    'demo': [
+        'tests/__init__.py',
+        'tests/test_portal_task_visibility.py',
+    ],
     'assets': {
         'web.assets_frontend': [
             'grm_website/static/src/scss/layout_custom.scss',
