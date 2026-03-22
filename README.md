@@ -51,7 +51,7 @@ For detailed usage instructions, please refer to the documentation in the `doc` 
 
 ## Dependencies
 
-- Odoo 16.0
+- Odoo 17.0
 - Python 3.8+
 - XlsxWriter (for Excel report generation)
 

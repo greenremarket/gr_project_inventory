@@ -22,10 +22,12 @@ class TestDiscrepancyReport(TransactionCase):
         """
         super().setUpClass()
         print("SETTING UP TEST CLASS")
-        cls.project = cls.env['project.project'].create({
-            'name': 'Test Project'
-        })
-        print(f"Created project: {cls.project.name}")
+        # Reuse the seeded General project to avoid creating a new project in a database with strict billing constraints.
+        cls.project = cls.env['project.project'].search([
+            ('name', '=', 'General')
+        ], limit=1)
+        assert cls.project, "The General project should exist for the discrepancy test setup"
+        print(f"Using project: {cls.project.name}")
         cls.task = cls.env['project.task'].create({
             'name': 'Test Task',
             'project_id': cls.project.id,

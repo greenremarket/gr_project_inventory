@@ -18,7 +18,6 @@ class TestProjectInventory(TransactionCase):
         Set up test data before each test.
         
         Creates:
-            - A test project
             - A test task
             - Product types (Laptop, Desktop, Monitor) if they don't exist
             - Chassis types (Tower, Desktop, Laptop)
@@ -26,9 +25,11 @@ class TestProjectInventory(TransactionCase):
             - A client inventory
         """
         super().setUp()
-        self.project = self.env['project.project'].create({
-            'name': 'Test Project'
-        })
+        # Reuse the seeded General project so the test stays aligned with the Odoo 17 project configuration.
+        self.project = self.env['project.project'].search([
+            ('name', '=', 'General')
+        ], limit=1)
+        self.assertTrue(self.project, "The General project should exist for the test setup")
         self.task = self.env['project.task'].create({
             'name': 'Test Task',
             'project_id': self.project.id,

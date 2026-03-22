@@ -900,9 +900,9 @@ class ProjectTask(models.Model):
     )
     
     def _get_default_project(self):
-        """Set default project to 'General' (ID 1)"""
+        """Set default project to the project named 'General'."""
         general_project = self.env['project.project'].search([
-            ('id', '=', 1)  # General project
+            ('name', '=', 'General')
         ], limit=1)
         return general_project if general_project else False
 
