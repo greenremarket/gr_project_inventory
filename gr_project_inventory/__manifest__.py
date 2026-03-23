@@ -37,6 +37,10 @@
     'qweb': [
         'reports/erasure_certificate.xml',
     ],
+    'demo': [
+        'tests/__init__.py',
+        'tests/test_lot_name_generation.py',
+    ],
     'installable': True,
     'application': True,
     'license': 'LGPL-3',

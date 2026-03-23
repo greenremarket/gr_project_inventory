@@ -81,13 +81,15 @@ class TestProjectInventory(TransactionCase):
         
         This method ensures that no test data persists between test runs by:
             - Calling the parent class's tearDown method
-            - Deleting all created inventory and related records
+            - Deleting only test-created records (not all records in database)
         """
         super().tearDown()
-        # Clean up any created records
-        self.env['gr.client.inventory'].search([]).unlink()
-        self.env['gr.internal.inventory'].search([]).unlink()
-        self.env['gr.discrepancy'].search([]).unlink()
+        # Clean up only records created during this test
+        # Use domain to avoid deleting production data
+        test_domain = [('create_uid', '=', self.env.uid)]
+        self.env['gr.client.inventory'].search(test_domain).unlink()
+        self.env['gr.internal.inventory'].search(test_domain).unlink()
+        self.env['gr.discrepancy'].search(test_domain).unlink()
         print("Cleaned up test data")
 
     def test_create_client_inventory(self):
