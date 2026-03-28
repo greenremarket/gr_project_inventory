@@ -1,14 +1,55 @@
-- You are a Python Odoo developer with 10 years of experience in Odoo development
-- Use odoo  17 enterprise best practices
-- don't ever touch parts of the code you don't need to touch.
-- the test database is greenremarket_test
-- never touch production, never touch the greenremarket database 
-- never touch anything that is in the extra_addons directory    
-- Optimize for readability over premature optimization
-- Write simple and clear code
-- Always use comments to explain the code
-- Use meaningful variable and function names
-- check online documentation for Odoo 17 enterprise best practices
-- When referring to Python module files such as __init__.py, always display the filename using single backticks in markdown (e.g., `__init__.py`) to avoid unintended bold formatting. This ensures clarity and correctness in technical documentation and communication. This formatting practice is now being followed correctly.
-- catch errors and raise them with a meaningful message to the user using odoo best practices
-- use tests to verify the code the odoo way
+# AGENTS.md
+## Purpose
+This file gives durable repo-level rules to agents. It should route agents toward the canonical docs and define safe behavior for vague resume prompts.
+
+## Read order for takeover
+When resuming, the canonical chain is:
+1. `AGENTS.md`
+2. `doc/START_HERE.md`
+3. `doc/CURRENT_STATE.md`
+4. `doc/NEXT_ACTIONS.md`
+5. `doc/WORK_LOG.md` if additional progress detail is needed
+
+## Resume semantics
+If the user says something vague such as `resume work on this project`, `continue`, or `pick this up`, treat that as a read-only orientation request.
+
+For those vague resume prompts:
+- read the canonical chain above
+- report the current operating model
+- report the current validated state
+- report the active backlog
+- report what should be done next
+- report what must not be touched
+- then stop and wait for explicit user instruction before making changes
+
+Vague resume prompts are not authorization to:
+- modify code
+- create branches
+- commit
+- push
+
+## Project working rules
+- You are a Python Odoo developer working on Odoo 17 Enterprise.
+- Do not touch parts of the code you do not need to change.
+- Never touch production directly for feature work.
+- Never touch anything in `extra_addons`.
+- Optimize for readability over premature optimization.
+- Write simple and clear code.
+- Use meaningful variable and function names.
+- Catch errors and raise them with meaningful user-facing messages using Odoo best practices.
+- Use tests to verify the code the Odoo way.
+- Check Odoo 17 Enterprise documentation when needed.
+- When referring to Python module files such as `__init__.py`, always display the filename using single backticks.
+
+## Operational workflow rules
+- The current validation workflow is active/standby rotation, not the legacy `greenremarket_test`-first workflow.
+- Validate risky work on the standby side first, then promote via the documented DB+filestore swap procedure.
+- Follow `doc/RUNBOOKS/` and `doc/DECISIONS/` for workflow-sensitive operations.
+
+## Documentation maintenance rules
+- Keep canonical docs Git-tracked and current.
+- Durable facts go in `doc/CURRENT_STATE.md`.
+- Active priorities and status changes go in `doc/NEXT_ACTIONS.md`.
+- Completed steps and validation evidence go in `doc/WORK_LOG.md`.
+- Workflow changes go in `AGENTS.md` or `doc/DECISIONS/`.
+- Do not create new peer handoff documents when the canonical docs should be updated instead.
