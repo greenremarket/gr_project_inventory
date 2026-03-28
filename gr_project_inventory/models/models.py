@@ -480,6 +480,7 @@ class GrInternalInventory(models.Model):
         string='Date de création',
         default=fields.Datetime.now,
         required=True,  # Remettre required=True pour assurer que le champ n'est jamais vide
+        copy=False,  # Lors de la duplication, utiliser la date actuelle au lieu de copier l'originale
     )
 
     # Ajouter ce nouveau champ
@@ -489,6 +490,7 @@ class GrInternalInventory(models.Model):
         readonly=True,
         default=lambda self: self.env.user.id,
         tracking=True,  # Pour suivre les changements dans le chatter
+        copy=False,  # Lors de la duplication, utiliser l'utilisateur actuel au lieu de copier l'original
     )
 
     inventory_line_ids = fields.One2many(
@@ -1074,12 +1076,20 @@ class ProjectTask(models.Model):
         for record in self:
             if record.lot_name:
                 # Vérification de la longueur (doit être STRICTEMENT bloquante)
-                if len(record.lot_name) > 5:
-                    raise ValidationError("ERREUR: Le nom du lot ne doit pas dépasser 5 caractères.")
+                if len(record.lot_name) > 6:
+                    raise ValidationError("ERREUR: Le nom du lot ne doit pas dépasser 6 caractères.")
                 
                 # Vérification des caractères alphanumériques
                 if not re.match(r'^[A-Z0-9]+$', record.lot_name):
                     raise ValidationError("ERREUR: Le nom du lot ne doit contenir que des caractères alphanumériques (A-Z, 0-9).")
+                
+                # Vérification de l'unicité (Python validation)
+                duplicate = self.search([
+                    ('lot_name', '=', record.lot_name),
+                    ('id', '!=', record.id)
+                ])
+                if duplicate:
+                    raise ValidationError(f"ERREUR: Le nom du lot '{record.lot_name}' existe déjà. Il doit être unique.")
 
     @api.onchange('lot_name')
     def _onchange_lot_name_uppercase(self):
@@ -1088,12 +1098,12 @@ class ProjectTask(models.Model):
             uppercase_value = self.lot_name.upper()
             
             # Vérifier la longueur avant de tronquer
-            if len(uppercase_value) > 5:
-                # Cela affiche un avertissement visuel à l\'utilisateur
+            if len(uppercase_value) > 6:
+                # Cela affiche un avertissement visuel à l'utilisateur
                 return {
                     'warning': {
                         'title': 'Nom du lot trop long',
-                        'message': "Le nom du lot ne doit pas dépasser 5 caractères. Il sera tronqué à l'enregistrement." # Utilisation de guillemets doubles pour éviter l'échappement
+                        'message': "Le nom du lot ne doit pas dépasser 6 caractères. Il sera tronqué à l'enregistrement."
                     }
                 }
             self.lot_name = uppercase_value
@@ -1101,8 +1111,8 @@ class ProjectTask(models.Model):
     def write(self, vals):
         if 'lot_name' in vals and vals['lot_name']:
             lot_name_val = vals['lot_name']
-            if isinstance(lot_name_val, str) and len(lot_name_val) > 5:
-                raise ValidationError("ERREUR: Le nom du lot ne doit pas dépasser 5 caractères.")
+            if isinstance(lot_name_val, str) and len(lot_name_val) > 6:
+                raise ValidationError("ERREUR: Le nom du lot ne doit pas dépasser 6 caractères.")
             # Gérer les cas où lot_name est explicitement mis à False/None pour l'effacer
             elif lot_name_val is not False and not isinstance(lot_name_val, str):
                 raise ValidationError("Format de nom de lot invalide.")
@@ -1194,11 +1204,94 @@ class ProjectTask(models.Model):
                     'internal_inventory_id': internal_inventory_id,
                 })
 
+    def _generate_client_hint(self):
+        """Generate 3-char client hint from partner or order_giver."""
+        self.ensure_one()
+        import unicodedata
+        from datetime import datetime
+        
+        # Try partner first, then order_giver
+        source = ""
+        if self.partner_id and self.partner_id.name:
+            source = self.partner_id.name
+        elif hasattr(self, 'order_giver_id') and self.order_giver_id and self.order_giver_id.name:
+            source = self.order_giver_id.name
+        
+        # Normalize: remove accents, keep alphanumeric, uppercase, max 3
+        if source:
+            # Remove accents
+            source = unicodedata.normalize('NFKD', source).encode('ASCII', 'ignore').decode('ASCII')
+            # Keep only alphanumeric, uppercase
+            source = re.sub(r'[^A-Z0-9]', '', source.upper())
+            # Take first 3 chars
+            return source[:3] if source else "UNK"
+        
+        return "UNK"  # Unknown fallback
+    
+    def _generate_year_hint(self):
+        """Generate 1-char year hint (last digit of current year)."""
+        from datetime import datetime
+        return str(datetime.now().year)[-1]
+    
+    def _generate_sequence(self, client_hint, year_hint):
+        """Generate 2-char sequence with collision handling."""
+        self.ensure_one()
+        prefix = f"{client_hint}{year_hint}"
+        
+        # Find existing lots with same prefix
+        existing_lots = self.search([('lot_name', '=like', f"{prefix}%")]).mapped('lot_name')
+        
+        # Extract sequence numbers (last 2 chars)
+        sequences = []
+        for lot in existing_lots:
+            if len(lot) >= 6 and lot[:4] == prefix:
+                try:
+                    seq = int(lot[4:6])
+                    sequences.append(seq)
+                except ValueError:
+                    continue
+        
+        # Find next available sequence
+        max_seq = max(sequences) if sequences else 0
+        next_seq = max_seq + 1
+        
+        # Ensure 2-digit format
+        return f"{next_seq:02d}"
+    
+    def _generate_lot_name(self):
+        """Generate complete lot name with format: XXXYY (client+year+sequence)."""
+        self.ensure_one()
+        
+        client_hint = self._generate_client_hint()
+        year_hint = self._generate_year_hint()
+        sequence = self._generate_sequence(client_hint, year_hint)
+        
+        return f"{client_hint}{year_hint}{sequence}"
+    
+    def _auto_generate_lot_name_if_empty(self):
+        """Auto-generate lot name if empty."""
+        if not self.lot_name:
+            try:
+                generated_name = self._generate_lot_name()
+                self.lot_name = generated_name
+                _logger.info(f"Auto-generated lot name: {generated_name} for task {self.id}")
+            except Exception as e:
+                _logger.error(f"Failed to auto-generate lot name for task {self.id}: {str(e)}")
+                # Don't raise error, just log it
+
     @api.model
     def create(self, vals):
         temp_attachments = vals.pop('temp_attachment_ids', False)
         _logger.info(f"Creating task with temp attachments: {temp_attachments}")
-        task = super(ProjectTask, self).create(vals)
+        
+        # Auto-generate lot_name if not provided
+        if not vals.get('lot_name'):
+            # Create task first to get access to related fields
+            task = super(ProjectTask, self).create(vals)
+            # Then auto-generate lot_name
+            task._auto_generate_lot_name_if_empty()
+        else:
+            task = super(ProjectTask, self).create(vals)
 
         if temp_attachments:
             for command in temp_attachments:

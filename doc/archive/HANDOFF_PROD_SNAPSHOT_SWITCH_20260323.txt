@@ -1,0 +1,225 @@
+HANDOFF - PROD SNAPSHOT RESTORE + SWITCH
+
+Date: 2026-03-23
+
+Objective
+- Load today's production export from:
+  C:\Users\bsartek\Downloads\greenremarket_2026-03-23_17-58-14
+- Bring it up to date with local custom modules:
+  - gr_project_inventory
+  - grm_website
+  - grm_documents_project
+- Validate tests for gr_project_inventory
+- Promote upgraded DB/filestore to active local name: greenremarket
+
+Source Snapshot (input)
+- dump.sql (plain SQL)
+- filestore/ (Odoo filestore tree)
+- manifest.json
+
+Execution Summary
+1) Safety backups created before restore
+- DB backup:
+  dumps\pre_upgrade_20260323_191244\greenremarket_pre_upgrade_20260323_191244.dump
+- Filestore backup:
+  odoo_data\filestore_backups\greenremarket_20260323_191244
+
+2) Restore to isolated working database
+- Working DB created:
+  greenremarket_prod_20260323_175814
+- dump.sql restored with ON_ERROR_STOP
+- Working filestore populated at:
+  odoo_data\filestore\greenremarket_prod_20260323_175814
+- File parity after copy:
+  source=2245, working=2245
+
+3) Custom module alignment
+- Module actions run on working DB:
+  - install: grm_website, grm_documents_project
+  - upgrade: gr_project_inventory, grm_website, grm_documents_project
+- Final module states on working DB:
+  - gr_project_inventory: installed (17.0.1.2)
+  - grm_website: installed (17.0.1.1.3)
+  - grm_documents_project: installed (17.0.1.1.2)
+
+4) Validation
+- Startup sanity check (stop-after-init): OK
+- Test DB cloned:
+  greenremarket_prod_20260323_175814_test
+- gr_project_inventory tests executed with:
+  --test-enable --test-tags "/gr_project_inventory"
+- Result: exit code 0, 0 failed, 0 errors
+
+5) Post-upgrade checks on working DB
+- Counts:
+  - gr_internal_inventory: 11169
+  - gr_client_inventory: 468
+  - gr_discrepancy: 166
+  - gr_manufacturer: 308
+  - gr_chassis: 74
+  - gr_observation: 136
+- Website override safety:
+  - Found 5 active editor-style overrides
+  - Deactivated 5
+  - Re-check result: 0 active editor-style overrides
+
+6) Promotion switch to active name
+- Database rename switch:
+  - previous active: greenremarket -> greenremarket_pre_switch_20260323_192352
+  - promoted: greenremarket_prod_20260323_175814 -> greenremarket
+- Filestore switch:
+  - previous active filestore moved to:
+    odoo_data\filestore_backups\greenremarket_pre_switch_20260323_192352
+  - promoted filestore moved to active:
+    odoo_data\filestore\greenremarket
+
+Final Active State
+- Active DB: greenremarket
+- Active filestore: odoo_data\filestore\greenremarket
+- Active filestore file count: 2245
+- Preserved rollback DB: greenremarket_pre_switch_20260323_192352
+- Preserved rollback filestore:
+  odoo_data\filestore_backups\greenremarket_pre_switch_20260323_192352
+
+Rollback Notes
+- To revert, rename DBs in opposite direction:
+  - greenremarket -> temporary name
+  - greenremarket_pre_switch_20260323_192352 -> greenremarket
+- Restore matching filestore by moving:
+  odoo_data\filestore_backups\greenremarket_pre_switch_20260323_192352
+  back to
+  odoo_data\filestore\greenremarket
+
+-------------------------------------------------------------------------------
+P1.8 CONTINUATION (POST-SWITCH EXECUTION)
+-------------------------------------------------------------------------------
+
+Date: 2026-03-23 (evening continuation)
+
+Scope executed
+- Rebuilt test runway from active `greenremarket`
+- Implemented dashboard access/menu adjustment + P1.8 logo sizing changes
+- Added targeted logo test suite
+- Validated on `greenremarket_test`
+- Took fresh pre-rollout backups
+- Rolled changes to active `greenremarket`
+- Ran post-rollout smoke checks
+
+1) Test runway rebuilt from active DB
+- Existing test DB preserved:
+  `greenremarket_test` -> `greenremarket_test_pre_rebuild_20260323_194334`
+- Fresh test clone created:
+  `greenremarket_test` (template from active `greenremarket`)
+- Test filestore rebuilt from active:
+  source=2245, test=2245 files
+
+2) Code changes applied
+- Dashboard/menu access change:
+  - `gr_project_inventory/views/views.xml`
+  - `gr_project_inventory_menu_root` changed to top-level app menu (no parent), sequence 45, action `action_gr_client_inventory`
+- P1.8 logo scaling:
+  - `gr_project_inventory/reports/internal_inventory_report.py`
+    - `x_scale/y_scale`: `0.125` -> `0.4`
+  - `gr_project_inventory/reports/discrepancy_report.py`
+    - `x_scale/y_scale`: `0.125` -> `0.4`
+  - `gr_project_inventory/reports/audit_report_xlsx.py`
+    - added logo insertion block (`insert_image`) with scale `0.4`
+- Tests:
+  - added `gr_project_inventory/tests/test_report_logo.py`
+  - wired import in `gr_project_inventory/tests/__init__.py`
+
+3) Validation on `greenremarket_test`
+- Module upgrade run:
+  `-u gr_project_inventory,grm_website,grm_documents_project`
+- Targeted logo tests:
+  `--test-enable --test-tags="logo"`
+  - result: 3 tests, 0 failed, 0 errors
+- Full module test suite:
+  `--test-enable --test-tags="/gr_project_inventory"`
+  - result: 26 tests, 0 failed, 0 errors
+- Known non-blocking warning observed during audit XLSX generation:
+  - footer placeholder image count mismatch (`&L&G...`) warning from xlsxwriter
+
+4) Fresh pre-rollout backup before active update
+- Timestamp: `20260323_194722`
+- Verified DB backup:
+  `dumps\pre_p18_rollout_20260323_194722\greenremarket_pre_p18_20260323_194722.dump`
+  (verified via `pg_restore --list`)
+- Filestore backup:
+  `odoo_data\filestore_backups\greenremarket_pre_p18_20260323_194722`
+  file parity: active=2245, backup=2245
+
+5) Rollout to active `greenremarket`
+- Module update executed on active DB:
+  `-u gr_project_inventory,grm_website,grm_documents_project`
+- Post-rollout state:
+  - Modules installed:
+    - `gr_project_inventory` `17.0.1.2`
+    - `grm_website` `17.0.1.1.3`
+    - `grm_documents_project` `17.0.1.1.2`
+  - GR menu root now top-level:
+    - menu 221 `Project Inventory`, `parent_id=NULL`, `action=ir.actions.act_window,421`
+    - children: 222 `Client Inventory`, 223 `Internal Inventory`
+  - Website editor-style override safety:
+    - active count = 0
+  - Core data counts preserved:
+    - `gr_internal_inventory`: 11169
+    - `gr_client_inventory`: 468
+    - `gr_discrepancy`: 166
+    - `gr_observation`: 136
+
+Current operational baseline after P1.8 continuation
+- Active DB: `greenremarket`
+- Active filestore: `odoo_data\filestore\greenremarket`
+- Primary rollback layers now available:
+  1) `greenremarket_pre_switch_20260323_192352` + matching filestore backup
+  2) `greenremarket_pre_p18_20260323_194722.dump` + filestore backup `greenremarket_pre_p18_20260323_194722`
+
+-------------------------------------------------------------------------------
+ROTATION BACKUP DRILL + LOADER/P1.8 STABILIZATION (2026-03-26)
+-------------------------------------------------------------------------------
+
+Scope executed
+- Validated PostgreSQL superuser authentication (`postgres`) and enabled DB alias rotation actions.
+- Normalized active/standby naming for DB + filestore.
+- Executed bidirectional swap drill (active -> backup -> active) for DB and filestore.
+- Applied portal loader hardening in `grm_website` and upgraded module on active DB.
+- Closed P1.8 logo scale mismatch and revalidated tests on `greenremarket_test`.
+
+1) Rotation naming normalization
+- Database aliases:
+  - active: `greenremarket`
+  - standby: `greenremarket_backup` (fresh clone from active)
+  - archived prior standby: `greenremarket_20260326204605`
+- Filestore aliases (`odoo_data\\filestore`):
+  - active: `greenremarket` (2217 files)
+  - standby: `greenremarket_backup` (2217 files)
+  - archived prior standby: `greenremarket_20260326204605` (2217 files)
+
+2) Live swap drill evidence
+- Swap phase A (to backup): DB+filestore aliases swapped; Odoo startup completed on resulting `greenremarket` (HTTP service running + registry loaded).
+- Swap phase B (back to active): DB+filestore aliases swapped back; Odoo startup again completed on `greenremarket` (HTTP service running + registry loaded).
+- Post-drill aliases remain:
+  - DBs include `greenremarket`, `greenremarket_backup`, `greenremarket_20260326204605`, plus existing historical/test DBs.
+  - Filestores include `greenremarket`, `greenremarket_backup`, `greenremarket_20260326204605`, plus existing historical/test folders.
+
+3) Portal loader stabilization
+- Updated files:
+  - `grm_website/static/src/js/loader.js`
+    - removed jQuery dependency for loader path
+    - enforced deterministic hide timing and safe fallback timeout
+    - kept loader removal + DOM cleanup behavior
+  - `grm_website/templates/layout.xml`
+    - added critical inline CSS fallback (`grm-loader-critical-css`) for immediate translucent overlay rendering before full asset paint
+- Applied on active DB with module update:
+  - `-u grm_website --stop-after-init`
+
+4) P1.8 logo closure
+- Updated file:
+  - `gr_project_inventory/reports/internal_inventory_report.py`
+    - `x_scale/y_scale` aligned to `1.0` (matching discrepancy/audit and tests)
+- Validation on `greenremarket_test`:
+  - targeted: `--test-enable --test-tags=\"logo\"` -> 3 tests, 0 failed, 0 errors
+  - full: `--test-enable --test-tags=\"/gr_project_inventory\"` -> 0 failed, 0 errors
+- Applied on active DB:
+  - `-u gr_project_inventory --stop-after-init`

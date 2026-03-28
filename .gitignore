@@ -54,6 +54,10 @@ portal_gr/
 # Local repro backups
 repro_backup_*.dump
 repro_filestore_backup_*.zip
+greenremarket_repro_*.dump
+greenremarket_repro_*.zip
+*.dump
+*.zip
 
 # One-off artifacts
 *.exe

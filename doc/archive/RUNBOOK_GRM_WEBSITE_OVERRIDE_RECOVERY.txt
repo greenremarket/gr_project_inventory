@@ -1,0 +1,146 @@
+GRM WEBSITE OVERRIDE RECOVERY RUNBOOK (ODOO 17)
+
+Purpose
+- Restore GRM website pages when Odoo Web Editor customizations override module-defined templates.
+- Reusable for staging/production updates.
+
+Typical symptom
+- GRM website pages (/, /contactus, etc.) do not show expected GRM content even though modules are installed.
+
+Root cause pattern
+- Active website QWeb extension views created via Web Editor (no ir_model_data XML ID) override GRM templates.
+
+-----------------------------------------------------------------------------
+1) DB CONNECTION (Windows + PostgreSQL)
+-----------------------------------------------------------------------------
+PowerShell:
+
+$env:PGPASSWORD = "{{ODOO_DB_PASSWORD}}"
+& "C:\Program Files\PostgreSQL\14\bin\psql" -U odoo -d greenremarket --pset="pager=off"
+
+-----------------------------------------------------------------------------
+2) DETECT CANDIDATE OVERRIDES (editor-style)
+-----------------------------------------------------------------------------
+SQL:
+
+WITH candidates AS (
+  SELECT v.id, v.key, v.active
+  FROM ir_ui_view v
+  LEFT JOIN ir_model_data imd
+    ON imd.model = 'ir.ui.view'
+   AND imd.res_id = v.id
+  WHERE v.type = 'qweb'
+    AND v.mode = 'extension'
+    AND v.inherit_id IS NOT NULL
+    AND v.website_id IS NOT NULL
+    AND imd.id IS NULL
+)
+SELECT COALESCE(split_part(key, '.', 1), '(null)') AS key_prefix,
+       COUNT(*) AS total,
+       COUNT(*) FILTER (WHERE active) AS active
+FROM candidates
+GROUP BY 1
+ORDER BY 1;
+
+Optional detailed listing:
+
+SELECT v.id, v.name, v.key, v.active, v.create_date
+FROM ir_ui_view v
+LEFT JOIN ir_model_data imd
+  ON imd.model = 'ir.ui.view'
+ AND imd.res_id = v.id
+WHERE v.type = 'qweb'
+  AND v.mode = 'extension'
+  AND v.inherit_id IS NOT NULL
+  AND v.website_id IS NOT NULL
+  AND imd.id IS NULL
+ORDER BY v.id;
+
+-----------------------------------------------------------------------------
+3) DISABLE ACTIVE EDITOR-STYLE OVERRIDES
+-----------------------------------------------------------------------------
+SQL:
+
+WITH target AS (
+  SELECT v.id
+  FROM ir_ui_view v
+  LEFT JOIN ir_model_data imd
+    ON imd.model = 'ir.ui.view'
+   AND imd.res_id = v.id
+  WHERE v.type = 'qweb'
+    AND v.mode = 'extension'
+    AND v.inherit_id IS NOT NULL
+    AND v.website_id IS NOT NULL
+    AND imd.id IS NULL
+)
+UPDATE ir_ui_view v
+SET active = FALSE
+FROM target t
+WHERE v.id = t.id
+  AND v.active IS TRUE
+RETURNING v.id, v.name, v.key;
+
+-----------------------------------------------------------------------------
+4) VERIFY CLEAN STATE
+-----------------------------------------------------------------------------
+SQL:
+
+SELECT COUNT(*) AS active_editor_style_website_overrides
+FROM ir_ui_view v
+LEFT JOIN ir_model_data imd
+  ON imd.model = 'ir.ui.view'
+ AND imd.res_id = v.id
+WHERE v.type = 'qweb'
+  AND v.mode = 'extension'
+  AND v.inherit_id IS NOT NULL
+  AND v.website_id IS NOT NULL
+  AND imd.id IS NULL
+  AND v.active IS TRUE;
+
+Expected result:
+- active_editor_style_website_overrides = 0
+
+-----------------------------------------------------------------------------
+5) REFRESH ODOO REGISTRY/VIEWS
+-----------------------------------------------------------------------------
+PowerShell:
+
+$env:ODOO_DB_PASSWORD = "{{ODOO_DB_PASSWORD}}"
+.\.venv_odoo\Scripts\python.exe odoo\odoo-bin `
+  -d greenremarket `
+  --addons-path="odoo\addons,enterprise,.,OCA\reporting-engine,account_ebics_repo,bank_statement_import_repo,account_reconcile_repo,l10n_france_repo" `
+  --db_host=localhost --db_port=5432 --db_user=odoo --db_password=$env:ODOO_DB_PASSWORD `
+  --data-dir=".\odoo_data" `
+  -u grm_website,grm_documents_project `
+  --stop-after-init --log-level=info
+
+-----------------------------------------------------------------------------
+6) RESTART ODOO SERVER
+-----------------------------------------------------------------------------
+PowerShell:
+
+$env:ODOO_DB_PASSWORD = "{{ODOO_DB_PASSWORD}}"
+.\.venv_odoo\Scripts\python.exe odoo\odoo-bin `
+  -d greenremarket `
+  --addons-path="odoo\addons,enterprise,.,OCA\reporting-engine,account_ebics_repo,bank_statement_import_repo,account_reconcile_repo,l10n_france_repo" `
+  --db_host=localhost --db_port=5432 --db_user=odoo --db_password=$env:ODOO_DB_PASSWORD `
+  --data-dir=".\odoo_data" `
+  --log-level=info
+
+-----------------------------------------------------------------------------
+7) SMOKE TEST
+-----------------------------------------------------------------------------
+- Open:
+  - http://localhost:8069/
+  - http://localhost:8069/contactus
+- Hard refresh browser (Ctrl+F5).
+- Confirm GRM templates are visible.
+
+-----------------------------------------------------------------------------
+PRE-PROD CHECKLIST (RUN EVERY UPDATE)
+-----------------------------------------------------------------------------
+- [ ] Run detection query before release validation.
+- [ ] Confirm active editor-style overrides count is 0 (or explicitly approved exceptions).
+- [ ] Run module refresh (-u) for grm_website/grm_documents_project if views changed.
+- [ ] Restart Odoo.
+- [ ] Perform website smoke tests.
