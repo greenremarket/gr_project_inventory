@@ -37,5 +37,21 @@ Last updated: 2026-03-28
 - The agent treated that prompt as authorization to implement work, created branch `fix/backlog-fixes`, committed changes, and pushed them.
 - That outcome is now treated as a guardrail failure case, not as accepted project progress.
 
-## 2026-03-28 — Guardrail goal clarified
-- The desired behavior is now explicit: on vague resume prompts, a fresh agent must orient from the canonical docs, summarize state, and wait for explicit instruction before making changes.
+## 2026-03-28 — Backlog test review completed
+- Reviewed active backlog items against existing test coverage in `gr_project_inventory/tests/`.
+- **Lot name length**: Confirmed implemented and tested via `test_lot_name_generation.py`:
+  - 6-character maximum constraint enforced (`test_lot_name_length_constraint_6_chars`)
+  - Unique constraint with proper ValidationError (`test_lot_name_unique_constraint`)
+  - Auto-generation format XXXYZZ validated (`test_format_compatibility`)
+- **Inventory item duplication**: No tests found covering date reset on copy; implementation status unknown.
+- **Operation start date**: Tests exist in `test_date_field.py` but field names appear incomplete (placeholder `''` values); needs verification.
+- **Client bug in form**: No tests found; needs clarification on specific issue.
+- Moved "Lot name length" from Open to Confirmed closed in `doc/NEXT_ACTIONS.md`.
+
+## 2026-03-28 — Guardrail docs patched and branching model established (session 3)
+- External research pass confirmed design alignment with AGENTS.md community standard, guardrails.md Signs architecture, OpenAI Codex AGENTS.md discovery model, and GitHub Agentic Workflows 3-layer guardrail pattern.
+- Four gaps identified and addressed: structured 5-section resume report format, privilege boundaries (safe vs. requires approval), push-and-sync requirement, backlog closure criteria requiring test evidence.
+- Added Git and branching model: `main` as stable integration branch, feature branches per task, agents check current branch on resume.
+- Cleaned up stale `fix/backlog-fixes` references from all canonical docs.
+- Updated `doc/CURRENT_STATE.md` to reflect `main`-first model and pending consolidation of `backup-before-p1-8`.
+- Code fixes from artifact branch `fix/backlog-client-form-duplication-start-date` cherry-picked onto `backup-before-p1-8` (copy=False on created_at/created_by_id, remove duplicate client field, add views_simple.xml to manifest).

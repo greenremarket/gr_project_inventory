@@ -28,6 +28,18 @@ Vague resume prompts are not authorization to:
 - commit
 - push
 
+## Resume report format
+When executing a vague resume prompt, produce a structured report with these five sections, then stop:
+1. **Operating model** — workflow, branch, active/standby config, companion repo status
+2. **Validated state** — confirmed working items; for each, cite the test file and test case name
+3. **Active backlog** — items labeled Open / Pending review / Confirmed closed
+4. **Recommended next action** — single most important next step and a one-sentence rationale
+5. **Do not touch** — what must not be changed without explicit approval
+
+## Privilege boundaries
+Safe without approval: read files, read git state, run read-only tests, summarize, report.
+Requires explicit approval before doing: modify any file, create branches, commit, push, any DB or filestore operation.
+
 ## Project working rules
 - You are a Python Odoo developer working on Odoo 17 Enterprise.
 - Do not touch parts of the code you do not need to change.
@@ -46,6 +58,13 @@ Vague resume prompts are not authorization to:
 - Validate risky work on the standby side first, then promote via the documented DB+filestore swap procedure.
 - Follow `doc/RUNBOOKS/` and `doc/DECISIONS/` for workflow-sensitive operations.
 
+## Git and branching model
+- `main` is the stable integration branch; it must always be pushed and in a working state.
+- Feature work happens on branches created from `main`, named after the task or backlog item.
+- When a task is done, tested, and pushed, merge the feature branch back to `main` and push `main`.
+- When resuming: check the current branch. If already on the correct feature branch for the next task, continue there. If on `main`, create a new feature branch.
+- Never do feature work directly on `main`.
+
 ## Documentation maintenance rules
 - Keep canonical docs Git-tracked and current.
 - Durable facts go in `doc/CURRENT_STATE.md`.
@@ -53,3 +72,13 @@ Vague resume prompts are not authorization to:
 - Completed steps and validation evidence go in `doc/WORK_LOG.md`.
 - Workflow changes go in `AGENTS.md` or `doc/DECISIONS/`.
 - Do not create new peer handoff documents when the canonical docs should be updated instead.
+
+## Push and sync
+After committing canonical doc changes, push to remote immediately. Guardrail state and operational docs must exist on the remote to survive across machines and sessions. Never leave doc or guardrail commits local-only.
+
+## Backlog closure criteria
+A backlog item is confirmed closed only when all four conditions are met:
+- Implementation is present in code.
+- A passing test validates it; record the test file and test case name.
+- The validation evidence is appended to `doc/WORK_LOG.md`.
+- The change is committed and pushed to the remote.

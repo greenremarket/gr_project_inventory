@@ -480,6 +480,7 @@ class GrInternalInventory(models.Model):
         string='Date de création',
         default=fields.Datetime.now,
         required=True,  # Remettre required=True pour assurer que le champ n'est jamais vide
+        copy=False,  # Lors de la duplication, utiliser la date actuelle au lieu de copier l'originale
     )
 
     # Ajouter ce nouveau champ
@@ -489,6 +490,7 @@ class GrInternalInventory(models.Model):
         readonly=True,
         default=lambda self: self.env.user.id,
         tracking=True,  # Pour suivre les changements dans le chatter
+        copy=False,  # Lors de la duplication, utiliser l'utilisateur actuel au lieu de copier l'original
     )
 
     inventory_line_ids = fields.One2many(

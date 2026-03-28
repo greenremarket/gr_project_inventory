@@ -4,9 +4,10 @@ Last verified: 2026-03-28
 
 ## Repository and branch
 - Repository: `greenremarket/gr_project_inventory`
-- Working branch: `backup-before-p1-8`
+- Canonical integration branch: `main` — always pushed, always stable
+- Current working branch: `backup-before-p1-8` (being consolidated into `main`)
+- After consolidation: all new work branches from `main` per task, merges back when done
 - Canonical operational docs are Git-tracked in `doc/`.
-- There is an unreviewed autonomous branch named `fix/backlog-fixes` created by an accidental takeover test. It is not canonical state.
 
 ## Current operating model
 - Primary workflow is active/standby rotation for both database and filestore.
@@ -22,7 +23,7 @@ Last verified: 2026-03-28
 - Do not treat vague resume prompts as permission to implement.
 - Do not modify production directly for feature work.
 - Do not modify `extra_addons`.
-- Do not treat the unreviewed `fix/backlog-fixes` branch as accepted project state.
+- Do not do feature work directly on `main`.
 
 ## Validation and promotion workflow
 - Refresh the standby side from active before risky work.
@@ -49,10 +50,10 @@ Last verified: 2026-03-28
   - `gr_project_inventory/views/views.xml`
 - The canonical documentation reorganization under `doc/` is the intended takeover path.
 
-## Pending review from accidental autonomous test
-- Branch: `fix/backlog-fixes`
-- Status: unreviewed and not approved
-- Meaning: useful only as review material, not as current accepted backlog completion
+## Pending integration
+- `backup-before-p1-8` has accumulated development work since the last push to `main`.
+- It is being consolidated (merged to `main` and pushed) in the current session.
+- After the merge, all new work should branch from `main` per task.
 
 ## Current safety memory
 - Do not modify `extra_addons`.

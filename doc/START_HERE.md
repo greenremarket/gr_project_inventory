@@ -9,13 +9,9 @@ For a vague prompt such as `resume work on this project`, do not start implement
 
 Instead:
 1. Read the canonical chain below.
-2. Summarize:
-   - current operating model
-   - current validated state
-   - active backlog
-   - what should be done next
-   - what must not be touched
-3. Wait for explicit user instruction before modifying files, creating branches, committing, or pushing.
+2. Produce the structured resume report defined in `AGENTS.md` (five sections: Operating model, Validated state, Active backlog, Recommended next action, Do not touch).
+3. Note the current git branch. If it matches the recommended next task, say so. If not, note that a new feature branch from `main` will be needed.
+4. Wait for explicit user instruction before modifying files, creating branches, committing, or pushing.
 
 ## Read this chain in order
 0. `AGENTS.md` — repo-level rules and safety semantics
@@ -39,3 +35,4 @@ Instead:
 - Update `doc/NEXT_ACTIONS.md` when priorities or statuses change.
 - Append to `doc/WORK_LOG.md` when you complete a meaningful step or validation.
 - Update `AGENTS.md` or `doc/DECISIONS/` when the working method itself changes.
+- After committing canonical doc changes, push to remote immediately. Operational and guardrail state must live on the remote to survive across machines and sessions.

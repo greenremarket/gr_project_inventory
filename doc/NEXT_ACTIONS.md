@@ -6,21 +6,20 @@ Last verified: 2026-03-28
 1. Keep `greenremarket_backup` fresh before risky database/module work.
 2. Keep the matching filestore pair aligned with any DB refresh or swap.
 3. Preserve access to the `enterprise` companion repository.
-4. Review and decide what to do with the accidental autonomous branch `fix/backlog-fixes`.
 
 ## Product and code backlog
 ### Open
 - Fix the client bug in the form.
 - For inventory item duplication, replace copied original dates with `fields.Datetime.now()`.
-- Limit the maximum length of the lot name.
 - Change the operation start date behavior or configuration.
 
 ### Pending review
-- Branch `fix/backlog-fixes` attempted to address several backlog items autonomously.
-- Those changes are not accepted backlog completion until explicitly reviewed and approved.
+- Code for the three items above exists in artifact branch `fix/backlog-client-form-duplication-start-date` and is being cherry-picked; needs test validation before closure.
+- Do not mark any of these confirmed closed without passing tests and a WORK_LOG entry.
 
 ### Confirmed closed
 - P1.8 logo sizing is closed and should not be reopened without a new explicit request.
+- Lot name length limit is implemented and tested (6-character constraint with validation).
 
 ## Resume guidance
 - For short prompts such as `resume work on this project`, do not implement immediately.
