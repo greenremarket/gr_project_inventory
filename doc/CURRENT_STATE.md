@@ -4,9 +4,8 @@ Last verified: 2026-03-28
 
 ## Repository and branch
 - Repository: `greenremarket/gr_project_inventory`
-- Canonical integration branch: `main` — always pushed, always stable
-- Current working branch: `backup-before-p1-8` (being consolidated into `main`)
-- After consolidation: all new work branches from `main` per task, merges back when done
+- Canonical integration branch: `main` — pushed, stable, all work consolidated here
+- New feature work: branch from `main`, name after the task, merge back when done
 - Canonical operational docs are Git-tracked in `doc/`.
 
 ## Current operating model
