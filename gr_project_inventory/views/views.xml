@@ -62,7 +62,6 @@
                     <group>
                         <field name="name" string="Nom de l'opération (task id)" required="1"/>
                         <field name="order_giver_id" string="Commanditaire"/>
-                        <field name="client_destination_name" string="Client destinataire"/>
                         <field name="description" string="Description détaillée de l'opération" />
                         <field name="contacts" string="Contacts"/>
                         <field name="address" string="Adresse"/>
@@ -318,8 +317,8 @@
     <!-- Menus for Client Inventory and Internal Inventory -->
     <menuitem id="gr_project_inventory_menu_root"
               name="Project Inventory"
-              sequence="10"
-              parent="project.menu_main_pm"/>
+              sequence="45"
+              action="action_gr_client_inventory"/>
 
     <menuitem id="gr_project_inventory_menu_client_inventory"
               name="Client Inventory"
