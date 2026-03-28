@@ -55,3 +55,12 @@ Last updated: 2026-03-28
 - Cleaned up stale `fix/backlog-fixes` references from all canonical docs.
 - Updated `doc/CURRENT_STATE.md` to reflect `main`-first model and pending consolidation of `backup-before-p1-8`.
 - Code fixes from artifact branch `fix/backlog-client-form-duplication-start-date` cherry-picked onto `backup-before-p1-8` (copy=False on created_at/created_by_id, remove duplicate client field, add views_simple.xml to manifest).
+
+## 2026-03-28 — Deferred platform roadmap captured for later execution
+- Added a deferred backlog item in `doc/NEXT_ACTIONS.md` to preserve the cross-machine kickstart and containerization/swarm initiative.
+- Explicitly documented future execution mode: create a dedicated feature branch from `main`, implement in phases, validate, and merge when ready.
+
+## 2026-03-28 — Mandatory feature intake gate added
+- Updated guardrail workflow to require a strict pre-implementation sequence for first-pass feature work: research/probing, written plan, then explicit developer approval.
+- Added the same gate to the canonical startup guidance so future sessions enforce it consistently before branching or coding.
+- Updated current-state documentation to reflect this as active operating policy.

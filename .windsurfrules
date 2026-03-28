@@ -39,6 +39,19 @@ When executing a vague resume prompt, produce a structured report with these fiv
 ## Privilege boundaries
 Safe without approval: read files, read git state, run read-only tests, summarize, report.
 Requires explicit approval before doing: modify any file, create branches, commit, push, any DB or filestore operation.
+## Feature intake gate (mandatory)
+For any feature being tackled for the first time, use a strict three-step gate before implementation:
+1. **Research and probing phase** (read-only): inspect the relevant code paths, tests, data flow, and operational impacts until the current behavior is clearly mapped.
+2. **Written plan phase**: produce a concrete implementation plan covering scope, affected files/components, validation strategy, and rollout risks.
+3. **Developer approval phase**: wait for explicit developer confirmation that the plan is approved.
+
+Before explicit plan approval, agents must not:
+- modify files
+- create feature branches
+- commit or push
+- run DB/filestore state-changing operations
+
+If new findings materially change scope during implementation, pause, update the plan, and get approval again before continuing.
 
 ## Project working rules
 - You are a Python Odoo developer working on Odoo 17 Enterprise.

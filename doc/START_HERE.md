@@ -13,6 +13,15 @@ Instead:
 3. Note the current git branch. If it matches the recommended next task, say so. If not, note that a new feature branch from `main` will be needed.
 4. Wait for explicit user instruction before modifying files, creating branches, committing, or pushing.
 
+## New feature kickoff gate
+For any feature being handled for the first time:
+1. Run a read-only research/probing pass to map current behavior and constraints.
+2. Produce a concrete implementation plan.
+3. Wait for explicit developer approval of that plan.
+4. Only after approval: create a feature branch from `main` and begin implementation.
+
+Do not skip this gate, even when the feature request seems straightforward.
+
 ## Read this chain in order
 0. `AGENTS.md` — repo-level rules and safety semantics
 1. `doc/CURRENT_STATE.md` — authoritative live operational state

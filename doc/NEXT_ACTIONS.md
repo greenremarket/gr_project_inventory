@@ -13,6 +13,13 @@ Last verified: 2026-03-28
 - For inventory item duplication, replace copied original dates with `fields.Datetime.now()`.
 - Change the operation start date behavior or configuration.
 
+### Deferred (planned, not started)
+- Cross-machine kickstart and containerization/swarm roadmap is approved as a future initiative:
+  - machine-agnostic local bootstrap on Windows/Linux via Docker Compose
+  - agent directive kickstart flow for deterministic startup in Warp/Windsurf
+  - swarm-target architecture with scalable Odoo, PostgreSQL persistent storage, Nginx reverse proxy, and cache service
+- When promoted from deferred to active, create a dedicated feature branch from `main`, implement in phases, validate, and merge back per the branching model.
+
 ### Pending review
 - Code for the three items above exists in artifact branch `fix/backlog-client-form-duplication-start-date` and is being cherry-picked; needs test validation before closure.
 - Do not mark any of these confirmed closed without passing tests and a WORK_LOG entry.

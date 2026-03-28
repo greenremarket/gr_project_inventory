@@ -17,6 +17,7 @@ Last verified: 2026-03-28
 - Standby filestore: `odoo_data/filestore/greenremarket_backup`
 - Archived prior standby filestore: `odoo_data/filestore/greenremarket_20260326204605`
 - The old `greenremarket_test`-first workflow is historical, not current.
+- Feature intake workflow now enforces a mandatory gate: research/probing, written plan, explicit developer approval, then implementation.
 
 ## What must not be touched without explicit approval
 - Do not treat vague resume prompts as permission to implement.
