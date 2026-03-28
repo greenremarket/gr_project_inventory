@@ -82,3 +82,10 @@ A backlog item is confirmed closed only when all four conditions are met:
 - A passing test validates it; record the test file and test case name.
 - The validation evidence is appended to `doc/WORK_LOG.md`.
 - The change is committed and pushed to the remote.
+
+## Operation completion criteria
+Any operation that changes durable state (merge, DB swap, branch promotion, workflow change) is only complete when:
+- `doc/CURRENT_STATE.md` reflects the new state accurately.
+- `doc/WORK_LOG.md` has an entry for what was done.
+- The updated docs are committed and pushed.
+Do not consider an operation done until the docs match reality.
