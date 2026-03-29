@@ -64,3 +64,8 @@ Last updated: 2026-03-28
 - Updated guardrail workflow to require a strict pre-implementation sequence for first-pass feature work: research/probing, written plan, then explicit developer approval.
 - Added the same gate to the canonical startup guidance so future sessions enforce it consistently before branching or coding.
 - Updated current-state documentation to reflect this as active operating policy.
+
+## 2026-03-29 — Resume consistency gate and stale state fix
+- Added a mandatory resume consistency gate in guardrails: canonical docs must be cross-checked against live git state before any recommended next action is produced.
+- Added a hard prohibition against recommending merge/cherry-pick/push steps unless same-session git verification proves they are still pending.
+- Replaced stale `doc/CURRENT_STATE.md` pending-integration text with verified integration status for `backup-before-p1-8`.

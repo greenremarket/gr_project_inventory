@@ -50,10 +50,9 @@ Last verified: 2026-03-28
   - `gr_project_inventory/views/views.xml`
 - The canonical documentation reorganization under `doc/` is the intended takeover path.
 
-## Pending integration
-- `backup-before-p1-8` has accumulated development work since the last push to `main`.
-- It is being consolidated (merged to `main` and pushed) in the current session.
-- After the merge, all new work should branch from `main` per task.
+## Integration status
+- `backup-before-p1-8` is already merged into `main`.
+- Branch-first workflow remains in force: new feature work starts from `main` on a dedicated feature branch and merges back after validation.
 
 ## Current safety memory
 - Do not modify `extra_addons`.

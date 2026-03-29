@@ -36,6 +36,20 @@ When executing a vague resume prompt, produce a structured report with these fiv
 4. **Recommended next action** — single most important next step and a one-sentence rationale
 5. **Do not touch** — what must not be changed without explicit approval
 
+## Resume consistency gate (mandatory before recommendations)
+Before producing **Recommended next action**, agents must run this sequence in the same session:
+1. Read canonical docs: `doc/CURRENT_STATE.md`, `doc/NEXT_ACTIONS.md`, `doc/WORK_LOG.md`.
+2. Read live git state (current branch, referenced branch presence, merged/not merged status for any branch named in docs, ahead/behind, dirty tree).
+3. Cross-check canonical claims against git facts.
+4. If any mismatch exists, do not provide task recommendations yet. Instead report:
+   - `Consistency check: FAILED`
+   - exact mismatches
+   - minimal doc reconciliation plan
+   - wait for explicit approval before edits
+5. Only when checks pass, provide the normal five-section resume report.
+
+Hard prohibition: never present merge/cherry-pick/push as a recommended next step unless git verification in the same session proves that step is still pending.
+
 ## Privilege boundaries
 Safe without approval: read files, read git state, run read-only tests, summarize, report.
 Requires explicit approval before doing: modify any file, create branches, commit, push, any DB or filestore operation.
