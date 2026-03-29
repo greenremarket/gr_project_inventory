@@ -69,3 +69,9 @@ CONTAINERIZATION_PLAN.md
 LOCAL_REPRODUCTION_REPORT.md
 PROD_HANDOFF_PLAN.md
 DIAGNOSTIC.md
+
+# Track dump directories, ignore their contents
+dumps/instant_rollback/*
+!dumps/instant_rollback/.gitkeep
+dumps/rotation/*
+!dumps/rotation/.gitkeep
