@@ -70,6 +70,7 @@ Last updated: 2026-03-30
 - Savepoint 3: `dumps/savepoint_3_upgraded.dump`.
 - DB renamed `greenremarket_incoming` → `greenremarket`. Filestore promoted. Old March 30 filestore archived as `greenremarket_prior_march30`.
 - Machine is now operational.
+- Standby pair created: `greenremarket_backup` DB (240 installed modules confirmed) and `odoo_data/filestore/greenremarket_backup`. Active/standby rotation model is now fully operational on this machine.
 
 ## 2026-03-28 — Guardrail docs patched and branching model established (session 3)
 - External research pass confirmed design alignment with AGENTS.md community standard, guardrails.md Signs architecture, OpenAI Codex AGENTS.md discovery model, and GitHub Agentic Workflows 3-layer guardrail pattern.

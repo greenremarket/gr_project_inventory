@@ -11,8 +11,9 @@ Last verified: 2026-03-30
 ## Current operating model
 - Primary workflow is active/standby rotation for both database and filestore.
 - Active DB: `greenremarket` (production snapshot 2026-03-31, gr modules installed)
-- Standby DB: none yet — create from active before risky work
+- Standby DB: `greenremarket_backup` (mirror of active as of 2026-03-31, ready to use)
 - Active filestore: `odoo_data/filestore/greenremarket`
+- Standby filestore: `odoo_data/filestore/greenremarket_backup`
 - Prior partial setup filestore archived at: `odoo_data/filestore/greenremarket_prior_march30`
 - The old `greenremarket_test`-first workflow is historical, not current.
 - Feature intake workflow now enforces a mandatory gate: research/probing, written plan, explicit developer approval, then implementation.
