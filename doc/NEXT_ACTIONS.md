@@ -12,7 +12,9 @@ Last verified: 2026-03-30
 - Fix the client bug in the form.
 - For inventory item duplication, replace copied original dates with `fields.Datetime.now()`.
 - Change the operation start date behavior or configuration.
-- Fix `views/views_simple.xml` xpath: `<field name="date_deadline" position="before">` fails on this enterprise task form version. Investigate the correct xpath to expose `planned_date_begin` and re-enable the file in `__manifest__.py`.
+- Fix `views/views_simple.xml` xpath: inherit `project.task.view.form.inherit.project.enterprise` instead of targeting `date_deadline` directly. Re-enable in `__manifest__.py`.
+- **EBICS BLOCKER**: Key file `ebics_keys/greenremarket/120558690001_keys` has only `#USER` section. Obtain complete key file from production server (should have `#BANK` section too). Replace local file. If production also missing `#BANK`, call HPB from the Odoo EBICS interface to re-download bank public keys.
+- **Icecat/MySQL**: `odoo_icecat_connector` logs connection errors on this machine (external MySQL server not reachable). Disable the module or configure the connection URL.
 
 ### Deferred (planned, not started)
 - Cross-machine kickstart and containerization/swarm roadmap is approved as a future initiative:
