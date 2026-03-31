@@ -66,7 +66,7 @@
                         <field name="contacts" string="Contacts"/>
                         <field name="address" string="Adresse"/>
                         <field name="lot_name" string="Nom du Lot"/>
-                        <field name="date_deadline" string="Date"/>
+                        <field name="planned_date_begin" string="Date de début de l'opération"/>
                         <field name="deliverable_ids" widget="many2many_checkboxes" string="Livrables attendus"/>
                         <field name="company_id" invisible="1"/>
                     </group>
