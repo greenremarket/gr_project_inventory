@@ -48,6 +48,21 @@ Last updated: 2026-03-30
 - **Client bug in form**: No tests found; needs clarification on specific issue.
 - Moved "Lot name length" from Open to Confirmed closed in `doc/NEXT_ACTIONS.md`.
 
+## 2026-03-31 — migmi machine bootstrap (session 4)
+- Repo refactored: `gr_project_inventory`, `grm_documents_project`, `grm_website` moved to `modules/`.
+- `third_party_modules/` and `ebics_keys/` directories created with `.gitkeep`; contents gitignored.
+- `portal_gr` removed from all references (no longer exists; replaced by `grm_*` in `modules/`).
+- Git remote fixed from stale OneDrive path to `https://github.com/greenremarket/gr_project_inventory.git`.
+- `doc/DECISIONS/2026-03-31-ebics-keys-location.md` created documenting EBICS key location.
+- PostgreSQL 17.9 installed via winget. Role `odoo/odoo` with CREATEDB created.
+- Cloned at `17.0 --depth 1`: `odoo`, `enterprise`, `third_party_modules/reporting-engine` (OCA), `third_party_modules/account_ebics_repo` (Noviat), `third_party_modules/account_reconcile_repo` (OCA), `third_party_modules/bank_statement_import_repo` (OCA), `third_party_modules/l10n_france_repo` (OCA).
+- pip requirements installed from `odoo/requirements.txt` and `requirements.txt` into `.venv_odoo`.
+- Production backup `greenremarket_2026-03-31_17-20-12.zip` received (PG 16.13 source, 69 MB SQL + 2252 filestore files).
+- Savepoint 0: extracted to `dumps/savepoint_0_production_20260331/` (immutable baseline).
+- DB `greenremarket_incoming` created and restored from `dump.sql`. Filestore copied to `odoo_data/filestore/greenremarket_incoming/`. 2252 files confirmed.
+- Savepoint 1: `dumps/savepoint_1_restored_raw.dump` (pg_dump -Fc of raw restored DB).
+- Next: website cleanup → savepoint 2 → module upgrade → savepoint 3 → promote to `greenremarket`.
+
 ## 2026-03-28 — Guardrail docs patched and branching model established (session 3)
 - External research pass confirmed design alignment with AGENTS.md community standard, guardrails.md Signs architecture, OpenAI Codex AGENTS.md discovery model, and GitHub Agentic Workflows 3-layer guardrail pattern.
 - Four gaps identified and addressed: structured 5-section resume report format, privilege boundaries (safe vs. requires approval), push-and-sync requirement, backlog closure criteria requiring test evidence.
