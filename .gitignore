@@ -42,10 +42,8 @@ env/
 
 # Local Odoo reproduction environment
 .venv_odoo/
-odoo/*
-!odoo/.gitkeep
-enterprise/*
-!enterprise/.gitkeep
+odoo/
+enterprise/
 odoo_data/
 repro_dump/
 
