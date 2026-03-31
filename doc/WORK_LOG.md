@@ -1,6 +1,6 @@
 # WORK LOG
 Status: active
-Last updated: 2026-03-28
+Last updated: 2026-03-30
 
 ## 2026-03-23 — Database recovery
 - Restored the project after dump-format confusion by using the correct PostgreSQL restore method for plain SQL dumps.
@@ -69,3 +69,8 @@ Last updated: 2026-03-28
 - Added a mandatory resume consistency gate in guardrails: canonical docs must be cross-checked against live git state before any recommended next action is produced.
 - Added a hard prohibition against recommending merge/cherry-pick/push steps unless same-session git verification proves they are still pending.
 - Replaced stale `doc/CURRENT_STATE.md` pending-integration text with verified integration status for `backup-before-p1-8`.
+
+## 2026-03-30 — Environment readiness hard gate enforced for resume flows
+- Added a mandatory resume-time environment readiness probe requirement in `AGENTS.md` and `doc/START_HERE.md`.
+- Defined `NON-OPERATIONAL` behavior: agents must report missing prerequisites first and stop at environment bootstrap/recovery guidance.
+- Updated `doc/CURRENT_STATE.md` and `doc/NEXT_ACTIONS.md` so backlog/code-task recommendations are blocked until local prerequisites are confirmed present.

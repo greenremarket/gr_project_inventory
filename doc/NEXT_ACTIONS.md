@@ -1,6 +1,6 @@
 # NEXT ACTIONS
 Status: active
-Last verified: 2026-03-28
+Last verified: 2026-03-30
 
 ## Operating priorities
 1. Keep `greenremarket_backup` fresh before risky database/module work.
@@ -30,5 +30,7 @@ Last verified: 2026-03-28
 
 ## Resume guidance
 - For short prompts such as `resume work on this project`, do not implement immediately.
-- First summarize the operating model, validated state, active backlog, recommended next action, and what must not be touched.
+- First run a live environment readiness probe and report `OPERATIONAL` or `NON-OPERATIONAL` with missing prerequisites.
+- If status is `NON-OPERATIONAL`, stop at environment bootstrap/recovery guidance; do not recommend or begin feature implementation.
+- Then summarize the operating model, validated state, active backlog, recommended next action, and what must not be touched.
 - If a task changes the database or requires rollout-style validation, use the standby workflow from `doc/CURRENT_STATE.md` and `doc/RUNBOOKS/BACKUP_AND_SWAP.md`.

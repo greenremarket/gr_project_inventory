@@ -25,6 +25,8 @@ env/
 .vscode/
 *.swp
 *.swo
+*.un~
+*~
 
 # Logs
 *.log
@@ -42,13 +44,16 @@ env/
 .venv_odoo/
 odoo/
 enterprise/
-OCA/
-account_ebics_repo/
-account_reconcile_repo/
-bank_statement_import_repo/
-l10n_france_repo/
 odoo_data/
 repro_dump/
+
+# Third-party module clones (clone on demand, do not commit)
+third_party_modules/*
+!third_party_modules/.gitkeep
+
+# EBICS keys and certificates (sensitive, never commit)
+ebics_keys/*
+!ebics_keys/.gitkeep
 
 # Local repro backups
 repro_backup_*.dump
