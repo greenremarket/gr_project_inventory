@@ -13,8 +13,14 @@ Last verified: 2026-03-30
 - For inventory item duplication, replace copied original dates with `fields.Datetime.now()`.
 - Change the operation start date behavior or configuration.
 - Fix `views/views_simple.xml` xpath: inherit `project.task.view.form.inherit.project.enterprise` instead of targeting `date_deadline` directly. Re-enable in `__manifest__.py`.
-- **EBICS BLOCKER**: Key file `ebics_keys/greenremarket/120558690001_keys` has only `#USER` section. Obtain complete key file from production server (should have `#BANK` section too). Replace local file. If production also missing `#BANK`, call HPB from the Odoo EBICS interface to re-download bank public keys.
-- **Icecat/MySQL**: `odoo_icecat_connector` logs connection errors on this machine (external MySQL server not reachable). Disable the module or configure the connection URL.
+- **EBICS resolved**: HPB called successfully, `#BANK` section written to key file, file download via FDL confirmed working.
+- **"Reconnecter la banque" error**: This is the Odoo Open Banking/PSD2 connector, NOT EBICS. Tokens from production are invalid here. Since bank statements come via EBICS, this button is irrelevant. The cron thread crashes are likely this same connector failing silently. Fix: disable or reconfigure the Open Banking connector to stop cron noise.
+- **Icecat/MySQL**: `odoo_icecat_connector` connection errors on startup (external MySQL not reachable on this machine). Disable the module.
+- **Warning pile (non-critical, clean up when time allows)**:
+  - `pkg_resources` deprecated API warning from `fintech` package
+  - `active_id`/`active_ids`/`active_model` in ir_ui_view expressions deprecated in Odoo 17
+  - `gr_project_inventory` models not overriding `create` method in batch (ORM performance hint)
+  - `@route()` decorator warnings in `grm_website`
 
 ### Deferred (planned, not started)
 - Cross-machine kickstart and containerization/swarm roadmap is approved as a future initiative:
