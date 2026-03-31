@@ -318,7 +318,7 @@
     <menuitem id="gr_project_inventory_menu_root"
               name="Project Inventory"
               sequence="45"
-              action="action_gr_client_inventory"/>
+              parent="project.menu_main_pm"/>
 
     <menuitem id="gr_project_inventory_menu_client_inventory"
               name="Client Inventory"
