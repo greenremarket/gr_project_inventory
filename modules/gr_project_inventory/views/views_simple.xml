@@ -1,19 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Form view: enterprise already adds planned_date_begin as invisible after date_deadline
-         (inside div#date_deadline_and_recurring_task) as part of the daterange widget.
-         We inherit the enterprise view and make it visible as a standalone "Date de début" field. -->
-    <record id="view_task_form_planned_date_field" model="ir.ui.view">
-        <field name="name">project.task.form.planned.date.field</field>
-        <field name="model">project.task</field>
-        <field name="inherit_id" ref="project_enterprise.project_task_view_form"/>
-        <field name="arch" type="xml">
-            <xpath expr="//div[@id='date_deadline_and_recurring_task']/field[@name='planned_date_begin']" position="attributes">
-                <attribute name="invisible">0</attribute>
-                <attribute name="string">Date de début</attribute>
-            </xpath>
-        </field>
-    </record>
+    <!-- NOTE: planned_date_begin is intentionally kept invisible in the form view.
+         The enterprise daterange widget on date_deadline already exposes it as the
+         start-of-range field. Making it visible as a standalone field inside
+         div#date_deadline_and_recurring_task (d-inline-flex) causes layout corruption. -->
 
     <!-- List view: enterprise adds planned_date_begin with column_invisible="True" to
          project_task_view_tree_base (the parent of view_task_tree2).
