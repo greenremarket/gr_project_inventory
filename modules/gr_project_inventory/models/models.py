@@ -1,5 +1,6 @@
 import socket
 import logging
+from datetime import datetime, timedelta, date, time as dt_time
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 import threading
@@ -1284,10 +1285,33 @@ class ProjectTask(models.Model):
                 # Don't raise error, just log it
 
     @api.model
+    def default_get(self, fields_list):
+        result = super().default_get(fields_list)
+        # When opening the creation form (gr_creation_form context flag),
+        # pre-fill date_deadline to today+1 so the form always has a valid deadline.
+        # This prevents enterprise's _onchange_planned_dates from wiping planned_date_begin.
+        if self.env.context.get('gr_creation_form') and 'date_deadline' in fields_list:
+            if not result.get('date_deadline'):
+                result['date_deadline'] = fields.Date.today() + timedelta(days=1)
+        return result
+
+    @api.model
     def create(self, vals):
         temp_attachments = vals.pop('temp_attachment_ids', False)
         _logger.info(f"Creating task with temp attachments: {temp_attachments}")
-        
+
+        # Sync planned_date_begin from date_deadline when only deadline is provided.
+        # The creation form collects date_deadline (avoids enterprise onchange clearing
+        # planned_date_begin). Here we mirror it to planned_date_begin at midnight.
+        if vals.get('date_deadline') and not vals.get('planned_date_begin'):
+            dl = vals['date_deadline']
+            if isinstance(dl, str):
+                dl = fields.Date.from_string(dl)
+            if isinstance(dl, date) and not isinstance(dl, datetime):
+                vals['planned_date_begin'] = datetime.combine(dl, dt_time(0, 0, 0))
+            elif isinstance(dl, datetime):
+                vals['planned_date_begin'] = dl.replace(hour=0, minute=0, second=0, microsecond=0)
+
         # Auto-generate lot_name if not provided
         if not vals.get('lot_name'):
             # Create task first to get access to related fields

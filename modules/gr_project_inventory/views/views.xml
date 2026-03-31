@@ -66,7 +66,7 @@
                         <field name="contacts" string="Contacts"/>
                         <field name="address" string="Adresse"/>
                         <field name="lot_name" string="Nom du Lot"/>
-                        <field name="planned_date_begin" string="Date de début de l'opération"/>
+                        <field name="date_deadline" string="Date de début de l'opération"/>
                         <field name="deliverable_ids" widget="many2many_checkboxes" string="Livrables attendus"/>
                         <field name="company_id" invisible="1"/>
                     </group>
@@ -129,7 +129,7 @@
         <field name="view_mode">form</field>
         <field name="view_id" ref="view_task_creation_form"/>
         <field name="target">new</field>
-        <field name="context">{'dialog_size': 'extra-large', 'default_project_id': 1}</field>
+        <field name="context">{'dialog_size': 'extra-large', 'default_project_id': 1, 'gr_creation_form': True}</field>
     </record>
 
     <!-- Menu Item for Task Creation -->

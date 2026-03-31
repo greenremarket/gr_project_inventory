@@ -89,8 +89,9 @@ Last verified: 2026-03-31 (session 6, end of day)
 
 ## Startup and test commands
 - Start Odoo on active:
-  - `.\.venv_odoo\Scripts\python.exe odoo\odoo-bin -d greenremarket --db_host=localhost --db_port=5432 --db_user=odoo --db_password=odoo --data-dir=".\odoo_data" --addons-path="odoo/addons,enterprise,modules,third_party_modules/reporting-engine,third_party_modules/account_ebics_repo,third_party_modules/bank_statement_import_repo,third_party_modules/account_reconcile_repo,third_party_modules/l10n_france_repo" --log-level=warn --logfile=odoo_data/odoo.log --max-cron-threads=0`
-  - Note: `--max-cron-threads=0` avoids a Windows-specific `pg_conn.poll()` crash in cron threads. HTTP server is unaffected. Crons can be triggered manually from Settings → Technical → Scheduled Actions if needed.
+  - `.\.venv_odoo\Scripts\python.exe odoo\odoo-bin -d greenremarket --db_host=localhost --db_port=5432 --db_user=odoo --db_password=odoo --data-dir=".\odoo_data" --addons-path="odoo/addons,enterprise,modules,third_party_modules/reporting-engine,third_party_modules/account_ebics_repo,third_party_modules/bank_statement_import_repo,third_party_modules/account_reconcile_repo,third_party_modules/l10n_france_repo" --log-level=warn --logfile=odoo_data/odoo.log --max-cron-threads=0 --dev=reload`
+  - `--max-cron-threads=0`: avoids Windows-specific `pg_conn.poll()` crash in background cron threads.
+  - `--dev=reload`: enables werkzeug dev reloader so Ctrl-C cleanly stops the server on Windows.
 - PostgreSQL credentials: superuser `postgres`/`postgres`, Odoo role `odoo`/`odoo`. Use `$env:PGPASSWORD = "odoo"` before psql commands.
 - Preferred validation target:
   - `greenremarket_backup`
