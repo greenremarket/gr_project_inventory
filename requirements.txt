@@ -4,4 +4,5 @@ pandas>=2.0.0
 numpy>=1.24.0
 pymysql>=1.1
 fintech
-pdfminer.six
+# pdfminer.six conflicts with cryptography==3.4.8 required by Odoo (pdfminer>=36 vs Odoo 3.4.8)
+# PDF attachment indexation will show a warning but is non-critical
