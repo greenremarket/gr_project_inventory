@@ -39,44 +39,41 @@ jobs:
           libfreetype6-dev liblcms2-dev libwebp-dev libharfbuzz-dev libfribidi-dev libxcb1-dev \
           postgresql-client
         
+    - name: Download Odoo 17.0
+      run: |
+        git clone https://github.com/odoo/odoo.git --depth 1 --branch 17.0 odoo
+
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
         pip install wheel setuptools psycopg2-binary phonenumbers
-        if [ -f gr_project_inventory/requirements.txt ]; then pip install -r gr_project_inventory/requirements.txt; fi
-        
-    - name: Download Odoo 17.0
+        # Odoo requirements first (pins cryptography==3.4.8 — must come before anything else)
+        pip install -r odoo/requirements.txt
+        # Module-level requirements (pymysql; fintech excluded — cryptography conflict, not needed for gr_project_inventory tests)
+        pip install -r modules/gr_project_inventory/requirements.txt
+        # Report dependencies
+        pip install xlsxwriter openpyxl pandas numpy
+
+    - name: Clone OCA reporting-engine
       run: |
-        git clone https://github.com/odoo/odoo.git --depth 1 --branch 17.0 odoo
-        cd odoo
-        pip install -r requirements.txt
-    
-    - name: Copy custom module
+        git clone https://github.com/OCA/reporting-engine.git --depth 1 --branch 17.0 OCA/reporting-engine
+
+    - name: Copy custom module to Odoo extra_addons
       run: |
         mkdir -p odoo/extra_addons/gr_project_inventory
-        cp -r gr_project_inventory/* odoo/extra_addons/gr_project_inventory/
-        
-    - name: Clone OCA Report XLSX modules
-      run: |
-        mkdir -p OCA
-        git clone https://github.com/OCA/reporting-engine.git --depth 1 --branch 17.0 OCA/reporting-engine
-    
-    - name: Install Python requirements for XLSX support
-      run: |
-        pip install xlsxwriter openpyxl pandas numpy
-    
-    - name: Run only your module’s tests
+        cp -r modules/gr_project_inventory/* odoo/extra_addons/gr_project_inventory/
+
+    - name: Run only your module's tests
       run: |
         cd odoo
-        
+
         # Recreate test database
         PGPASSWORD=odoo psql -h localhost -U odoo -d postgres -c "DROP DATABASE IF EXISTS odoo_test;"
         PGPASSWORD=odoo psql -h localhost -U odoo -d postgres -c "CREATE DATABASE odoo_test OWNER odoo;"
-        
-        # Build your addons path
+
+        # Addons path: community + our module + OCA reporting-engine
         ADDONS_PATH="addons,extra_addons,../OCA/reporting-engine"
-        
-        # Install dependencies + your module, enable tests but only pick up tests tagged with your module name
+
         python odoo-bin \
           -i base,project,stock,barcodes,report_xlsx,report_xlsx_helper,gr_project_inventory \
           --addons-path=$ADDONS_PATH \
