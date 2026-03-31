@@ -43,6 +43,11 @@ jobs:
       run: |
         git clone https://github.com/odoo/odoo.git --depth 1 --branch 17.0 odoo
 
+    - name: Download Odoo Enterprise 17.0
+      run: |
+        # Enterprise is a public GitHub repo — no token required
+        git clone https://github.com/odoo/enterprise.git --depth 1 --branch 17.0 enterprise
+
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
@@ -71,11 +76,11 @@ jobs:
         PGPASSWORD=odoo psql -h localhost -U odoo -d postgres -c "DROP DATABASE IF EXISTS odoo_test;"
         PGPASSWORD=odoo psql -h localhost -U odoo -d postgres -c "CREATE DATABASE odoo_test OWNER odoo;"
 
-        # Addons path: community + our module + OCA reporting-engine
-        ADDONS_PATH="addons,extra_addons,../OCA/reporting-engine"
+        # Addons path: community + enterprise + our module + OCA reporting-engine
+        ADDONS_PATH="addons,../enterprise,extra_addons,../OCA/reporting-engine"
 
         python odoo-bin \
-          -i base,project,stock,barcodes,report_xlsx,report_xlsx_helper,gr_project_inventory \
+          -i base,project,project_enterprise,stock,barcodes,report_xlsx,report_xlsx_helper,gr_project_inventory \
           --addons-path=$ADDONS_PATH \
           --db_host=localhost \
           --db_port=5432 \

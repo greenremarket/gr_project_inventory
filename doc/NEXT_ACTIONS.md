@@ -12,8 +12,6 @@ Last verified: 2026-03-31
 - **EBICS bank account — needs IBAN confirmation**: Bank account is currently stored as raw BBAN `00021148802`. Once the correct full IBAN is obtained from CIC/CM online banking, update `res_partner_bank` id=1 and id=1 on `greenremarket_backup` (both `acc_number` and `sanitized_acc_number`). Account `00021148806` may need a second journal if it belongs to the company.
 - **Statement gap 2025-06-21 to 2026-03-04**: CIC EBICS FDL only retains ~30 days of CFONB history (90005 on earlier range). Statements for this 9-month gap must be imported manually from CIC online banking PDF/CSV export. Accounting team to handle.
 - **EBICS catch-up for 2026-03-28 onwards**: Next FDL run needed to pick up the last few days (file ended 2026-03-27). Should be done from the UI now that the account matching is fixed.
-- **Duplication performance (item 5a, pending user validation)**: Indexes added. Validate by duplicating a line on a large inventory task.
-- Fix the client bug in the form (item 5c — pending live confirmation from user).
 - **EBICS auto-download scheduled action**: Build a custom Odoo Scheduled Action calling `ebics.xfer` FDL + auto-import daily. Replaces manual imports for accounting team.
 - **Warning pile (non-critical, clean up when time allows)**:
   - `pkg_resources` deprecated API from `fintech`
@@ -53,6 +51,8 @@ Last verified: 2026-03-31
 - Shell scripts archived in `scripts/` for reuse.
 - `planned_date_begin` persistence fixed and live-validated: creation form collects `date_deadline`; `create()` syncs to `planned_date_begin`. Task form shows "Planned Date" range. 28/28 tests passing.
 - Ctrl-C now stops the server cleanly on Windows via `--dev=reload` (werkzeug reloader). Live-validated.
+- Duplication performance (item 5a): indexes live on both DBs. Closed — reopen only if lag reappears in production.
+- Client form bug (item 5c): closed by user validation.
 
 ## Resume guidance
 - For short prompts such as `resume work on this project`, do not implement immediately.
