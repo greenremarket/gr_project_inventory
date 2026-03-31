@@ -14,6 +14,7 @@ Last verified: 2026-03-31
 - **EBICS catch-up for 2026-03-28 onwards**: Next FDL run needed to pick up the last few days (file ended 2026-03-27). Should be done from the UI now that the account matching is fixed.
 - **Duplication performance (item 5a, pending user validation)**: Indexes added. Validate by duplicating a line on a large inventory task.
 - Fix the client bug in the form (item 5c — pending live confirmation from user).
+- Validate `planned_date_begin` fix live: open Formulaire de lancement d'opération, fill the date, submit → task form should show "Planned Date" range.
 - **EBICS auto-download scheduled action**: Build a custom Odoo Scheduled Action calling `ebics.xfer` FDL + auto-import daily. Replaces manual imports for accounting team.
 - **Warning pile (non-critical, clean up when time allows)**:
   - `pkg_resources` deprecated API from `fintech`
@@ -51,6 +52,8 @@ Last verified: 2026-03-31
 - Creation form date field fixed: `planned_date_begin` (start date) replaces `date_deadline` in "Formulaire de lancement d'opération".
 - EBICS fully resolved via Odoo shell scripts (`scripts/`). `sanitized_acc_number` was the real missing fix (SQL update of `acc_number` does not trigger stored field recompute). 16 statements imported for 2026-03-05 to 2026-03-27. Historical gap (2025-06-21 to 2026-03-04) confirmed unavailable via EBICS (code 90005). Account `00021148806` still needs investigation.
 - Shell scripts archived in `scripts/` for reuse.
+- `planned_date_begin` persistence fixed: creation form collects `date_deadline`; `create()` syncs to `planned_date_begin`. 28/28 tests passing.
+- Ctrl-C fix: `--dev=reload` added to startup command.
 
 ## Resume guidance
 - For short prompts such as `resume work on this project`, do not implement immediately.

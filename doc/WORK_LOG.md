@@ -72,6 +72,13 @@ Last updated: 2026-03-30
 - Machine is now operational.
 - Standby pair created: `greenremarket_backup` DB (240 installed modules confirmed) and `odoo_data/filestore/greenremarket_backup`. Active/standby rotation model is now fully operational on this machine.
 
+## 2026-03-31 — planned_date_begin fix, Ctrl-C, test coverage (session 6, end)
+- Root cause confirmed via test: `Form()` fires `_onchange_planned_dates` after each field change, not after the whole form is filled. Setting `planned_date_begin` first always wipes it even if `date_deadline` is set next.
+- Fix: creation form now collects `date_deadline` (labeled "Date de début de l'opération"). `date_deadline` has no enterprise onchange that wipes it. `create()` override mirrors `date_deadline` → `planned_date_begin` at midnight server-side.
+- `default_get` override: when `gr_creation_form` context flag is present, pre-fills `date_deadline` to today+1 so the form always opens with a valid date (prevents onchange wipe on first keypress).
+- `--dev=reload` added to startup command: werkzeug dev reloader handles Ctrl-C on Windows.
+- 28/28 tests passing. New tests: `test_planned_date_begin_wiped_without_deadline` (documents bug), `test_create_syncs_planned_date_from_deadline` (validates fix), `test_explicit_planned_date_begin_is_not_overwritten`.
+
 ## 2026-03-31 — EBICS full resolution + statement import (session 6, late)
 - Root cause of "No financial journal found" identified: `sanitized_acc_number` is a stored computed field. SQL update to `acc_number` does NOT trigger a recompute. Both `acc_number` and `sanitized_acc_number` on `res_partner_bank` id=1 now set to `00021148802` on both DBs.
 - EBICS 91116 on FDL with end date 2026-03-31: bank considers that delivery "consumed" (receipt acknowledged). Shifting end date to 2026-03-30 bypassed the block.
