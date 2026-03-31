@@ -45,7 +45,9 @@ Remove-Item Env:PGPASSWORD
 ## Step 3 — Create the Python virtualenv
 ```
 python -m venv .venv_odoo
+.venv_odoo\Scripts\Activate.ps1
 ```
+The `(.venv_odoo)` prefix will appear in your prompt. All subsequent `python` and `pip` commands use the venv. To activate again in a new shell, run `.venv_odoo\Scripts\Activate.ps1` from the repo root.
 
 ---
 
@@ -77,9 +79,11 @@ git clone https://github.com/OCA/l10n-france --branch 17.0 --depth 1 third_party
 
 ## Step 7 — Install pip requirements
 ```
-.\.venv_odoo\Scripts\pip.exe install -r odoo\requirements.txt
-.\.venv_odoo\Scripts\pip.exe install -r requirements.txt
+pip install -r odoo\requirements.txt
+pip install -r requirements.txt
 ```
+Note: `requirements.txt` includes `pymysql>=1.1` and `fintech` (required by our modules and account_ebics).
+Do NOT install `pdfminer.six` — it requires `cryptography>=36` which conflicts with Odoo's pinned `cryptography==3.4.8`. PDF attachment indexation will show a warning at startup but is non-critical.
 
 ---
 
@@ -88,13 +92,14 @@ Copy the EBICS SSL keys into `ebics_keys/` from a secure source.
 See `doc/DECISIONS/2026-03-31-ebics-keys-location.md` for the expected directory structure.
 The keys are machine-local and never committed to git.
 
-After restoring the DB, update the key path in the database (the path is machine-specific):
+After restoring the DB, update the key path in the database — the path in the DB is machine-specific and must match your actual filesystem:
 ```
 $env:PGPASSWORD = "odoo"
-psql --pset="pager=off" -U odoo -d greenremarket -c "UPDATE ebics_config SET ebics_keys = 'E:\Dev\gr_project_inventory\ebics_keys\greenremarket' WHERE id = 1;"
+psql --pset="pager=off" -U odoo -d greenremarket -c "UPDATE ebics_config SET ebics_keys = '<absolute path to ebics_keys/greenremarket>' WHERE id = 1;"
 Remove-Item Env:PGPASSWORD
 ```
-Adjust the path to match the actual absolute path on your machine.
+Example on migmi machine: `E:\Dev\gr_project_inventory\ebics_keys\greenremarket`
+See `doc/DECISIONS/2026-03-31-ebics-keys-location.md` for full details.
 
 ---
 
@@ -108,10 +113,17 @@ Adjust the path to match the actual absolute path on your machine.
    psql --pset="pager=off" -U odoo -d greenremarket -f path\to\dump.sql
    Remove-Item Env:PGPASSWORD
    ```
+   Note: psql will warn about `\restrict <token>` — this is Odoo's backup verification token, harmless, ignore it.
 3. Copy the filestore:
    ```
    Copy-Item -Recurse path\to\filestore odoo_data\filestore\greenremarket
    ```
+4. Install/upgrade GRM modules (required if restoring from a backup that predates our modules):
+   ```
+   $env:PATH += ";C:\Program Files\PostgreSQL\17\bin"
+   python odoo\odoo-bin -d greenremarket --db_host=localhost --db_port=5432 --db_user=odoo --db_password=odoo --data-dir=".\odoo_data" --addons-path="odoo/addons,enterprise,modules,third_party_modules/reporting-engine,third_party_modules/account_ebics_repo,third_party_modules/bank_statement_import_repo,third_party_modules/account_reconcile_repo,third_party_modules/l10n_france_repo" --update=gr_project_inventory,account_ebics,account_ebics_oe --init=grm_website,grm_documents_project --stop-after-init --log-level=warn
+   ```
+   If grm_website and grm_documents_project are already installed, use `--update` instead of `--init` for them.
 
 ### Option B: Fresh empty DB
 ```
@@ -155,6 +167,12 @@ Before starting feature work, confirm all of these exist:
 - `ebics_keys/greenremarket/` present (for EBICS connectivity)
 
 If any of these are missing, this machine is NON-OPERATIONAL. Fix before doing feature work.
+
+---
+
+## Known issues
+- `modules/gr_project_inventory/views/views_simple.xml` is **disabled** in `__manifest__.py`. The xpath targeting `date_deadline` for `planned_date_begin` fails on Odoo 17 Enterprise. The fix requires inheriting `project.task.view.form.inherit.project.enterprise` instead. Tracked in `doc/NEXT_ACTIONS.md`.
+- PDF attachment indexation warns at startup (`pdfminer` not installed). This is expected and non-critical — `pdfminer.six` conflicts with Odoo's pinned `cryptography==3.4.8`.
 
 ---
 

@@ -81,3 +81,5 @@ dumps/instant_rollback/*
 !dumps/instant_rollback/.gitkeep
 dumps/rotation/*
 !dumps/rotation/.gitkeep
+dumps/savepoint_*/
+dumps/pre_*/
