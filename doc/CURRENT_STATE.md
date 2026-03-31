@@ -74,6 +74,8 @@ Last verified: 2026-03-31 (session 6, end of day)
 - `lot_name` generation priority: `client_destination_name` → `order_giver_id.name` → `partner_id.name` → `UNK`. 25/25 tests passing.
 - Bank journal (BNK1): `acc_number` set to `00021148802` (raw BBAN from EBICS CFONB file). `bank_statements_source` = `undefined`, Open Banking link cleared. “Reconnecter la banque” button gone.
 - Pending: confirm correct full IBAN for account `00021148802` from CIC online banking and update both `acc_number` and `sanitized_acc_number` on `res_partner_bank` id=1 (both DBs). Account `00021148806` may need a second journal.
+- "Formulaire de lancement d'opération" date fix: form collects `date_deadline` (labeled "Date de début"); `create()` syncs to `planned_date_begin`. Task form shows "Planned Date" range. Live-validated.
+- Ctrl-C: `--dev=reload` in startup command cleanly stops the server on Windows. Live-validated.
 - Bank statements imported via EBICS: 2026-03-05 to 2026-03-27 (16 statements). Gap 2025-06-21 to 2026-03-04 is not available via EBICS (CIC retention limit). Must be imported manually.
 - Shell scripts for EBICS operations available in `scripts/`. Key script for future FDL runs: `scripts/ebics_try_formats.py`.
 
