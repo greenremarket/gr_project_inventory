@@ -9,11 +9,11 @@ Last verified: 2026-03-31
 
 ## Product and code backlog
 ### Open
-- **EBICS bank account — needs IBAN confirmation**: `res_partner_bank` id=1 currently holds raw BBAN `00021148802` (updated from old IBAN that didn’t match the CFONB file). Once the correct IBAN for account `00021148802` is obtained from CIC/CM online banking, update it. Account `00021148806` may need a second journal.
+- **EBICS bank account — needs IBAN confirmation**: Bank account is currently stored as raw BBAN `00021148802`. Once the correct full IBAN is obtained from CIC/CM online banking, update `res_partner_bank` id=1 and id=1 on `greenremarket_backup` (both `acc_number` and `sanitized_acc_number`). Account `00021148806` may need a second journal if it belongs to the company.
+- **Statement gap 2025-06-21 to 2026-03-04**: CIC EBICS FDL only retains ~30 days of CFONB history (90005 on earlier range). Statements for this 9-month gap must be imported manually from CIC online banking PDF/CSV export. Accounting team to handle.
+- **EBICS catch-up for 2026-03-28 onwards**: Next FDL run needed to pick up the last few days (file ended 2026-03-27). Should be done from the UI now that the account matching is fixed.
 - **Duplication performance (item 5a, pending user validation)**: Indexes added. Validate by duplicating a line on a large inventory task.
 - Fix the client bug in the form (item 5c — pending live confirmation from user).
-- Change the operation start date behavior or configuration.
-- **EBICS catch-up import**: Run FDL manually from 2025-06-21 to today to import all missing bank statements. Safe start date is 2025-06-21 (day after last Open Banking transaction). Odoo deduplication handles overlap within EBICS.
 - **EBICS auto-download scheduled action**: Build a custom Odoo Scheduled Action calling `ebics.xfer` FDL + auto-import daily. Replaces manual imports for accounting team.
 - **Warning pile (non-critical, clean up when time allows)**:
   - `pkg_resources` deprecated API from `fintech`
@@ -39,7 +39,7 @@ Last verified: 2026-03-31
 - Open Banking cron jobs disabled (IDs 38, 39, 40, 41 on both DBs) — were crashing every 5 minutes.
 - Project Inventory menu reverted to under Project app (removed incorrect standalone app behaviour).
 - CI workflow fixed for `modules/` refactor — was broken since repo structure change.
-- `views_simple.xml` fixed and re-enabled: form inherits `project_enterprise.project_task_view_form` to expose existing invisible `planned_date_begin`; tree view makes the enterprise-added hidden column optional/visible. `project_enterprise` added to module depends.
+- `views_simple.xml` re-enabled with tree-only change: optional `planned_date_begin` column in task list. Form view override was reverted (placed field inside date flex div causing layout corruption). `project_enterprise` added to module depends.
 - `odoo_icecat_connector` state is already `uninstalled` in DB — no action needed.
 - Duplication performance indexes added to `gr_internal_inventory` (task_id, client_inventory_id, created_at) and `gr_client_inventory` (task_id). Both DBs upgraded.
 - `test_date_field.py` skipped via `@unittest.skip` — tests are broken placeholders from cherry-pick.
@@ -48,6 +48,9 @@ Last verified: 2026-03-31
 - `lot_name` generation priority fixed: `client_destination_name` → `order_giver_id` → `partner_id` → `UNK`. Tests updated, 25/25 passing.
 - `lot_name` layout fixed in task form: moved to its own row outside the date flex div.
 - `views_simple.xml` form override reverted: `planned_date_begin` stays invisible in form (enterprise daterange widget handles it). Tree column kept.
+- Creation form date field fixed: `planned_date_begin` (start date) replaces `date_deadline` in "Formulaire de lancement d'opération".
+- EBICS fully resolved via Odoo shell scripts (`scripts/`). `sanitized_acc_number` was the real missing fix (SQL update of `acc_number` does not trigger stored field recompute). 16 statements imported for 2026-03-05 to 2026-03-27. Historical gap (2025-06-21 to 2026-03-04) confirmed unavailable via EBICS (code 90005). Account `00021148806` still needs investigation.
+- Shell scripts archived in `scripts/` for reuse.
 
 ## Resume guidance
 - For short prompts such as `resume work on this project`, do not implement immediately.

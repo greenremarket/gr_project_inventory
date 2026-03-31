@@ -73,7 +73,9 @@ Last verified: 2026-03-31 (session 6, end of day)
 - `lot_name` row fixed in task form: now appears on its own row below `date_deadline` (was landing inside the date flex div).
 - `lot_name` generation priority: `client_destination_name` → `order_giver_id.name` → `partner_id.name` → `UNK`. 25/25 tests passing.
 - Bank journal (BNK1): `acc_number` set to `00021148802` (raw BBAN from EBICS CFONB file). `bank_statements_source` = `undefined`, Open Banking link cleared. “Reconnecter la banque” button gone.
-- Pending: confirm correct full IBAN for account `00021148802` from CIC online banking and update `res_partner_bank` accordingly. Account `00021148806` may need a second journal.
+- Pending: confirm correct full IBAN for account `00021148802` from CIC online banking and update both `acc_number` and `sanitized_acc_number` on `res_partner_bank` id=1 (both DBs). Account `00021148806` may need a second journal.
+- Bank statements imported via EBICS: 2026-03-05 to 2026-03-27 (16 statements). Gap 2025-06-21 to 2026-03-04 is not available via EBICS (CIC retention limit). Must be imported manually.
+- Shell scripts for EBICS operations available in `scripts/`. Key script for future FDL runs: `scripts/ebics_try_formats.py`.
 
 ## Integration status
 - `backup-before-p1-8` is already merged into `main`.

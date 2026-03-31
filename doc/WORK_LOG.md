@@ -72,6 +72,15 @@ Last updated: 2026-03-30
 - Machine is now operational.
 - Standby pair created: `greenremarket_backup` DB (240 installed modules confirmed) and `odoo_data/filestore/greenremarket_backup`. Active/standby rotation model is now fully operational on this machine.
 
+## 2026-03-31 — EBICS full resolution + statement import (session 6, late)
+- Root cause of "No financial journal found" identified: `sanitized_acc_number` is a stored computed field. SQL update to `acc_number` does NOT trigger a recompute. Both `acc_number` and `sanitized_acc_number` on `res_partner_bank` id=1 now set to `00021148802` on both DBs.
+- EBICS 91116 on FDL with end date 2026-03-31: bank considers that delivery "consumed" (receipt acknowledged). Shifting end date to 2026-03-30 bypassed the block.
+- Z53 (camt.053 CIC-specific) rejected with 91005 INVALID_ORDER_TYPE. C53 rejected with functional error. FDL/cfonb120 is the only working format at CIC for this EBICS contract.
+- 16 bank statements imported: 2026-03-05 through 2026-03-27.
+- Historical gap 2025-06-21 to 2026-03-04: confirmed unavailable via EBICS (code 90005 EBICS_NO_DOWNLOAD_DATA_AVAILABLE). CIC only retains ~30 days of CFONB in EBICS FDL. This gap must be imported manually from CIC online banking export.
+- Shell scripts created in `scripts/` for reuse: `ebics_download_camt053.py`, `ebics_debug.py`, `ebics_try_formats.py`, `ebics_process_file.py`, `ebics_reprocess.py`, `ebics_missing_range.py`.
+- Creation form date field: `planned_date_begin` replaces `date_deadline` in "Formulaire de lancement d'opération".
+
 ## 2026-03-31 — lot_name generation, view layout, EBICS, bank config (session 6 final)
 - `lot_name` generation priority fixed: `_generate_client_hint` now tries `client_destination_name` first (the free-text destinataire field), then `order_giver_id.name`, then `partner_id.name`, then falls back to `UNK`. Logic, uniqueness, and 6-char constraints unchanged.
 - `test_lot_name_generation.py` updated: `test_client_hint_from_client_destination_name` and `test_client_destination_overrides_order_giver` added. 25/25 tests passing.
