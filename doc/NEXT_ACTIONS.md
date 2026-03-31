@@ -9,6 +9,8 @@ Last verified: 2026-03-31
 
 ## Product and code backlog
 ### Open
+- **Lot name generation priority**: `lot_name` auto-generation should use `client_destination_name` as base first, then `order_giver_id.name`, then a generic fallback. Needs implementation and test.
+- **EBICS bank account — needs IBAN confirmation**: `res_partner_bank` id=1 updated from IBAN `FR76 1027 8061 6400 0202 5770 259` to raw BBAN `00021148802` so the CFONB import can match. Once the correct IBAN for account `00021148802` is obtained from CIC/CM online banking, update the journal's bank account to the full IBAN. Account `00021148806` may need a second journal if it belongs to the company.
 - **Duplication performance (item 5a, pending user validation)**: Indexes added on `gr_internal_inventory.task_id`, `client_inventory_id`, `created_at` and `gr_client_inventory.task_id`. Should resolve the ~15s delay on large sets. Validate by duplicating a line on a large inventory task.
 - Fix the client bug in the form (item 5c — pending live confirmation from user).
 - Change the operation start date behavior or configuration.
@@ -42,6 +44,8 @@ Last verified: 2026-03-31
 - `odoo_icecat_connector` state is already `uninstalled` in DB — no action needed.
 - Duplication performance indexes added to `gr_internal_inventory` (task_id, client_inventory_id, created_at) and `gr_client_inventory` (task_id). Both DBs upgraded.
 - `test_date_field.py` skipped via `@unittest.skip` — tests are broken placeholders from cherry-pick.
+- "Reconnecter la banque" button removed: `account_journal.bank_statements_source` set to `undefined`, `account_online_account_id` and `account_online_link_id` cleared on both DBs (journal id=6).
+- Startup command updated with `--max-cron-threads=0` to suppress Windows cron thread crash.
 
 ## Resume guidance
 - For short prompts such as `resume work on this project`, do not implement immediately.
