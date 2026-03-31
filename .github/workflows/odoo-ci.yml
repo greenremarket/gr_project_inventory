@@ -44,9 +44,13 @@ jobs:
         git clone https://github.com/odoo/odoo.git --depth 1 --branch 17.0 odoo
 
     - name: Download Odoo Enterprise 17.0
+      env:
+        ENTERPRISE_TOKEN: ${{ secrets.ODOO_ENTERPRISE_TOKEN }}
       run: |
-        # Enterprise is a public GitHub repo — no token required
-        git clone https://github.com/odoo/enterprise.git --depth 1 --branch 17.0 enterprise
+        # Requires ODOO_ENTERPRISE_TOKEN secret: a GitHub PAT with read access
+        # to the odoo/enterprise private repo. Set it in:
+        # GitHub → repo Settings → Secrets and variables → Actions → New secret
+        git clone https://x-access-token:${ENTERPRISE_TOKEN}@github.com/odoo/enterprise.git --depth 1 --branch 17.0 enterprise
 
     - name: Install Python dependencies
       run: |
