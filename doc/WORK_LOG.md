@@ -72,6 +72,18 @@ Last updated: 2026-03-30
 - Machine is now operational.
 - Standby pair created: `greenremarket_backup` DB (240 installed modules confirmed) and `odoo_data/filestore/greenremarket_backup`. Active/standby rotation model is now fully operational on this machine.
 
+## 2026-03-31 — First functional validation session (session 5)
+- First browser validation on `greenremarket_backup`. Core module features confirmed working.
+- Menu fix: Project Inventory reverted to under Project app (`views.xml` `parent="project.menu_main_pm"` restored; incorrect standalone app change reverted and applied to both DBs).
+- EBICS: HPB called, `#BANK` section written to `ebics_keys/greenremarket/120558690001_keys`. FDL file download confirmed working.
+- Open Banking cron jobs (IDs 38, 39, 40, 41) disabled on both `greenremarket` and `greenremarket_backup` — were crashing every 5 minutes due to invalid PSD2 tokens from production.
+- EBICS safe import start date established: 2025-06-21 (day after last Open Banking transaction).
+- `pdfminer.six` removed from `requirements.txt` (cryptography conflict with Odoo's `==3.4.8` pin).
+- CI workflow (`odoo-ci.yml`) fixed: updated module path `gr_project_inventory/` → `modules/gr_project_inventory/`, fixed dependency install order to preserve cryptography pin.
+- 23/23 tests passing after all fixes.
+- Savepoint 4: `dumps/savepoint_4_ready_to_use_20260331.dump` + `odoo_data/filestore/greenremarket_backup` (standby).
+- `BACKUP_AND_SWAP.md` updated with exact Windows PowerShell commands including `source\*` filestore copy pattern.
+
 ## 2026-03-28 — Guardrail docs patched and branching model established (session 3)
 - External research pass confirmed design alignment with AGENTS.md community standard, guardrails.md Signs architecture, OpenAI Codex AGENTS.md discovery model, and GitHub Agentic Workflows 3-layer guardrail pattern.
 - Four gaps identified and addressed: structured 5-section resume report format, privilege boundaries (safe vs. requires approval), push-and-sync requirement, backlog closure criteria requiring test evidence.

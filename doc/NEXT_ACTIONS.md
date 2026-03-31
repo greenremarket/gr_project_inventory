@@ -1,9 +1,9 @@
 # NEXT ACTIONS
 Status: active
-Last verified: 2026-03-30
+Last verified: 2026-03-31
 
 ## Operating priorities
-1. Create `greenremarket_backup` from active before any risky work (standby does not exist yet on this machine).
+1. Keep `greenremarket_backup` in sync with active before any risky work (standby exists and is current as of 2026-03-31).
 2. Keep the matching filestore pair aligned with any DB refresh or swap.
 3. Preserve access to the `enterprise` companion repository.
 
@@ -13,15 +13,13 @@ Last verified: 2026-03-30
 - For inventory item duplication, replace copied original dates with `fields.Datetime.now()`.
 - Change the operation start date behavior or configuration.
 - Fix `views/views_simple.xml` xpath: inherit `project.task.view.form.inherit.project.enterprise` instead of targeting `date_deadline` directly. Re-enable in `__manifest__.py`.
-- **EBICS resolved**: HPB called successfully, `#BANK` section written to key file, file download via FDL confirmed working.
-- **Open Banking crons disabled** (IDs 38, 39, 40, 41) on both `greenremarket` and `greenremarket_backup`. These were crashing every 5 minutes. "Reconnecter la banque" is the OB connector, unrelated to EBICS, leave it alone.
-- **EBICS safe import start date: 2026-06-21** (day after last Open Banking transaction 2025-06-20). Always start EBICS FDL from this date to avoid duplicates with historical OB data.
-- **EBICS auto-download scheduled action**: No built-in cron in this Noviat module version. Must create a custom Odoo Scheduled Action calling `ebics.xfer` FDL download + auto-import. This is the task that replaces Open Banking for executives — they should never have to manually trigger imports.
-- **Icecat/MySQL**: `odoo_icecat_connector` connection errors on startup (external MySQL not reachable on this machine). Disable the module.
+- **EBICS catch-up import**: Run FDL manually from 2025-06-21 to today to import all missing bank statements. Safe start date is 2025-06-21 (day after last Open Banking transaction). Odoo deduplication handles overlap within EBICS.
+- **EBICS auto-download scheduled action**: Build a custom Odoo Scheduled Action calling `ebics.xfer` FDL + auto-import daily. Replaces manual imports for accounting team.
+- **Disable `odoo_icecat_connector`**: MySQL connection errors on startup (external server not reachable). Disable to clean up startup noise.
 - **Warning pile (non-critical, clean up when time allows)**:
-  - `pkg_resources` deprecated API warning from `fintech` package
+  - `pkg_resources` deprecated API from `fintech`
   - `active_id`/`active_ids`/`active_model` in ir_ui_view expressions deprecated in Odoo 17
-  - `gr_project_inventory` models not overriding `create` method in batch (ORM performance hint)
+  - `gr_project_inventory` models not overriding `create` in batch (ORM performance hint)
   - `@route()` decorator warnings in `grm_website`
 
 ### Deferred (planned, not started)
@@ -32,12 +30,15 @@ Last verified: 2026-03-30
 - When promoted from deferred to active, create a dedicated feature branch from `main`, implement in phases, validate, and merge back per the branching model.
 
 ### Pending review
-- Code for the three items above exists in artifact branch `fix/backlog-client-form-duplication-start-date` and is being cherry-picked; needs test validation before closure.
-- Do not mark any of these confirmed closed without passing tests and a WORK_LOG entry.
+- Client form bug, duplication date reset, and operation start date: code was cherry-picked from artifact branch. Needs explicit test validation before closure per backlog closure criteria.
 
 ### Confirmed closed
 - P1.8 logo sizing is closed and should not be reopened without a new explicit request.
 - Lot name length limit is implemented and tested (6-character constraint with validation).
+- EBICS bank keys obtained (HPB called 2026-03-31, `#BANK` section written, FDL download confirmed).
+- Open Banking cron jobs disabled (IDs 38, 39, 40, 41 on both DBs) — were crashing every 5 minutes.
+- Project Inventory menu reverted to under Project app (removed incorrect standalone app behaviour).
+- CI workflow fixed for `modules/` refactor — was broken since repo structure change.
 
 ## Resume guidance
 - For short prompts such as `resume work on this project`, do not implement immediately.
