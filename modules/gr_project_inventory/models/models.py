@@ -88,6 +88,7 @@ class GrClientInventory(models.Model):
         string='Task',
         ondelete='cascade',
         required=True,
+        index=True,
     )
     select_item = fields.Boolean(string='Selected', default=False)
     internal_inventory_id = fields.Many2one(
@@ -443,13 +444,15 @@ class GrInternalInventory(models.Model):
         string='Tâche',
         ondelete='cascade',
         required=True,
+        index=True,
     )
     asset_tag = fields.Char(string='Asset Tag Interne', readonly=False, copy=False)
 
     client_inventory_id = fields.Many2one(
         comodel_name='gr.client.inventory',
         string='Client Inventory',
-        ondelete='set null'
+        ondelete='set null',
+        index=True,
     )
 
     status = fields.Selection([
@@ -481,6 +484,7 @@ class GrInternalInventory(models.Model):
         default=fields.Datetime.now,
         required=True,  # Remettre required=True pour assurer que le champ n'est jamais vide
         copy=False,  # Lors de la duplication, utiliser la date actuelle au lieu de copier l'originale
+        index=True,  # Used by _order = 'created_at desc' — index avoids full-scan sort on large sets
     )
 
     # Ajouter ce nouveau champ
