@@ -1,6 +1,6 @@
 # CURRENT STATE
 Status: active
-Last verified: 2026-03-28
+Last verified: 2026-03-30
 
 ## Repository and branch
 - Repository: `greenremarket/gr_project_inventory`
@@ -38,6 +38,16 @@ Last verified: 2026-03-28
 - Required companion repos at branch `17.0`: `odoo`, `enterprise`, `OCA/reporting-engine`, `account_reconcile_repo`, `bank_statement_import_repo`, `l10n_france_repo`, `account_ebics_repo`
 - Enterprise repo access must remain valid or Odoo startup will fail.
 
+## Resume-time environment readiness gate
+- Any resume flow must probe live machine readiness before recommending code changes.
+- Minimum required checks:
+  - companion repos/paths: `odoo`, `enterprise`, `OCA/reporting-engine`, `account_reconcile_repo`, `bank_statement_import_repo`, `l10n_france_repo`, `account_ebics_repo`
+  - runtime entrypoints: `.venv_odoo/Scripts/python.exe`, `odoo/odoo-bin`
+  - data paths: `odoo_data/filestore/greenremarket`, `odoo_data/filestore/greenremarket_backup`
+  - PostgreSQL tooling/connectivity on the local machine
+- If any mandatory prerequisite is missing, status must be reported as `NON-OPERATIONAL` before any backlog recommendation.
+- In `NON-OPERATIONAL` state, only environment bootstrap/recovery actions may be recommended until readiness is restored.
+
 ## Current validated changes
 - P1.8 report/logo work is closed.
   - `gr_project_inventory/reports/internal_inventory_report.py` uses logo scale `1.0`
@@ -62,7 +72,7 @@ Last verified: 2026-03-28
 
 ## Startup and test commands
 - Start Odoo on active:
-  - `.\.venv_odoo\Scripts\python.exe odoo\odoo-bin -d greenremarket --db_host=localhost --db_port=5432 --db_user=odoo --db_password=odoo --data-dir=".\odoo_data" --addons-path="odoo/addons,enterprise,.,OCA/reporting-engine,account_ebics_repo,bank_statement_import_repo,account_reconcile_repo,l10n_france_repo,portal_gr" --log-level=info`
+  - `.\.venv_odoo\Scripts\python.exe odoo\odoo-bin -d greenremarket --db_host=localhost --db_port=5432 --db_user=odoo --db_password=odoo --data-dir=".\odoo_data" --addons-path="odoo/addons,enterprise,modules,OCA/reporting-engine,account_ebics_repo,bank_statement_import_repo,account_reconcile_repo,l10n_france_repo" --log-level=info`
 - Preferred validation target:
   - `greenremarket_backup`
 - Targeted logo tests:

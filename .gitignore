@@ -49,7 +49,6 @@ bank_statement_import_repo/
 l10n_france_repo/
 odoo_data/
 repro_dump/
-portal_gr/
 
 # Local repro backups
 repro_backup_*.dump
