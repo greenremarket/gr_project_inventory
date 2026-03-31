@@ -19,7 +19,18 @@ copied manually from a secure source before EBICS connectivity will work.
 ## On a new machine
 1. Obtain the EBICS keys from a secure location (existing machine, encrypted backup, or bank re-registration).
 2. Copy into `ebics_keys/` matching the structure above.
-3. Verify the `account_ebics_module` config points to the correct key paths.
+3. Update the path in the database — it is stored in the `ebics_config` table, `ebics_keys` column:
+   ```
+   UPDATE ebics_config SET ebics_keys = '<absolute path to ebics_keys/greenremarket on this machine>' WHERE id = 1;
+   ```
+   On the migmi Windows machine: `E:\Dev\gr_project_inventory\ebics_keys\greenremarket`
+   On the production Linux server: `/etc/odoo/ebics_keys/greenremarket`
+   On a new machine, the path will differ — always update the DB record before starting Odoo.
+
+## Key file naming
+- Key files are named `<ebics_user_id>_keys` (e.g. `120558690001_keys`)
+- They contain JSON with A (authentication), E (encryption), and X (signature) key pairs
+- Never share or log this file content
 
 ## Security note
 Never commit key files to git. Never store them in cloud drives without encryption.

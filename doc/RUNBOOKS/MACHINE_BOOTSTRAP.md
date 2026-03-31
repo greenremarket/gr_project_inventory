@@ -88,6 +88,14 @@ Copy the EBICS SSL keys into `ebics_keys/` from a secure source.
 See `doc/DECISIONS/2026-03-31-ebics-keys-location.md` for the expected directory structure.
 The keys are machine-local and never committed to git.
 
+After restoring the DB, update the key path in the database (the path is machine-specific):
+```
+$env:PGPASSWORD = "odoo"
+psql --pset="pager=off" -U odoo -d greenremarket -c "UPDATE ebics_config SET ebics_keys = 'E:\Dev\gr_project_inventory\ebics_keys\greenremarket' WHERE id = 1;"
+Remove-Item Env:PGPASSWORD
+```
+Adjust the path to match the actual absolute path on your machine.
+
 ---
 
 ## Step 9 — Restore or create a database
