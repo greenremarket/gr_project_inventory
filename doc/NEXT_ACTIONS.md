@@ -14,7 +14,9 @@ Last verified: 2026-03-30
 - Change the operation start date behavior or configuration.
 - Fix `views/views_simple.xml` xpath: inherit `project.task.view.form.inherit.project.enterprise` instead of targeting `date_deadline` directly. Re-enable in `__manifest__.py`.
 - **EBICS resolved**: HPB called successfully, `#BANK` section written to key file, file download via FDL confirmed working.
-- **"Reconnecter la banque" error**: This is the Odoo Open Banking/PSD2 connector, NOT EBICS. Tokens from production are invalid here. Since bank statements come via EBICS, this button is irrelevant. The cron thread crashes are likely this same connector failing silently. Fix: disable or reconfigure the Open Banking connector to stop cron noise.
+- **Open Banking crons disabled** (IDs 38, 39, 40, 41) on both `greenremarket` and `greenremarket_backup`. These were crashing every 5 minutes. "Reconnecter la banque" is the OB connector, unrelated to EBICS, leave it alone.
+- **EBICS safe import start date: 2026-06-21** (day after last Open Banking transaction 2025-06-20). Always start EBICS FDL from this date to avoid duplicates with historical OB data.
+- **EBICS auto-download scheduled action**: No built-in cron in this Noviat module version. Must create a custom Odoo Scheduled Action calling `ebics.xfer` FDL download + auto-import. This is the task that replaces Open Banking for executives — they should never have to manually trigger imports.
 - **Icecat/MySQL**: `odoo_icecat_connector` connection errors on startup (external MySQL not reachable on this machine). Disable the module.
 - **Warning pile (non-critical, clean up when time allows)**:
   - `pkg_resources` deprecated API warning from `fintech` package
