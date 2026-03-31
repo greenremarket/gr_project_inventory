@@ -72,6 +72,15 @@ Last updated: 2026-03-30
 - Machine is now operational.
 - Standby pair created: `greenremarket_backup` DB (240 installed modules confirmed) and `odoo_data/filestore/greenremarket_backup`. Active/standby rotation model is now fully operational on this machine.
 
+## 2026-03-31 — lot_name generation, view layout, EBICS, bank config (session 6 final)
+- `lot_name` generation priority fixed: `_generate_client_hint` now tries `client_destination_name` first (the free-text destinataire field), then `order_giver_id.name`, then `partner_id.name`, then falls back to `UNK`. Logic, uniqueness, and 6-char constraints unchanged.
+- `test_lot_name_generation.py` updated: `test_client_hint_from_client_destination_name` and `test_client_destination_overrides_order_giver` added. 25/25 tests passing.
+- `lot_name` form layout fixed: xpath was targeting `//field[@name='date_deadline']` position=after which placed the field inside `div#date_deadline_and_recurring_task` (d-inline-flex), causing MOR601 to appear on the date row. Changed to target `//div[@id='date_deadline_and_recurring_task']` position=after — now a proper labeled row.
+- `views_simple.xml` form view override removed: making `planned_date_begin` visible inside the flex div corrupted the entire date row. The enterprise daterange widget already exposes it. Tree column kept.
+- Bank journal (BNK1): `acc_number` updated from IBAN `FR76 1027 8061 6400 0202 5770 259` to raw BBAN `00021148802` (what EBICS CFONB file sends). IBAN-to-BBAN mismatch was the root cause of "No financial journal found" errors on all 17 transactions. IBAN confirmation from CIC still pending.
+- `bank_statements_source` set to `undefined`, `account_online_account_id`/`account_online_link_id` cleared — removes "Reconnecter la banque" button on both DBs.
+- Startup command fixed with `--max-cron-threads=0` — prevents Windows cron thread crash (`pg_conn.poll()` incompatibility). HTTP server is unaffected.
+
 ## 2026-03-31 — Duplication performance fix, test skip, db indexes (session 6 continued)
 - Root cause of ~15s duplication delay: `gr_internal_inventory` and `gr_client_inventory` had only primary-key indexes; lookups by `task_id` were full table scans.
 - Added `index=True` on `gr.internal.inventory.task_id`, `client_inventory_id`, `created_at` and `gr.client.inventory.task_id`.

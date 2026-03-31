@@ -1209,28 +1209,28 @@ class ProjectTask(models.Model):
                 })
 
     def _generate_client_hint(self):
-        """Generate 3-char client hint from partner or order_giver."""
+        """Generate 3-char client hint.
+        Priority: client_destination_name → order_giver_id.name → partner_id.name → 'UNK'
+        """
         self.ensure_one()
         import unicodedata
-        from datetime import datetime
-        
-        # Try partner first, then order_giver
-        source = ""
-        if self.partner_id and self.partner_id.name:
-            source = self.partner_id.name
-        elif hasattr(self, 'order_giver_id') and self.order_giver_id and self.order_giver_id.name:
-            source = self.order_giver_id.name
-        
-        # Normalize: remove accents, keep alphanumeric, uppercase, max 3
+
+        # Priority order: free-text client name first, then relational fields
+        source = (
+            self.client_destination_name
+            or (self.order_giver_id and self.order_giver_id.name)
+            or (self.partner_id and self.partner_id.name)
+            or ""
+        )
+
         if source:
-            # Remove accents
+            # Remove accents, keep only A-Z 0-9, uppercase, take first 3 chars
             source = unicodedata.normalize('NFKD', source).encode('ASCII', 'ignore').decode('ASCII')
-            # Keep only alphanumeric, uppercase
             source = re.sub(r'[^A-Z0-9]', '', source.upper())
-            # Take first 3 chars
-            return source[:3] if source else "UNK"
-        
-        return "UNK"  # Unknown fallback
+            if source:
+                return source[:3]
+
+        return "UNK"
     
     def _generate_year_hint(self):
         """Generate 1-char year hint (last digit of current year)."""

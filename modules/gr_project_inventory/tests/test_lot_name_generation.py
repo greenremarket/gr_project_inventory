@@ -91,19 +91,31 @@ class TestLotNameAutoGeneration(TransactionCase):
         # Should keep manual lot_name
         self.assertEqual(task.lot_name, manual_lot_name)
 
+    def test_client_hint_from_client_destination_name(self):
+        """client_destination_name is highest priority for lot hint."""
+        task = self.env['project.task'].create({
+            'name': 'Test Task',
+            'project_id': self.test_project.id,
+            'client_destination_name': 'INFODIS',
+            'partner_id': self.test_partner.id,  # should be ignored
+        })
+        hint = task._generate_client_hint()
+        # INFODIS → 'INF'
+        self.assertEqual(hint, 'INF')
+
     def test_client_hint_generation(self):
-        """Test client hint generation from partner name."""
+        """Falls back to partner_id.name when client_destination_name is empty."""
         task = self.env['project.task'].create({
             'name': 'Test Task',
             'project_id': self.test_project.id,
             'partner_id': self.test_partner.id,
+            # client_destination_name intentionally not set
         })
 
         client_hint = task._generate_client_hint()
         self.assertEqual(len(client_hint), 3, "Client hint should be 3 characters")
         self.assertTrue(client_hint.isalnum(), "Client hint should be alphanumeric")
         self.assertTrue(client_hint.isupper(), "Client hint should be uppercase")
-        
         # Should extract "TES" from "Test Client InfoDisk"
         self.assertIn('TES', client_hint)
 
@@ -154,23 +166,39 @@ class TestLotNameAutoGeneration(TransactionCase):
         self.assertTrue(task.lot_name.startswith('UNK'), "Should use UNK as fallback client hint")
 
     def test_order_giver_fallback(self):
-        """Test fallback to order_giver when no partner."""
-        # Create order giver
+        """Falls back to order_giver_id when client_destination_name and partner are both empty."""
         test_order_giver = self.env['res.partner'].create({
             'name': 'Order Giver Corp',
             'email': 'order@example.com',
         })
-        
+
         task = self.env['project.task'].create({
             'name': 'Test Task',
             'project_id': self.test_project.id,
             'order_giver_id': test_order_giver.id,
-            # No partner_id
+            # No client_destination_name, no partner_id
         })
 
-        # Should extract from order_giver
         client_hint = task._generate_client_hint()
         self.assertIn('ORD', client_hint)  # From "Order Giver Corp"
+
+    def test_client_destination_overrides_order_giver(self):
+        """client_destination_name beats order_giver_id."""
+        test_order_giver = self.env['res.partner'].create({
+            'name': 'Order Giver Corp',
+            'email': 'order2@example.com',
+        })
+
+        task = self.env['project.task'].create({
+            'name': 'Test Task',
+            'project_id': self.test_project.id,
+            'client_destination_name': 'ACME',
+            'order_giver_id': test_order_giver.id,
+        })
+
+        hint = task._generate_client_hint()
+        # ACME → 'ACM', not 'ORD'
+        self.assertEqual(hint, 'ACM')
 
     def test_edge_cases_special_characters(self):
         """Test edge cases with special characters and accents."""

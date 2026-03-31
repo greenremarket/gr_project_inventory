@@ -1,6 +1,6 @@
 # CURRENT STATE
 Status: active
-Last verified: 2026-03-31
+Last verified: 2026-03-31 (session 6, end of day)
 
 ## Repository and branch
 - Repository: `greenremarket/gr_project_inventory`
@@ -68,15 +68,12 @@ Last verified: 2026-03-31
 
 ## Current validated changes
 - P1.8 report/logo work is closed.
-  - `gr_project_inventory/reports/internal_inventory_report.py` uses logo scale `1.0`
-  - `gr_project_inventory/reports/discrepancy_report.py` uses logo scale `1.0`
-  - `gr_project_inventory/reports/audit_report_xlsx.py` contains logo insertion with scale `1.0`
-- Portal loader hardening is applied in:
-  - `grm_website/static/src/js/loader.js`
-  - `grm_website/templates/layout.xml`
-- Dashboard/menu access change is retained in:
-  - `gr_project_inventory/views/views.xml`
-- The canonical documentation reorganization under `doc/` is the intended takeover path.
+- Portal loader hardening is applied in `grm_website`.
+- `views_simple.xml` re-enabled: tree view exposes `planned_date_begin` as an optional column. Form view keeps `planned_date_begin` invisible — the enterprise daterange widget on `date_deadline` already exposes it as the range start.
+- `lot_name` row fixed in task form: now appears on its own row below `date_deadline` (was landing inside the date flex div).
+- `lot_name` generation priority: `client_destination_name` → `order_giver_id.name` → `partner_id.name` → `UNK`. 25/25 tests passing.
+- Bank journal (BNK1): `acc_number` set to `00021148802` (raw BBAN from EBICS CFONB file). `bank_statements_source` = `undefined`, Open Banking link cleared. “Reconnecter la banque” button gone.
+- Pending: confirm correct full IBAN for account `00021148802` from CIC online banking and update `res_partner_bank` accordingly. Account `00021148806` may need a second journal.
 
 ## Integration status
 - `backup-before-p1-8` is already merged into `main`.
@@ -90,8 +87,9 @@ Last verified: 2026-03-31
 
 ## Startup and test commands
 - Start Odoo on active:
-  - `.\.venv_odoo\Scripts\python.exe odoo\odoo-bin -d greenremarket --db_host=localhost --db_port=5432 --db_user=odoo --db_password=odoo --data-dir=".\odoo_data" --addons-path="odoo/addons,enterprise,modules,third_party_modules/reporting-engine,third_party_modules/account_ebics_repo,third_party_modules/bank_statement_import_repo,third_party_modules/account_reconcile_repo,third_party_modules/l10n_france_repo" --log-level=warn --logfile=odoo_data/odoo.log`
-- PostgreSQL must be in PATH. On Windows: `$env:PATH += ";C:\Program Files\PostgreSQL\17\bin"`
+  - `.\.venv_odoo\Scripts\python.exe odoo\odoo-bin -d greenremarket --db_host=localhost --db_port=5432 --db_user=odoo --db_password=odoo --data-dir=".\odoo_data" --addons-path="odoo/addons,enterprise,modules,third_party_modules/reporting-engine,third_party_modules/account_ebics_repo,third_party_modules/bank_statement_import_repo,third_party_modules/account_reconcile_repo,third_party_modules/l10n_france_repo" --log-level=warn --logfile=odoo_data/odoo.log --max-cron-threads=0`
+  - Note: `--max-cron-threads=0` avoids a Windows-specific `pg_conn.poll()` crash in cron threads. HTTP server is unaffected. Crons can be triggered manually from Settings → Technical → Scheduled Actions if needed.
+- PostgreSQL credentials: superuser `postgres`/`postgres`, Odoo role `odoo`/`odoo`. Use `$env:PGPASSWORD = "odoo"` before psql commands.
 - Preferred validation target:
   - `greenremarket_backup`
 - Targeted logo tests:
