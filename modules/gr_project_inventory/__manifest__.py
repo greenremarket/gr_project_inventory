@@ -11,13 +11,13 @@
     'author': 'Morad Igmir',
     'company': 'Green Remarket',
     'website': 'https://greenremarket.fr/',
-    'depends': ['base', 'project', 'report_xlsx', 'report_xlsx_helper', 'stock', 'barcodes'],
+    'depends': ['base', 'project', 'project_enterprise', 'report_xlsx', 'report_xlsx_helper', 'stock', 'barcodes'],
     'data': [
         'security/ir.model.access.csv',
         'reports/discrepancy_report.xml',
         'reports/internal_inventory_report.xml',
         'views/views.xml',
-        # 'views/views_simple.xml',  # TODO: fix xpath for planned_date_begin - date_deadline position fails on this enterprise version
+        'views/views_simple.xml',
         'views/res_config_settings_view.xml',
         'views/audit_report_xlsx_wizard_view.xml',
         'data/product_type_data.xml',

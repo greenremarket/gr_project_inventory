@@ -72,6 +72,15 @@ Last updated: 2026-03-30
 - Machine is now operational.
 - Standby pair created: `greenremarket_backup` DB (240 installed modules confirmed) and `odoo_data/filestore/greenremarket_backup`. Active/standby rotation model is now fully operational on this machine.
 
+## 2026-03-31 — views_simple.xml fix and icecat audit (session 6)
+- `views_simple.xml` was disabled because both its views tried to add `planned_date_begin` to views where enterprise already added it (invisible), causing a duplicate-field conflict.
+- Form view fixed: now inherits `project_enterprise.project_task_view_form`, uses xpath `//div[@id='date_deadline_and_recurring_task']/field[@name='planned_date_begin']` to flip `invisible=0` and set `string="Date de début"`.
+- Tree view fixed: inherits `project.view_task_tree2`, uses xpath `//field[@name='planned_date_begin']` to set `column_invisible=0` and `optional=show` (field was added `column_invisible="True"` by enterprise to `project_task_view_tree_base`, which is the parent).
+- `project_enterprise` added to `gr_project_inventory` depends in `__manifest__.py`.
+- `views_simple.xml` re-enabled in manifest.
+- Both `greenremarket_backup` and `greenremarket` upgraded cleanly (no errors, only known warnings).
+- `odoo_icecat_connector` confirmed already `uninstalled` in both DBs — no action needed.
+
 ## 2026-03-31 — First functional validation session (session 5)
 - First browser validation on `greenremarket_backup`. Core module features confirmed working.
 - Menu fix: Project Inventory reverted to under Project app (`views.xml` `parent="project.menu_main_pm"` restored; incorrect standalone app change reverted and applied to both DBs).

@@ -12,10 +12,8 @@ Last verified: 2026-03-31
 - Fix the client bug in the form.
 - For inventory item duplication, replace copied original dates with `fields.Datetime.now()`.
 - Change the operation start date behavior or configuration.
-- Fix `views/views_simple.xml` xpath: inherit `project.task.view.form.inherit.project.enterprise` instead of targeting `date_deadline` directly. Re-enable in `__manifest__.py`.
 - **EBICS catch-up import**: Run FDL manually from 2025-06-21 to today to import all missing bank statements. Safe start date is 2025-06-21 (day after last Open Banking transaction). Odoo deduplication handles overlap within EBICS.
 - **EBICS auto-download scheduled action**: Build a custom Odoo Scheduled Action calling `ebics.xfer` FDL + auto-import daily. Replaces manual imports for accounting team.
-- **Disable `odoo_icecat_connector`**: MySQL connection errors on startup (external server not reachable). Disable to clean up startup noise.
 - **Warning pile (non-critical, clean up when time allows)**:
   - `pkg_resources` deprecated API from `fintech`
   - `active_id`/`active_ids`/`active_model` in ir_ui_view expressions deprecated in Odoo 17
@@ -39,6 +37,8 @@ Last verified: 2026-03-31
 - Open Banking cron jobs disabled (IDs 38, 39, 40, 41 on both DBs) — were crashing every 5 minutes.
 - Project Inventory menu reverted to under Project app (removed incorrect standalone app behaviour).
 - CI workflow fixed for `modules/` refactor — was broken since repo structure change.
+- `views_simple.xml` fixed and re-enabled: form inherits `project_enterprise.project_task_view_form` to expose existing invisible `planned_date_begin`; tree view makes the enterprise-added hidden column optional/visible. `project_enterprise` added to module depends.
+- `odoo_icecat_connector` state is already `uninstalled` in DB — no action needed.
 
 ## Resume guidance
 - For short prompts such as `resume work on this project`, do not implement immediately.
