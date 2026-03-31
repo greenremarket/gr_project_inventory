@@ -17,7 +17,7 @@
         'reports/discrepancy_report.xml',
         'reports/internal_inventory_report.xml',
         'views/views.xml',
-        'views/views_simple.xml',
+        # 'views/views_simple.xml',  # TODO: fix xpath for planned_date_begin - date_deadline position fails on this enterprise version
         'views/res_config_settings_view.xml',
         'views/audit_report_xlsx_wizard_view.xml',
         'data/product_type_data.xml',

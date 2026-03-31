@@ -62,6 +62,14 @@ Last updated: 2026-03-30
 - DB `greenremarket_incoming` created and restored from `dump.sql`. Filestore copied to `odoo_data/filestore/greenremarket_incoming/`. 2252 files confirmed.
 - Savepoint 1: `dumps/savepoint_1_restored_raw.dump` (pg_dump -Fc of raw restored DB).
 - Next: website cleanup → savepoint 2 → module upgrade → savepoint 3 → promote to `greenremarket`.
+- Website cleanup done: 4 editor-style overrides deactivated (template_header_default, header_text_element, footer_custom, footer_copyright_company_name). Count confirmed 0.
+- Savepoint 2: `dumps/savepoint_2_cleaned.dump`.
+- Missing pip dependencies discovered and installed: `pymysql>=1.1`, `fintech`, `pdfminer.six`. Added to `requirements.txt`.
+- `views_simple.xml` commented out in manifest — `date_deadline` xpath fails on this enterprise version. Added as open backlog item.
+- gr modules upgraded/installed: `gr_project_inventory` 17.0.1.2, `grm_website` 17.0.1.1.3, `grm_documents_project` 17.0.1.1.2. `account_ebics` and `account_ebics_oe` synced.
+- Savepoint 3: `dumps/savepoint_3_upgraded.dump`.
+- DB renamed `greenremarket_incoming` → `greenremarket`. Filestore promoted. Old March 30 filestore archived as `greenremarket_prior_march30`.
+- Machine is now operational.
 
 ## 2026-03-28 — Guardrail docs patched and branching model established (session 3)
 - External research pass confirmed design alignment with AGENTS.md community standard, guardrails.md Signs architecture, OpenAI Codex AGENTS.md discovery model, and GitHub Agentic Workflows 3-layer guardrail pattern.

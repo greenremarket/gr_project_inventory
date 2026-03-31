@@ -3,7 +3,7 @@ Status: active
 Last verified: 2026-03-30
 
 ## Operating priorities
-1. Keep `greenremarket_backup` fresh before risky database/module work.
+1. Create `greenremarket_backup` from active before any risky work (standby does not exist yet on this machine).
 2. Keep the matching filestore pair aligned with any DB refresh or swap.
 3. Preserve access to the `enterprise` companion repository.
 
@@ -12,6 +12,7 @@ Last verified: 2026-03-30
 - Fix the client bug in the form.
 - For inventory item duplication, replace copied original dates with `fields.Datetime.now()`.
 - Change the operation start date behavior or configuration.
+- Fix `views/views_simple.xml` xpath: `<field name="date_deadline" position="before">` fails on this enterprise task form version. Investigate the correct xpath to expose `planned_date_begin` and re-enable the file in `__manifest__.py`.
 
 ### Deferred (planned, not started)
 - Cross-machine kickstart and containerization/swarm roadmap is approved as a future initiative:
