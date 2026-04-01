@@ -40,10 +40,14 @@ class GRPortalHome(http.Controller):
             return request.redirect(url('/web/login'), local=False)
         if request.env.user.has_group('base.group_portal'):
             return request.redirect(url('/my'), local=False)
-        # Internal / admin users: pass through to the normal website controller.
-        # This is required for the Website backend editor iframe to work
-        # (redirecting to /web inside an iframe breaks due to X-Frame-Options).
-        return WebsiteMain().index(**kw)
+        # Internal / admin users:
+        #   - Website editor loads / with ?enable_editor=1 (added by /website/force/1)
+        #     → pass through so the editor iframe shows the site correctly.
+        #   - Direct browser visit (no enable_editor)
+        #     → redirect to the Odoo backend.
+        if 'enable_editor' in request.httprequest.args:
+            return WebsiteMain().index(**kw)
+        return request.redirect(url('/my/home'), local=False)
 
 
 class GRPortalLogin(WebHome):
