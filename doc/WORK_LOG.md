@@ -1,6 +1,6 @@
 # WORK LOG
 Status: active
-Last updated: 2026-04-01 (session 10)
+Last updated: 2026-04-01 (session 10, CT 200 deploy)
 
 ## 2026-03-23 â€” Database recovery
 - Restored the project after dump-format confusion by using the correct PostgreSQL restore method for plain SQL dumps.
@@ -219,6 +219,23 @@ Last updated: 2026-04-01 (session 10)
 - Filestore synced from local odoo_data/filestore/greenremarket to /opt/odoo/data/filestore/greenremarket.
 - Odoo restarted and confirmed active.
 - Remaining go-live blockers: router NAT (80/443 → 192.168.21.200), EBICS bank account BBAN fix, DNS cutover, Proxmox snapshot.
+
+## 2026-04-01 — CT 200 gr_portal deploy + pre-existing gevent issue (session 10, late)
+- `scp -r modules/gr_portal/ odoo-grm:/opt/odoo/grm_repo/modules/` — all files transferred OK (new logo, portal.js, portal_templates.xml, controllers).
+- `--update gr_portal` ran on CT 200 with no template or code errors.
+- Odoo will not restart: `pkg_resources.DistributionNotFound: The 'zope.interface' distribution was not found`.
+- This is a **pre-existing venv issue**, not caused by gr_portal. Odoo was running continuously since session 9 without restart — issue was masked.
+- Debugging steps taken:
+  - Confirmed `import zope.interface` and `import gevent` both work fine
+  - `zope_interface-8.2.dist-info` exists with valid METADATA
+  - Error originates from `gevent 21.12.0` entry_point loading: `plugin.load()` calls `pkg_resources.require(['zope.interface'])` and the working_set can't resolve it
+  - setuptools upgraded 59.6.0 → 82.0.1 (broke pkg_resources entirely) → downgraded to 70.3.0
+  - `pip install zope` run during debug — added full Zope 6.0 ecosystem (side effect, should be cleaned up)
+  - gevent 21.12.0 has no version pin on zope packages (just `Requires-Dist: zope.interface`)
+  - `import gevent` → clean exit 0
+- CT 200 current venv: setuptools=70.3.0, gevent=21.12.0, greenlet=1.1.2, zope.interface=8.2
+- Odoo service is stopped on CT 200. gr_portal code IS deployed. Need to fix venv to restart.
+- Next: try `pip install 'zope.interface==5.5.2' 'zope.event==4.5.0'` or reinstall venv from requirements.txt
 
 ## 2026-04-01 — gr_portal visual refresh from Lovable (session 10)
 - Reviewed Lovable prototype repo `moradigmir/remix-of-green-remarket-portal-refresh` (private).
