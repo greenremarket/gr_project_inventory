@@ -9,6 +9,14 @@ Last verified: 2026-04-01
 
 ## Product and code backlog
 ### Open
+- **CT 200 go-live checklist**:
+  - Router: forward ports 80 + 443 to 192.168.21.200
+  - Real SSL: `certbot --nginx -d <domain>` on odoo-grm once port 80 is forwarded
+  - Init missing GRM modules: `--init=grm_website,grm_documents_project` on CT 200
+  - Fix EBICS bank account: UPDATE res_partner_bank SET acc_number=sanitized_acc_number=00021148802 WHERE id=1 on CT 200
+  - DNS cutover: point domain(s) to CT 200 public IP
+  - Proxmox snapshot after first successful smoke-test (`pct snapshot 200 post-golive`)
+  - Decommission / keep odoo_sartrouville as cold standby
 - **Statement gap 2025-06-21 to 2026-03-04**: CIC EBICS FDL only retains ~30 days of CFONB history (90005 on earlier range). Statements for this 9-month gap must be imported manually from CIC online banking PDF/CSV export. Accounting team to handle.
 - **EBICS catch-up for 2026-03-28 onwards**: Next FDL run needed to pick up the last few days (file ended 2026-03-27). Should be done from the UI now that the account matching is fixed.
 - **EBICS auto-download scheduled action**: Build a custom Odoo Scheduled Action calling `ebics.xfer` FDL + auto-import. Logic: every day, download and process statements for `date = TODAY - 2 days` only (avoids CIC same-day delivery issues and prevents re-consuming already-acknowledged deliveries). Script template: `scripts/ebics_catchup_20260328.py`. Deferred until after deployment.
@@ -20,7 +28,7 @@ Last verified: 2026-04-01
 
 ### Deferred (planned, not started)
 - **grm_website — video background on home/login page**: Replace the current wobbling-pictures layout with a fullscreen video background (video asset already added to static assets). Add a very light translucid green overlay. Scope: `grm_website` templates/CSS only, no Python changes needed. Branch from `main` when ready.
-- **Deployment — odoo_sartrouville probe**: Read-only configuration probe of the `odoo_sartrouville` production/target server before deploying GRM modules. Covers: Odoo version, installed modules, DB schema conflicts, filestore state, system parameters, and any site-specific config that must be carried forward. Connection details TBD from operator.- Cross-machine kickstart and containerization/swarm roadmap is approved as a future initiative:
+- Cross-machine kickstart and containerization/swarm roadmap is approved as a future initiative:
   - machine-agnostic local bootstrap on Windows/Linux via Docker Compose
   - agent directive kickstart flow for deterministic startup in Warp/Windsurf
   - swarm-target architecture with scalable Odoo, PostgreSQL persistent storage, Nginx reverse proxy, and cache service
@@ -31,6 +39,7 @@ Last verified: 2026-04-01
 - `test_date_field.py`: all tests skipped (`@unittest.skip`) â€” placeholder stubs with empty field names from a cherry-pick. Either rewrite against `planned_date_begin` or delete.
 
 ### Confirmed closed
+- odoo_sartrouville deployment probe: completed 2026-04-01. Full probe report in doc/RUNBOOKS/DEPLOYMENT_SARTROUVILLE.md. New deployment target is Proxmox CT 200 (odoo-grm, 192.168.21.200).
 - Créer le lot Aiken depuis le Formulaire de lancement d'opération: implemented and live-validated (2026-04-01). `create_aiken_lot` checkbox on creation form calls `gr.erasure.service.create_lot()` synchronously; non-blocking on Aiken failure (yellow toast + logger.error). ``Créer et aller à la tâche`` navigation button added. Erasure cert misleading error message fixed (UserError now passes through). 36/36 tests passing. Merged to `main` 2026-04-01.
 - P1.8 logo sizing is closed and should not be reopened without a new explicit request.
 - Lot name length limit is implemented and tested (6-character constraint with validation).
@@ -63,6 +72,7 @@ Last verified: 2026-04-01
 - If status is `NON-OPERATIONAL`, stop at environment bootstrap/recovery guidance; do not recommend or begin feature implementation.
 - Then summarize the operating model, validated state, active backlog, recommended next action, and what must not be touched.
 - If a task changes the database or requires rollout-style validation, use the standby workflow from `doc/CURRENT_STATE.md` and `doc/RUNBOOKS/BACKUP_AND_SWAP.md`.
+
 
 
 

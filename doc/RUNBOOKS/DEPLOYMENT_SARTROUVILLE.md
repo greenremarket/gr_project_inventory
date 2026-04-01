@@ -90,3 +90,28 @@ The current /opt/odoo/odoo.conf is missing critical production settings:
 7. Update systemd odoo.service Environment lines with correct MySQL credentials
 8. systemctl daemon-reload + systemctl restart odoo
 9. Smoke-test: login, Formulaire de lancement, EBICS import, erasure cert
+
+---
+
+## 2026-04-01 UPDATE — New deployment target: Proxmox CT 200 (odoo-grm)
+The in-place upgrade plan for odoo_sartrouville was superseded. A clean parallel deployment was done instead on a Proxmox LXC container.
+
+### What was deployed
+- Container 200 on Proxmox vms1 (192.168.21.20), hostname odoo-grm, IP 192.168.21.200
+- Ubuntu 22.04, Odoo 17 Enterprise, PostgreSQL 16, nginx + HTTPS (self-signed, certbot ready)
+- All GRM modules on path, gr_project_inventory upgraded, Aiken credentials correct in systemd unit
+- DB restored from local savepoint (UTF-8, fr_FR.UTF-8 locale)
+
+### Remaining go-live steps (in order)
+1. Router 192.168.21.254: forward ports 80 + 443 ? 192.168.21.200
+2. `ssh odoo-grm "certbot --nginx -d <domain>"` — replace self-signed cert
+3. `ssh odoo-grm "sudo -u odoo /opt/odoo/venv/bin/python3 /opt/odoo/addons_src/odoo-bin -c /opt/odoo/odoo.conf --init=grm_website,grm_documents_project --stop-after-init --log-level=warn"`
+4. Fix EBICS bank account on CT 200: `psql -h localhost -U odoo -d greenremarket -c "UPDATE res_partner_bank SET acc_number='00021148802', sanitized_acc_number='00021148802' WHERE id=1;"`
+5. Smoke-test: login, Formulaire de lancement, Créer le lot Aiken, EBICS import, erasure cert
+6. `ssh root@192.168.21.20 "pct snapshot 200 post-golive"` — Proxmox snapshot
+7. DNS cutover: point domain(s) to public IP ? CT 200 (via router NAT)
+8. Monitor for 24h. Keep odoo_sartrouville running as cold standby.
+
+### Rollback
+- DNS back to odoo_sartrouville (immediate), OR
+- `ssh root@192.168.21.20 "pct rollback 200 post-golive"` (Proxmox snapshot restore)

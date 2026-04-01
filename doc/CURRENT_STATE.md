@@ -1,6 +1,6 @@
 # CURRENT STATE
 Status: active
-Last verified: 2026-04-01 (session 8, feature complete)
+Last verified: 2026-04-01 (session 8, deployment)
 
 ## Repository and branch
 - Repository: `greenremarket/gr_project_inventory`
@@ -8,6 +8,28 @@ Last verified: 2026-04-01 (session 8, feature complete)
 - New feature work: branch from `main`, name after the task, merge back when done
 - Canonical operational docs are Git-tracked in `doc/`.
 
+## Deployment — Proxmox CT 200 (odoo-grm)
+- New Odoo 17 Enterprise container created 2026-04-01 on Proxmox host vms1 (192.168.21.20).
+- Container ID: 200, hostname: odoo-grm, IP: 192.168.21.200/24, gw: 192.168.21.254
+- Proxmox SSH: `ssh root@192.168.21.20` (passwordless via migmi key)
+- Container SSH: `ssh odoo-grm` (passwordless via migmi key, see `~/.ssh/config`)
+- OS: Ubuntu 22.04 LTS, PostgreSQL 16, Python 3.10, Odoo venv at `/opt/odoo/venv`
+- Odoo source: `/opt/odoo/addons_src` (community), `/opt/odoo/enterprise`, `/opt/odoo/grm_repo` (GRM modules)
+- OCA/EBICS addons: `/opt/odoo/extra_addons`
+- Config: `/opt/odoo/odoo.conf` — db_name=greenremarket, proxy_mode=True, workers=4
+- Service: `systemctl status odoo` — enabled, starts on boot
+- MySQL env: correct Aiken credentials (`manager`/`gren2803awb`/`192.168.21.206`) in systemd unit
+- nginx: HTTPS with self-signed cert — replace with real Let's Encrypt once port 80/443 is forwarded from router
+- Database: `greenremarket` restored from local savepoint, UTF-8 encoding (fr_FR.UTF-8 locale)
+- Filestore: `/opt/odoo/data/filestore/greenremarket` (copied from local)
+- Pending before go-live:
+  - Router port forward 80/443 ? 192.168.21.200
+  - `certbot --nginx -d sartrouville.greenremarket.fr` (or the target domain) for real SSL
+  - Install grm_website + grm_documents_project (`--init`)
+  - Fix EBICS bank account id=1: BBAN 00021148802 (currently IBAN)
+  - DNS cutover from odoo_sartrouville to odoo-grm
+  - Take Proxmox snapshot after smoke-test passes
+- Rollback: Proxmox snapshot or just point DNS back to odoo_sartrouville
 ## Current operating model
 - Primary workflow is active/standby rotation for both database and filestore.
 - Active DB: `greenremarket` (production snapshot 2026-03-31, gr modules installed)
@@ -105,6 +127,7 @@ Last verified: 2026-04-01 (session 8, feature complete)
   - `--test-enable --test-tags="logo" --stop-after-init`
 - Full module suite:
   - `--test-tags="/gr_project_inventory"`
+
 
 
 

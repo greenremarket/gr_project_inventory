@@ -192,3 +192,19 @@ Last updated: 2026-04-01
 - Erasure cert error message fixed: `UserError` from `fetch_for_lot` now passes through; only unexpected errors show generic "Could not connect" message.
 - Live-validated: lot MOR601 created in Aiken, navigation works, correct error on cert with no erasures.
 - 36/36 tests passing. Branch feat/aiken-lot-creation merged to main.
+
+## 2026-04-01 — CT 200 deployment on Proxmox (session 8, deployment)
+- Proxmox host vms1 (192.168.21.20) probed: 32 cores, 62 GB RAM, 5.3 TB LVM thin pool, Ubuntu 24.04 on host.
+- SSH key (ed25519) generated on Windows and deployed to Proxmox host and CT 200. `odoo-grm` added to ~/.ssh/config.
+- CT 200 created: Ubuntu 22.04, 4 cores, 4 GB RAM, 60 GB disk, IP 192.168.21.200, hostname odoo-grm.
+- Full Odoo 17 Enterprise stack installed: PostgreSQL 16, Python 3.10 venv, wkhtmltopdf 0.12.6, nginx, gevent, psycopg2, all Odoo/GRM requirements.
+- Community source cloned to /opt/odoo/addons_src. Enterprise (462 MB) transferred via scp. OCA/EBICS modules cloned.
+- GRM modules cloned from GitHub: gr_project_inventory, grm_website, grm_documents_project at /opt/odoo/grm_repo/modules.
+- Database restored: plain SQL dump streamed from local PG17 to CT 200 PG16. Encoding bug fixed (SQL_ASCII → UTF-8): locale-gen fr_FR.UTF-8, recreated DB, re-imported.
+- Filestore copied from local odoo_data/filestore/greenremarket to CT 200 /opt/odoo/data/filestore/.
+- Module upgrade (gr_project_inventory) applied on CT 200 to pick up create_aiken_lot and all recent changes.
+- Systemd service: /etc/systemd/system/odoo.service, enabled, auto-restarts. Correct Aiken MySQL credentials in Environment.
+- nginx HTTPS: self-signed cert (real Let's Encrypt pending router port-forward). HTTP redirects to HTTPS. Longpolling + WebSocket config.
+- odoo.conf: proxy_mode=True, workers=4, db_name=greenremarket, dbfilter=^greenremarket$, list_db=False.
+- Odoo responds HTTP/HTTPS 200. Accents rendering correctly after UTF-8 fix.
+- Pending before go-live: router NAT, certbot real cert, --init grm_website+grm_documents_project, EBICS bank account BBAN fix, DNS cutover, Proxmox snapshot.
