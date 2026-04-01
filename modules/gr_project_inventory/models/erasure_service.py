@@ -67,8 +67,9 @@ class ErasureService(models.AbstractModel):
         LEFT JOIN Units_Devices d8 ON d8.UnitID = u.UnitID AND d8.Category = 'VIDEOCARD' AND d8.Refurbished = 0
 
         WHERE l.Number = %s
-        GROUP BY u.UnitID, l.Number, u.AssetTag, u.Created, u.ProductType, u.Model, u.Chassis, 
-                 u.PartNumber, u.SerialNumber, d1.Size, d1.Info1, d1.Info2, d2.Model, d2.Speed, d2.Info1,
+        GROUP BY u.UnitID, l.Number, u.AssetTag, u.Created, u.ProductType, u.Manufacturer,
+                 u.Model, u.Chassis, u.PartNumber, u.SerialNumber,
+                 d1.Size, d1.Info1, d1.Info2, d2.Model, d2.Speed, d2.Info1,
                  d4.Size, d4.Info1, d4.Model, d4.Serial, d5.Model, d6.Model, d7.Model, d8.Model,
                  u.OSRestored, u.ObservCodes, u.ObservNotes, u.Grade
         ORDER BY u.UnitID
@@ -161,15 +162,25 @@ class ErasureService(models.AbstractModel):
                 except Exception as close_err:
                     _logger.error("Error closing MySQL connection: %s", str(close_err))
 
-        # Always return a list, even if empty
+        if not raw_rows:
+            raise UserError(_("Lot %s exists in Workbench but has no units — the audit query returned no rows.") % lot_no)
+
         result = []
         for row in raw_rows:
             try:
+                # Safely format Created: PyMySQL normally returns datetime objects,
+                # but guard against strings or other types just in case.
+                created_val = row.get('Created')
+                if hasattr(created_val, 'strftime'):
+                    created_str = created_val.strftime('%Y-%m-%d %H:%M:%S')
+                else:
+                    created_str = str(created_val) if created_val else ''
+
                 result.append({
                     'unitid': row.get('UnitID'),
                     'lotid': row.get('LotID'),
                     'assettag': row.get('AssetTag'),
-                    'created': row.get('Created').strftime('%Y-%m-%d %H:%M:%S') if row.get('Created') else '',
+                    'created': created_str,
                     'producttype': row.get('ProductType'),
                     'manufacturer': row.get('Manufacturer'),
                     'model': row.get('Model'),
@@ -196,8 +207,15 @@ class ErasureService(models.AbstractModel):
                     'grade': row.get('Grade')
                 })
             except Exception as row_err:
-                _logger.error("Error parsing audit row: %s", str(row_err), exc_info=True)
+                _logger.error("Error parsing audit row: %s | row keys: %s", str(row_err), list(row.keys()), exc_info=True)
                 continue
+
+        if not result and raw_rows:
+            raise UserError(_(
+                "Lot %s returned %d rows from Workbench but all failed to parse. "
+                "Check the Odoo server log for 'Error parsing audit row' entries."
+            ) % (lot_no, len(raw_rows)))
+
         return result
 
 
