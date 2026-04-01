@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!--
+        Green Remarket — Portal Home Enhancement (Odoo 17)
+
+        IMPORTANT: grm_website overrides the /my and /my/home routes and renders
+        grm_website.portal_my_home_custom directly.  Odoo's portal.portal_my_home
+        is therefore never called, so we must inherit grm_website.portal_my_home_custom
+        instead.
+
+        This template adds a branded welcome banner above the existing portal content.
+        It does NOT replace grm_website's existing portal sections (orders, tasks, invoices)
+        which rely on data provided by grm_website's PortalHomeCustom controller.
+
+        Fixes applied vs Lovable source (2026-04-01):
+          - Correct inherit_id: grm_website.portal_my_home_custom (not portal.portal_my_home)
+          - Tailwind CSS classes replaced with Bootstrap 5 equivalents
+          - FA5/FA6 icons replaced with FA4-compatible icons
+          - dashboard_metrics t-foreach removed (no controller provides this variable)
+          - portal_my_home_community removed (broken XPath, duplicate inheritance)
+          - portal_my_orders removed (requires sale module not in depends)
+    -->
+
+    <template id="gr_portal_my_home"
+              inherit_id="grm_website.portal_my_home_custom"
+              name="GR Portal Home Banner"
+              priority="20">
+
+        <!--
+            Insert the branded welcome banner BEFORE the .my_account container.
+            grm_website.portal_my_home_custom structure:
+              <t t-call="website.layout">
+                <div class="container my_account pt16"> ← we insert before this
+                  ...existing portal content...
+                </div>
+              </t>
+        -->
+        <xpath expr="//div[hasclass('my_account')]" position="before">
+
+            <!-- Welcome banner — light green tint, GR logo + user name -->
+            <div class="o_portal_hero_banner">
+                <div class="container">
+                    <div class="d-flex align-items-center gap-3">
+                        <img src="/gr_portal/static/src/img/GR-Logo-2026-RVB.png"
+                             alt="Green Remarket"
+                             style="height: 2rem; width: auto;"/>
+                        <div>
+                            <p class="fw-semibold mb-0 fs-6">
+                                Bienvenue, <t t-esc="user.name"/>
+                            </p>
+                            <p class="small text-muted mb-0">
+                                <t t-esc="user.company_id.name"/>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </xpath>
+    </template>
+
+</odoo>
