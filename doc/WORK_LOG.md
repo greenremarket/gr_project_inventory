@@ -1,4 +1,4 @@
-﻿# WORK LOG
+# WORK LOG
 Status: active
 Last updated: 2026-04-01
 
@@ -208,3 +208,37 @@ Last updated: 2026-04-01
 - odoo.conf: proxy_mode=True, workers=4, db_name=greenremarket, dbfilter=^greenremarket$, list_db=False.
 - Odoo responds HTTP/HTTPS 200. Accents rendering correctly after UTF-8 fix.
 - Pending before go-live: router NAT, certbot real cert, --init grm_website+grm_documents_project, EBICS bank account BBAN fix, DNS cutover, Proxmox snapshot.
+
+## 2026-04-01 — CT 200 deployment fixes (session 9)
+- Charset bug root cause: previous deployment used SSH pipe (pg_dump | ssh psql) which mangled UTF-8 bytes in transit. Local data was always clean.
+- Fix: pg_dump -Fc on local PG17 → scp dump to server → pg_restore natively on server. No pipe, no encoding loss.
+- PostgreSQL 16 removed from CT 200; PostgreSQL 17 installed and configured on port 5432. pg_restore version now matches dump format (1.16).
+- DB re-restored cleanly: octet_length != char_length confirmed for accented chars (e.g. données: octet=30, char=29).
+- All 4 GRM modules redeployed via scp: gr_project_inventory, grm_website, grm_documents_project, gr_portal (new module added from feature/portal-login-revamp).
+- Let's Encrypt cert obtained via DNS challenge for sartrouville.greenremarket.fr + go.greenremarket.fr (valid 2026-06-30). nginx updated to use real cert.
+- Filestore synced from local odoo_data/filestore/greenremarket to /opt/odoo/data/filestore/greenremarket.
+- Odoo restarted and confirmed active.
+- Remaining go-live blockers: router NAT (80/443 → 192.168.21.200), EBICS bank account BBAN fix, DNS cutover, Proxmox snapshot.
+
+## 2026-04-01 -- Savepoint 6, portal login revamp, report + Aiken fixes (session 8)
+- New module `gr_portal` added on branch `feature/portal-login-revamp`:
+  video-background login page with hero section, image collage, pill-form inputs,
+  page loader. Inherits `grm_website.template_login_inherit` (priority 100).
+  Installed on `greenremarket`.
+- Report logo fixes committed: logo added to audit_report_xlsx, x/y_scale corrected
+  from 1.0 to 0.091 in discrepancy and internal inventory reports.
+- `ir_config_parameter.xml`: Aiken Workbench defaults (host/port/user) now set on
+  module install instead of being left blank.
+- `fetch_audit_for_lot` bug fixed: `Created.strftime()` crash when MySQL returns
+  non-datetime type silently skipped all rows, producing empty result. Fixed with
+  `hasattr(val, 'strftime')` guard. `u.Manufacturer` added to GROUP BY (was
+  missing, would fail MySQL strict mode).
+- `fetch_for_lot` and `fetch_audit_for_lot`: improved empty-lot error messages.
+  Both now distinguish `lot not found` from `lot exists but has no units`, with
+  French user-facing messages.
+- Savepoint 6 created: `dumps/savepoint_6_portal_login_aiken_fixes_20260401.dump`
+  (13.7 MB). `greenremarket_backup` restored from savepoint 6. Filestore synced
+  (2299 files each). Old backup filestore archived as
+  `odoo_data/filestore/greenremarket_backup_pre_sp6`.
+- DB safety rule clarified in `doc/CURRENT_STATE.md`: never run --init/--update
+  on `greenremarket_backup`; it is the clean fallback only.
