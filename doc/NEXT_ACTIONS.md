@@ -23,6 +23,7 @@ Last verified: 2026-04-01
 - **Statement gap 2025-06-21 to 2026-03-04**: CIC EBICS FDL only retains ~30 days of CFONB history (90005 on earlier range). Statements for this 9-month gap must be imported manually from CIC online banking PDF/CSV export. Accounting team to handle.
 - **EBICS catch-up for 2026-03-28 onwards**: Next FDL run needed to pick up the last few days (file ended 2026-03-27). Should be done from the UI now that the account matching is fixed.
 - **EBICS auto-download scheduled action**: Build a custom Odoo Scheduled Action calling `ebics.xfer` FDL + auto-import. Logic: every day, download and process statements for `date = TODAY - 2 days` only (avoids CIC same-day delivery issues and prevents re-consuming already-acknowledged deliveries). Script template: `scripts/ebics_catchup_20260328.py`. Deferred until after deployment.
+- **Tag PD3E automatique sur les opérations créées via le formulaire**: Les opérations créées via le Formulaire de lancement d'opération doivent automatiquement recevoir le tag PD3E si ce n'est pas déjà le cas. Sans ce tag, l'opération n'apparaît pas sur le portail client (le filtre du portail home utilise PD3E pour identifier les opérations visibles). Fix: dans `gr_project_inventory`, surcharger `create()` ou ajouter le tag dans le contexte du formulaire.
 - **Warning pile (non-critical, clean up when time allows)**:
   - `pkg_resources` deprecated API from `fintech`
   - `active_id`/`active_ids`/`active_model` in ir_ui_view expressions deprecated in Odoo 17
