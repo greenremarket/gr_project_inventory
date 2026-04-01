@@ -9,12 +9,9 @@ Last verified: 2026-04-01
 
 ## Product and code backlog
 ### Open
-- **Deploy gr_portal refresh to CT 200**: Branch merged to `main`. Still needed:
-  1. `--update gr_portal` on `greenremarket` (local)
-  2. Sync standby: `--update gr_portal` on `greenremarket_backup`
-  3. `scp -r modules/gr_portal/ odoo-grm:/opt/odoo/grm_repo/modules/`
-  4. On CT 200: `--update gr_portal --stop-after-init`
-  5. No savepoint needed (no schema changes)
+- **Deploy gr_portal refresh to CT 200**: Local updated + standby synced (savepoint 7). Still needed:
+  1. `scp -r modules/gr_portal/ odoo-grm:/opt/odoo/grm_repo/modules/`
+  2. On CT 200: `--update gr_portal --stop-after-init`
 - **CT 200 go-live checklist**:
   - DONE: Let's Encrypt SSL obtained (DNS challenge, sartrouville + go.greenremarket.fr, valid 2026-06-30)
   - DONE: All GRM modules deployed including new gr_portal

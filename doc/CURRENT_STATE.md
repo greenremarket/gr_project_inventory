@@ -32,12 +32,12 @@ Last verified: 2026-04-01 (session 9, deployment fixes)
 - Rollback: Proxmox snapshot or just point DNS back to odoo_sartrouville
 ## Current operating model
 - Primary workflow is active/standby rotation for both database and filestore.
-- Active DB: `greenremarket` (production snapshot 2026-03-31, gr modules installed)
-- Standby DB: `greenremarket_backup` (mirror of active as of 2026-04-01, savepoint 6, ready to use)
-- Archived previous standby DB: `greenremarket_backup_20260401`
-- Active filestore: `odoo_data/filestore/greenremarket`
-- Standby filestore: `odoo_data/filestore/greenremarket_backup`
-- Archived standby filestores: `odoo_data/filestore/greenremarket_backup_20260401` (savepoint 6), `odoo_data/filestore/greenremarket_backup_pre_sp5`
+- Active DB: `greenremarket` (gr_portal 17.0.1.1.0 installed, savepoint 7)
+- Standby DB: `greenremarket_backup` (mirror of active as of 2026-04-01, savepoint 7)
+- Archived standby DBs: `greenremarket_backup_20260401`, `greenremarket_backup_pre_sp7`
+- Active filestore: `odoo_data/filestore/greenremarket` (2305 files)
+- Standby filestore: `odoo_data/filestore/greenremarket_backup` (2305 files)
+- Archived standby filestores: `odoo_data/filestore/greenremarket_backup_20260401`, `odoo_data/filestore/greenremarket_backup_pre_sp7`, `odoo_data/filestore/greenremarket_backup_pre_sp5`
 - Prior partial setup filestore archived at: `odoo_data/filestore/greenremarket_prior_march30`
 - The old `greenremarket_test`-first workflow is historical, not current.
 - Feature intake workflow now enforces a mandatory gate: research/probing, written plan, explicit developer approval, then implementation.
