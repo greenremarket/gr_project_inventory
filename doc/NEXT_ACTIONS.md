@@ -9,7 +9,7 @@ Last verified: 2026-03-31
 
 ## Product and code backlog
 ### Open
-- **EBICS bank account â€” needs IBAN confirmation**: Bank account is currently stored as raw BBAN `00021148802`. Once the correct full IBAN is obtained from CIC/CM online banking, update `res_partner_bank` id=1 and id=1 on `greenremarket_backup` (both `acc_number` and `sanitized_acc_number`). Account `00021148806` may need a second journal if it belongs to the company.
+- **NEW — Créer le lot Aiken depuis le Formulaire de lancement d'opération**: When an operator uses the launch form, a `lot_name` is generated. Add a checkbox `Créer le lot Aiken` to the form; when checked, the task's `create()` calls a new method on `gr.erasure.service` that INSERTs into `awbc_db.Lots` (synchronous, LAN). `LotID` is `MAX(LotID)+1` inside a MySQL transaction. `Params` is 352 bytes of ASCII '0'. Full plan in Warp: "Créer le lot Aiken depuis le Formulaire de lancement d'opération". Branch from `main` before starting.- **EBICS bank account â€” needs IBAN confirmation**: Bank account is currently stored as raw BBAN `00021148802`. Once the correct full IBAN is obtained from CIC/CM online banking, update `res_partner_bank` id=1 and id=1 on `greenremarket_backup` (both `acc_number` and `sanitized_acc_number`). Account `00021148806` may need a second journal if it belongs to the company.
 - **Statement gap 2025-06-21 to 2026-03-04**: CIC EBICS FDL only retains ~30 days of CFONB history (90005 on earlier range). Statements for this 9-month gap must be imported manually from CIC online banking PDF/CSV export. Accounting team to handle.
 - **EBICS catch-up for 2026-03-28 onwards**: Next FDL run needed to pick up the last few days (file ended 2026-03-27). Should be done from the UI now that the account matching is fixed.
 - **EBICS auto-download scheduled action**: Build a custom Odoo Scheduled Action calling `ebics.xfer` FDL + auto-import daily. Replaces manual imports for accounting team.
@@ -62,4 +62,5 @@ Last verified: 2026-03-31
 - If status is `NON-OPERATIONAL`, stop at environment bootstrap/recovery guidance; do not recommend or begin feature implementation.
 - Then summarize the operating model, validated state, active backlog, recommended next action, and what must not be touched.
 - If a task changes the database or requires rollout-style validation, use the standby workflow from `doc/CURRENT_STATE.md` and `doc/RUNBOOKS/BACKUP_AND_SWAP.md`.
+
 

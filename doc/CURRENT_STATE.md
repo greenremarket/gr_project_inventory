@@ -1,6 +1,6 @@
 # CURRENT STATE
 Status: active
-Last verified: 2026-04-01 (session 7)
+Last verified: 2026-04-01 (session 8)
 
 ## Repository and branch
 - Repository: `greenremarket/gr_project_inventory`
@@ -11,9 +11,11 @@ Last verified: 2026-04-01 (session 7)
 ## Current operating model
 - Primary workflow is active/standby rotation for both database and filestore.
 - Active DB: `greenremarket` (production snapshot 2026-03-31, gr modules installed)
-- Standby DB: `greenremarket_backup` (mirror of active as of 2026-03-31, ready to use)
+- Standby DB: `greenremarket_backup` (mirror of active as of 2026-04-01, savepoint 6, ready to use)
+- Archived previous standby DB: `greenremarket_backup_20260401`
 - Active filestore: `odoo_data/filestore/greenremarket`
 - Standby filestore: `odoo_data/filestore/greenremarket_backup`
+- Archived standby filestores: `odoo_data/filestore/greenremarket_backup_20260401` (savepoint 6), `odoo_data/filestore/greenremarket_backup_pre_sp5`
 - Prior partial setup filestore archived at: `odoo_data/filestore/greenremarket_prior_march30`
 - The old `greenremarket_test`-first workflow is historical, not current.
 - Feature intake workflow now enforces a mandatory gate: research/probing, written plan, explicit developer approval, then implementation.
@@ -101,3 +103,6 @@ Last verified: 2026-04-01 (session 7)
   - `--test-enable --test-tags="logo" --stop-after-init`
 - Full module suite:
   - `--test-tags="/gr_project_inventory"`
+
+
+
