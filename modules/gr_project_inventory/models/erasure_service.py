@@ -216,9 +216,9 @@ class ErasureService(models.AbstractModel):
 
         # If any are missing, fall back to Odoo config parameters
         ICP = self.env['ir.config_parameter'].sudo()
-        host = host or ICP.get_param('gr.workbench_host', 'workbench.lan')
+        host = host or ICP.get_param('gr.workbench_host', '192.168.21.206')
         port = int(port or ICP.get_param('gr.workbench_port', 3306))
-        user = user or ICP.get_param('gr.workbench_user', 'odoo')
+        user = user or ICP.get_param('gr.workbench_user', 'awbadmin')
         password = password or ICP.get_param('gr.workbench_pwd', '')
         database = database or ICP.get_param('gr.workbench_db', 'awbc_db')
 
@@ -231,6 +231,71 @@ class ErasureService(models.AbstractModel):
             charset='utf8mb4',
             cursorclass=pymysql.cursors.DictCursor,
         )
+
+    @api.model
+    def create_lot(self, lot_name, customer):
+        """
+        Creates a new lot in the Aiken Workbench MySQL database.
+
+        :param lot_name: The lot number / name string (maps to Lots.Number).
+        :param customer: The customer label (maps to Lots.Customer).
+        :raises Exception: On connection failure, duplicate lot, or any MySQL error.
+                           The caller is responsible for deciding whether to surface
+                           this as a blocking error or a non-blocking notification.
+        """
+        _PARAMS_SIZE = 352  # observed fixed size in production rows
+        _PARAMS_BLOB = b'0' * _PARAMS_SIZE
+
+        conn = None
+        try:
+            conn = pymysql.connect(**self._dsn())
+            conn.autocommit = False
+            with conn.cursor() as cur:
+                # 1. Fail fast if the lot already exists
+                cur.execute(
+                    "SELECT 1 FROM Lots WHERE Number = %s LIMIT 1",
+                    (lot_name,),
+                )
+                if cur.fetchone() is not None:
+                    raise ValueError(
+                        "Lot '%s' already exists in Aiken Workbench." % lot_name
+                    )
+
+                # 2. Allocate next LotID (no AUTO_INCREMENT on this table)
+                cur.execute("SELECT COALESCE(MAX(LotID), 0) + 1 AS next_id FROM Lots")
+                row = cur.fetchone()
+                next_id = row['next_id']
+
+                # 3. Insert the new lot row
+                cur.execute(
+                    """
+                    INSERT INTO Lots
+                        (LotID, Number, Owner, Customer, Description,
+                         Status, Params, Created, Uploaded)
+                    VALUES
+                        (%s, %s, 'AIKEN', %s, 'AUDIT EFFACEMENT',
+                         0, %s, NOW(), NULL)
+                    """,
+                    (next_id, lot_name, customer or '', _PARAMS_BLOB),
+                )
+            conn.commit()
+            _logger.info(
+                '[aiken] create_lot: inserted Lots row LotID=%s Number=%s Customer=%s',
+                next_id, lot_name, customer,
+            )
+        except Exception:
+            if conn:
+                try:
+                    conn.rollback()
+                except Exception as rb_err:
+                    _logger.error('[aiken] create_lot: rollback failed: %s', rb_err)
+            raise
+        finally:
+            if conn:
+                try:
+                    conn.close()
+                except Exception as cl_err:
+                    _logger.error('[aiken] create_lot: close failed: %s', cl_err)
 
     def fetch_for_lot(self, lot_no):
         """
