@@ -121,7 +121,10 @@ class DiscrepancyReportXLSX(models.AbstractModel):
             # may be empty if filestore not restored). Fall back to logo if logo_web
             # is absent. Scale 1.0: logo_web is already sized at 180px.
             company = self.env.company
-            logo_source = company.logo_web or company.logo
+            # logo = partner_id.image_1920 (filestore, always current when data-dir is set)
+            # logo_web = 180px cached version stored in DB (may be stale from old dump)
+            # Always prefer logo (user's latest upload) over the potentially stale logo_web.
+            logo_source = company.logo or company.logo_web
             if logo_source:
                 image_data = io.BytesIO(base64.b64decode(logo_source))
                 sheet.insert_image('A1', 'logo.png', {
