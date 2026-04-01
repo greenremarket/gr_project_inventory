@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!--
+        Green Remarket — Login Page Override (Odoo 17)
+
+        Inheritance chain:
+          website.login_layout (core)
+            └─ grm_website.template_login_inherit  (priority 99, CSS grid)
+               └─ gr_portal.gr_login_layout        (priority 100, video + hero)
+
+          web.login (core form)
+            └─ grm_website.template_login_eye      (priority 99, password eye)
+               └─ gr_portal.gr_login_form          (priority 100, pill inputs)
+
+        NOTE: The XPath replaces the <section class="login-section"> that
+        grm_website injected.  We do NOT re-wrap in <t t-call="website.layout">
+        because grm_website's template already provides that outer wrapper.
+    -->
+
+    <!-- ─── 1. Layout override ─── -->
+    <template id="gr_login_layout"
+              inherit_id="grm_website.template_login_inherit"
+              name="GR Login Layout"
+              priority="100">
+
+        <xpath expr="//section[hasclass('login-section')]" position="replace">
+
+            <!-- Page loader — JS hides it once video fires canplaythrough -->
+            <div class="o_login_loader" id="gr_login_loader">
+                <div class="o_login_loader_inner">
+                    <div class="o_login_loader_icon">
+                        <i class="fa fa-leaf"/>
+                    </div>
+                    <div class="o_login_loader_spinner">
+                        <i class="fa fa-spinner fa-spin"/>
+                    </div>
+                    <span class="o_login_loader_text">Green Remarket</span>
+                </div>
+            </div>
+
+            <!-- Background video -->
+            <video autoplay="" muted="" loop="" playsinline=""
+                   class="o_login_video_bg" id="gr_login_video">
+                <source src="/gr_portal/static/src/video/greenremarket2.mp4"
+                        type="video/mp4"/>
+            </video>
+
+            <!-- Dark overlay for text contrast -->
+            <div class="o_login_overlay"/>
+
+            <section class="o_login_page login-section" data-vcss="001">
+                <div class="container">
+                    <div class="row align-items-center" style="min-height: 80vh;">
+
+                        <!-- Left column: hero then login form -->
+                        <div class="col-lg-5 o_login_left">
+
+                            <!-- Hero — visible by default -->
+                            <div class="o_login_hero" id="gr_login_hero">
+                                <div class="o_login_hero_logo">
+                                    <div class="o_login_hero_logo_icon">
+                                        <i class="fa fa-leaf"/>
+                                    </div>
+                                    <span class="o_login_hero_logo_text">GR.</span>
+                                </div>
+                                <p class="o_login_hero_subtitle">La reprise écologique</p>
+                                <h1 class="o_login_hero_title">
+                                    Green <span class="text-o-color-1">Remarket.</span>
+                                </h1>
+                                <div class="o_login_hero_cta">
+                                    <a href="#" class="o_login_cta btn btn-primary"
+                                       data-action="show-login">
+                                        Commencer maintenant
+                                        <i class="fa fa-arrow-right ms-2"/>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Login form — hidden by default, JS shows it -->
+                            <div class="oe_website_login_container" t-out="0"
+                                 style="display:none;"/>
+
+                            <!-- Back link — hidden by default -->
+                            <a href="#" class="o_login_back" data-action="show-hero"
+                               style="display:none;">
+                                <i class="fa fa-arrow-left me-1"/>
+                                Retour
+                            </a>
+
+                        </div>
+
+                        <!-- Right column: image collage (desktop only) -->
+                        <div class="col-lg-7 o_login_collage d-none d-lg-flex">
+                            <div class="o_login_collage_inner">
+                                <div class="o_login_collage_img o_login_collage_img_1">
+                                    <img src="/grm_website/static/src/img/login-1.png"
+                                         alt="Nature" loading="lazy"/>
+                                </div>
+                                <div class="o_login_collage_img o_login_collage_img_2">
+                                    <img src="/grm_website/static/src/img/login-2.png"
+                                         alt="Sustainability" loading="lazy"/>
+                                </div>
+                                <div class="o_login_collage_img o_login_collage_img_3">
+                                    <img src="/grm_website/static/src/img/login-3.png"
+                                         alt="Technology" loading="lazy"/>
+                                </div>
+                                <div class="o_login_brand_pill">
+                                    <i class="fa fa-leaf"/>
+                                </div>
+                                <div class="o_login_brand_badge">
+                                    <div class="o_login_brand_badge_icon">
+                                        <i class="fa fa-leaf"/>
+                                    </div>
+                                    <span>Green Remarket</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+        </xpath>
+    </template>
+
+    <!-- ─── 2. Form style override ─── -->
+    <!-- Adds pill-shaped inputs, forgot-password link, and styled submit button -->
+    <template id="gr_login_form"
+              inherit_id="grm_website.template_login_eye"
+              name="GR Login Form"
+              priority="100">
+
+        <!-- Pill-shaped email input with French placeholder -->
+        <xpath expr="//input[@name='login']" position="attributes">
+            <attribute name="class">form-control o_login_input</attribute>
+            <attribute name="placeholder">vous@exemple.com</attribute>
+        </xpath>
+
+        <!-- "Forgot password?" link after the password input group -->
+        <xpath expr="//div[hasclass('custom-passoword')]" position="after">
+            <div class="text-end mt-1">
+                <a href="/web/reset_password" class="o_login_forgot">
+                    Mot de passe oublié ?
+                </a>
+            </div>
+        </xpath>
+
+        <!-- Pill-shaped submit button -->
+        <xpath expr="//button[@type='submit']" position="attributes">
+            <attribute name="class">btn btn-primary o_login_submit w-100</attribute>
+        </xpath>
+
+    </template>
+
+</odoo>
