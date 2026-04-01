@@ -9,6 +9,12 @@ Last verified: 2026-04-01
 
 ## Product and code backlog
 ### Open
+- **Merge `feat/gr-portal-login-cleanup` → `main`**: gr_portal Lovable refresh is complete on branch. Steps:
+  1. Smoke-test login page and portal home visually on local `greenremarket` DB
+  2. `git checkout main && git merge feat/gr-portal-login-cleanup`
+  3. `--update gr_portal` on `greenremarket`, then sync to `greenremarket_backup`
+  4. Deploy to CT 200 via `scp modules/gr_portal/ odoo-grm:/opt/odoo/grm_repo/modules/` + `--update gr_portal`
+  5. No savepoint needed (CSS/template-only change, no schema changes)
 - **CT 200 go-live checklist**:
   - DONE: Let's Encrypt SSL obtained (DNS challenge, sartrouville + go.greenremarket.fr, valid 2026-06-30)
   - DONE: All GRM modules deployed including new gr_portal
@@ -28,7 +34,6 @@ Last verified: 2026-04-01
   - `@route()` decorator warnings in `grm_website`
 
 ### Deferred (planned, not started)
-- **grm_website � video background on home/login page**: Replace the current wobbling-pictures layout with a fullscreen video background (video asset already added to static assets). Add a very light translucid green overlay. Scope: `grm_website` templates/CSS only, no Python changes needed. Branch from `main` when ready.
 - Cross-machine kickstart and containerization/swarm roadmap is approved as a future initiative:
   - machine-agnostic local bootstrap on Windows/Linux via Docker Compose
   - agent directive kickstart flow for deterministic startup in Warp/Windsurf

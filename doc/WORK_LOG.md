@@ -1,6 +1,6 @@
 # WORK LOG
 Status: active
-Last updated: 2026-04-01
+Last updated: 2026-04-01 (session 10)
 
 ## 2026-03-23 â€” Database recovery
 - Restored the project after dump-format confusion by using the correct PostgreSQL restore method for plain SQL dumps.
@@ -219,6 +219,26 @@ Last updated: 2026-04-01
 - Filestore synced from local odoo_data/filestore/greenremarket to /opt/odoo/data/filestore/greenremarket.
 - Odoo restarted and confirmed active.
 - Remaining go-live blockers: router NAT (80/443 → 192.168.21.200), EBICS bank account BBAN fix, DNS cutover, Proxmox snapshot.
+
+## 2026-04-01 — gr_portal visual refresh from Lovable (session 10)
+- Reviewed Lovable prototype repo `moradigmir/remix-of-green-remarket-portal-refresh` (private).
+- Identified and applied visual changes: GR logo in loader + hero, collage right column removed,
+  layout centered (col-lg-6 col-xl-5), `fa-chevron-right` CTA icon (avoids `grm_website` SVG override).
+- Full `portal.css` rewrite: glassmorphism form card, fixed video to `position:fixed`,
+  defensive CSS-grid bleed suppression, `!important` overrides for grm_website link bleed-in
+  (font-weight, text-decoration), submit button `min-width:0` reset, `bg-greenrm` utility class.
+- `login.js` replaced: jQuery fadeIn/fadeOut transitions, `readyState >= 4` loader check, proper `destroy()`.
+- New `portal.js` (Odoo 17 `@odoo-module`): staggered fade-in on portal tile cards.
+- New `portal_templates.xml`: welcome banner injected before `grm_website.portal_my_home_custom`
+  (NOT `portal.portal_my_home` — grm_website overrides the /my route directly).
+- `__manifest__.py`: version 17.0.1.1.0, added `portal` dep, `portal_templates.xml`, `portal.js`.
+- `GR-Logo-2026-RVB.png` (55 KB) downloaded via `gh api` + PowerShell base64 decode (repo is private).
+- Lovable errors caught and fixed: wrong `inherit_id`, `dashboard_metrics` undefined variable,
+  `portal_my_home_community` broken XPath, `portal_my_orders` missing `sale` dep,
+  Tailwind classes → Bootstrap 5, FA5/FA6 icons → FA4, `assets.xml` old-style loading dropped,
+  `portal.js` `odoo.define` → `@odoo-module`.
+- Branch: `feat/gr-portal-login-cleanup` (2 commits). Not yet merged to `main`.
+- Pending: smoke-test visually, then merge + `--update gr_portal` on both DBs + CT 200 deploy.
 
 ## 2026-04-01 -- Savepoint 6, portal login revamp, report + Aiken fixes (session 8)
 - New module `gr_portal` added on branch `feature/portal-login-revamp`:

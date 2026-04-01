@@ -95,6 +95,11 @@ Last verified: 2026-04-01 (session 9, deployment fixes)
 - Erasure cert error fix: `UserError` from `fetch_for_lot` now passes through instead of being swallowed by generic 'Could not connect' message. Live-validated 2026-04-01.
 - P1.8 report/logo work is closed.
 - Portal loader hardening is applied in `grm_website`.
+- `gr_portal` visual refresh (branch `feat/gr-portal-login-cleanup`, not yet merged to `main`):
+  - Login page: GR logo in loader + hero, collage removed, centered layout, glassmorphism form card, fixed link/button CSS bleed-in from `grm_website`
+  - New `portal_templates.xml`: welcome banner above `grm_website.portal_my_home_custom`
+  - New `portal.js` (Odoo 17 @odoo-module), `portal.css` full rewrite, `login.js` improved
+  - Version bumped to 17.0.1.1.0. Rollout: `--update gr_portal` on both DBs.
 - `views_simple.xml` re-enabled: tree view exposes `planned_date_begin` as an optional column. Form view keeps `planned_date_begin` invisible ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â the enterprise daterange widget on `date_deadline` already exposes it as the range start.
 - `lot_name` row fixed in task form: now appears on its own row below `date_deadline` (was landing inside the date flex div).
 - `lot_name` generation priority: `client_destination_name` ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ `order_giver_id.name` ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ `partner_id.name` ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ `UNK`. 25/25 tests passing.
@@ -107,6 +112,7 @@ Last verified: 2026-04-01 (session 9, deployment fixes)
 
 ## Integration status
 - `backup-before-p1-8` is already merged into `main`.
+- `feat/gr-portal-login-cleanup` is open (2026-04-01): gr_portal visual refresh from Lovable. Not yet merged. Requires `--update gr_portal` on both DBs after merge.
 - Branch-first workflow remains in force: new feature work starts from `main` on a dedicated feature branch and merges back after validation.
 
 ## Current safety memory
