@@ -158,3 +158,11 @@ Last updated: 2026-03-30
 - Added a mandatory resume-time environment readiness probe requirement in `AGENTS.md` and `doc/START_HERE.md`.
 - Defined `NON-OPERATIONAL` behavior: agents must report missing prerequisites first and stop at environment bootstrap/recovery guidance.
 - Updated `doc/CURRENT_STATE.md` and `doc/NEXT_ACTIONS.md` so backlog/code-task recommendations are blocked until local prerequisites are confirmed present.
+
+## 2026-04-01 — Report logo fix (session 7 continued)
+- company.logo = related to partner_id.image_1920 (filestore). EMPTY in this DB — image_1920 not restored from production dump.
+- company.logo_web = 17,704 bytes stored directly in res_company table. Always present.
+- Fixed both internal_inventory_report.py and discrepancy_report.py to use logo_web first, logo as fallback.
+- Fixed scale regression: was 0.125 (P1.8 broke this), restored to 1.0. logo_web is 180px so 1.0 is correct.
+- Pending: restart server and validate new logo appears at correct size.
+

@@ -115,14 +115,19 @@ class DiscrepancyReportXLSX(models.AbstractModel):
             # Write title - covering full width including extra column
             sheet.merge_range('A1:I1', "RAPPORT D'ÉCARTS", title_format)
 
-            # Insert company logo
+            # Insert company logo.
+            # Use logo_web (stored directly in res_company table, always present)
+            # rather than logo (related to partner_id.image_1920, filestore-based,
+            # may be empty if filestore not restored). Fall back to logo if logo_web
+            # is absent. Scale 1.0: logo_web is already sized at 180px.
             company = self.env.company
-            if company.logo:
-                image_data = io.BytesIO(base64.b64decode(company.logo))
+            logo_source = company.logo_web or company.logo
+            if logo_source:
+                image_data = io.BytesIO(base64.b64decode(logo_source))
                 sheet.insert_image('A1', 'logo.png', {
                     'image_data': image_data,
-                    'x_scale': 0.125,
-                    'y_scale': 0.125,
+                    'x_scale': 1.0,
+                    'y_scale': 1.0,
                     'x_offset': 5,
                     'y_offset': 5,
                     'positioning': 1
