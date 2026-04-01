@@ -114,7 +114,7 @@ Last verified: 2026-04-01 (session 9, deployment fixes)
 
 ## Integration status
 - `backup-before-p1-8` is already merged into `main`.
-- `feat/gr-portal-login-cleanup` merged to `main` (2026-04-01). Requires `--update gr_portal` on both local DBs and CT 200 deploy.
+- `feat/gr-portal-login-cleanup` merged to `main` (2026-04-01). Applied locally (savepoint 7) and on CT 200. CT 200 Odoo active, HTTP 200.
 - Branch-first workflow remains in force: new feature work starts from `main` on a dedicated feature branch and merges back after validation.
 
 ## Current safety memory

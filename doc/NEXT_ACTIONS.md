@@ -9,28 +9,11 @@ Last verified: 2026-04-01
 
 ## Product and code backlog
 ### Open
-- **CT 200 gevent/zope startup fix** (blocker for go-live):
-  - gr_portal files deployed and `--update gr_portal` ran successfully (no template/code errors)
-  - Odoo **will not restart** due to pre-existing venv issue: `pkg_resources.DistributionNotFound: The 'zope.interface' distribution was not found`
-  - This is NOT caused by gr_portal. It was masked because Odoo ran continuously since session 9.
-  - Root cause: `gevent 21.12.0` entry_point `gevent.plugins.monkey.will_patch_all` calls `plugin.load()` which runs `pkg_resources.require(['zope.interface'])`. Despite `zope_interface-8.2.dist-info` existing and `import zope.interface` working, `pkg_resources.working_set` cannot resolve it.
-  - Current venv state on CT 200:
-    - setuptools: 70.3.0 (was 59.6.0, we went 59→82→70 while debugging)
-    - gevent: 21.12.0 (Odoo 17 requirements.txt wants 21.8.0 for Python 3.10)
-    - greenlet: 1.1.2 (correct)
-    - zope.interface: 8.2 (was already 8.2 before we touched anything)
-    - Full zope 6.0 ecosystem installed (side effect of `pip install zope` during debug — should be removed)
-    - `import gevent` → OK, `import zope.interface` → OK, but `pkg_resources.require(['zope.interface'])` → DistributionNotFound
-  - Approaches to try (in order):
-    1. Downgrade zope.interface to 5.x which was the version gevent 21.12.0 was tested with: `pip install 'zope.interface==5.5.2' 'zope.event==4.5.0'`
-    2. Upgrade gevent to match Odoo's requirements: gevent==21.8.0 requires build tools — try `pip install gevent==22.10.2` (different Python 3.10 constraint)
-    3. Add `PYTHONPATH` hack or `sitecustomize.py` to pre-load `pkg_resources` working set
-    4. Reinstall venv from scratch using `pip install -r /opt/odoo/addons_src/requirements.txt`
-  - SSH: `ssh odoo-grm` (passwordless via migmi key)
-- **CT 200 go-live checklist**:
+- **CT 200 go-live checklist** (gr_portal deployed, Odoo active, HTTP 200):
   - DONE: Let's Encrypt SSL obtained (DNS challenge, sartrouville + go.greenremarket.fr, valid 2026-06-30)
-  - DONE: All GRM modules deployed including new gr_portal
+  - DONE: All GRM modules deployed including gr_portal (refreshed 2026-04-01)
   - DONE: DB re-restored from local PG17 dump (charset clean, PG16 replaced by PG17)
+  - DONE: zope.interface/zope.event pinned to 5.5.2/4.5.0 to fix gevent 21.12.0 pkg_resources issue
   - Router: forward ports 80 + 443 to 192.168.21.200 (still pending)
   - Fix EBICS bank account: UPDATE res_partner_bank SET acc_number=sanitized_acc_number=00021148802 WHERE id=1 on CT 200
   - DNS cutover: point domain(s) to CT 200 public IP

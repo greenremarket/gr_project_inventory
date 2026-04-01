@@ -234,8 +234,8 @@ Last updated: 2026-04-01 (session 10, CT 200 deploy)
   - gevent 21.12.0 has no version pin on zope packages (just `Requires-Dist: zope.interface`)
   - `import gevent` → clean exit 0
 - CT 200 current venv: setuptools=70.3.0, gevent=21.12.0, greenlet=1.1.2, zope.interface=8.2
-- Odoo service is stopped on CT 200. gr_portal code IS deployed. Need to fix venv to restart.
-- Next: try `pip install 'zope.interface==5.5.2' 'zope.event==4.5.0'` or reinstall venv from requirements.txt
+- **Fixed**: `pip install 'zope.interface==5.5.2' 'zope.event==4.5.0'` — pinning to gevent 21.12.0-era versions resolved `pkg_resources.DistributionNotFound`.
+- Odoo restarted clean. `curl https://localhost/web/login` → HTTP 200. CT 200 fully operational with gr_portal refresh.
 
 ## 2026-04-01 — gr_portal visual refresh from Lovable (session 10)
 - Reviewed Lovable prototype repo `moradigmir/remix-of-green-remarket-portal-refresh` (private).
