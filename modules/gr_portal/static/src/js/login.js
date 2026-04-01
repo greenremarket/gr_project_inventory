@@ -32,10 +32,13 @@ const GRLoginPage = publicWidget.Widget.extend({
 
     start() {
         const result = this._super(...arguments);
+        // Hero, form, and back link are INSIDE .o_login_page — use this.$()
         this.$hero          = this.$(".o_login_hero");
         this.$formContainer = this.$(".oe_website_login_container");
         this.$back          = this.$(".o_login_back");
-        this.$loader        = this.$(".o_login_loader");
+        // Loader and video are SIBLINGS of .o_login_page (outside the section).
+        // this.$() only searches within the widget root, so use document-level $().
+        this.$loader = $("#gr_login_loader");
         this._initVideoLoader();
         return result;
     },
@@ -43,8 +46,13 @@ const GRLoginPage = publicWidget.Widget.extend({
     // ─── Page Loader ───
 
     _initVideoLoader() {
-        const $video = this.$("video.o_login_video_bg");
-        if (!$video.length || !this.$loader.length) {
+        // video is also outside .o_login_page — use document-level $()
+        const $video = $("video.o_login_video_bg");
+        if (!this.$loader.length) {
+            return; // no loader in DOM, nothing to hide
+        }
+        if (!$video.length) {
+            // No video element — hide loader immediately
             this._hideLoader();
             return;
         }
