@@ -163,7 +163,7 @@ class ErasureService(models.AbstractModel):
                     _logger.error("Error closing MySQL connection: %s", str(close_err))
 
         if not raw_rows:
-            raise UserError(_("Lot %s exists in Workbench but has no units — the audit query returned no rows.") % lot_no)
+            raise UserError(_("Le lot %s existe dans Aiken mais n'a aucun appareil enregistré pour l'instant.") % lot_no)
 
         result = []
         for row in raw_rows:
@@ -347,9 +347,14 @@ class ErasureService(models.AbstractModel):
                 except Exception as close_err:
                     _logger.error(f"Error closing MySQL connection for DSN {dsn_log}: {str(close_err)}")
 
-        # If nothing was returned, inform the user
+        # Distinguish between "lot doesn't exist" and "lot exists but has no units".
+        # _SQL starts from Units so it returns nothing for an empty lot — same as a missing lot.
         if not raw_rows:
-            raise UserError(_t("Lot %s not found in Workbench.") % lot_no)
+            if self.lot_exists(lot_no):
+                raise UserError(_t(
+                    "Le lot %s existe dans Aiken mais n'a aucun appareil enregistré pour l'instant."
+                ) % lot_no)
+            raise UserError(_t("Lot %s introuvable dans Aiken Workbench.") % lot_no)
 
         rows = []
         for r in raw_rows:
