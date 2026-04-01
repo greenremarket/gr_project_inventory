@@ -9,12 +9,12 @@ Last verified: 2026-04-01
 
 ## Product and code backlog
 ### Open
-- **Merge `feat/gr-portal-login-cleanup` → `main`**: gr_portal Lovable refresh is complete on branch. Steps:
-  1. Smoke-test login page and portal home visually on local `greenremarket` DB
-  2. `git checkout main && git merge feat/gr-portal-login-cleanup`
-  3. `--update gr_portal` on `greenremarket`, then sync to `greenremarket_backup`
-  4. Deploy to CT 200 via `scp modules/gr_portal/ odoo-grm:/opt/odoo/grm_repo/modules/` + `--update gr_portal`
-  5. No savepoint needed (CSS/template-only change, no schema changes)
+- **Deploy gr_portal refresh to CT 200**: Branch merged to `main`. Still needed:
+  1. `--update gr_portal` on `greenremarket` (local)
+  2. Sync standby: `--update gr_portal` on `greenremarket_backup`
+  3. `scp -r modules/gr_portal/ odoo-grm:/opt/odoo/grm_repo/modules/`
+  4. On CT 200: `--update gr_portal --stop-after-init`
+  5. No savepoint needed (no schema changes)
 - **CT 200 go-live checklist**:
   - DONE: Let's Encrypt SSL obtained (DNS challenge, sartrouville + go.greenremarket.fr, valid 2026-06-30)
   - DONE: All GRM modules deployed including new gr_portal

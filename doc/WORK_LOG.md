@@ -237,8 +237,25 @@ Last updated: 2026-04-01 (session 10)
   `portal_my_home_community` broken XPath, `portal_my_orders` missing `sale` dep,
   Tailwind classes → Bootstrap 5, FA5/FA6 icons → FA4, `assets.xml` old-style loading dropped,
   `portal.js` `odoo.define` → `@odoo-module`.
-- Branch: `feat/gr-portal-login-cleanup` (2 commits). Not yet merged to `main`.
-- Pending: smoke-test visually, then merge + `--update gr_portal` on both DBs + CT 200 deploy.
+- Branch: `feat/gr-portal-login-cleanup` (6 commits). Smoke-tested visually on local DB. Merged to `main`.
+
+### Bug fixes found during smoke-test (same session):
+- **Loader never hid** (`login.js`): `this.$('.o_login_loader')` scoped to `.o_login_page` but loader div is a
+  sibling of the section (outside it). Fixed to `$('#gr_login_loader')` and `$('video.o_login_video_bg')`
+  using document-level jQuery so elements outside the widget root are found.
+- **Hero blocks reset_password/signup** (`login_templates.xml`): Hero and back link now wrapped in
+  `<t t-if="is_login">` where `is_login = 'reset_password' not in path and 'signup' not in path`.
+  Form container gets `display:none` only on `/web/login`; visible immediately on other auth pages.
+- **`/` showed grm_website landing** (`controllers/main.py` — new file):
+  Added `GRPortalHome` controller overriding `GET /` with `website=True`:
+    - Unauthenticated → `/web/login`
+    - Portal user → `/my`
+    - Internal user → `/web` (NOT `/odoo` — that URL falls through to website 404 catch-all)
+  Added `GRPortalLogin(WebHome)` overriding `_login_redirect`:
+    - Portal users land on `/my` after login (not `/` which would loop)
+    - Internal users get standard backend redirect
+    - Explicit `?redirect=` always honoured
+  `is_user_internal` imported with `try/except` fallback for older 17.0 builds.
 
 ## 2026-04-01 -- Savepoint 6, portal login revamp, report + Aiken fixes (session 8)
 - New module `gr_portal` added on branch `feature/portal-login-revamp`:
