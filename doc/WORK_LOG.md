@@ -182,3 +182,13 @@ Last updated: 2026-04-01
 - Aiken Workbench MySQL probing completed (read-only): `Lots` table has no AUTO_INCREMENT on `LotID`; `Params` is 352 bytes of ASCII '0'; current max `LotID` is 1177; `Lots_Owners` confirms `AIKEN` (ID=1) as the owner for GRM operations.
 - Warp plan created: "Créer le lot Aiken depuis le Formulaire de lancement d'opération".
 - Next: branch from `main` and implement the `create_aiken_lot` checkbox feature.
+
+## 2026-04-01 — Créer le lot Aiken + erasure fix (session 8, feature complete)
+- `create_aiken_lot` Boolean field on `project.task`; checkbox in Formulaire de lancement d'opération.
+- `gr.erasure.service.create_lot()`: transactional INSERT (duplicate check + MAX(LotID)+1 + Params=352×'0').
+- Non-blocking hook in `project.task.create()`: MySQL failure → `_logger.error` + `bus.bus` yellow sticky warning toast; task always created.
+- `action_create_and_open()`: "Créer et aller à la tâche" navigates to full task form after save.
+- Custom footer: Créer et aller à la tâche (primary) / Créer (save) / Annuler (cancel).
+- Erasure cert error message fixed: `UserError` from `fetch_for_lot` now passes through; only unexpected errors show generic "Could not connect" message.
+- Live-validated: lot MOR601 created in Aiken, navigation works, correct error on cert with no erasures.
+- 36/36 tests passing. Branch feat/aiken-lot-creation merged to main.
