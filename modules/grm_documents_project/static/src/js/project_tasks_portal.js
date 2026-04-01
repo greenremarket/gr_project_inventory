@@ -30,59 +30,51 @@ publicWidget.registry.ProjectTasksDocument = publicWidget.Widget.extend({
     return def;
   },
 
-  downloadDelivrables: function () {
+  downloadDelivrables: async function () {
     try {
       const doc_ids = this.getSelectedTasks() || this.getActiveTask();
       if (doc_ids.length === 0) {
         this.displayError($('#unselectedLineErrorMsg').text());
         return;
       }
-      
-      // Create a hidden form and submit it to download the file
-      // This avoids fetch() issues with large files
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = '/delivrable/download';
-      form.style.display = 'none';
-      
-      // Add task_ids
-      const taskIdsInput = document.createElement('input');
-      taskIdsInput.type = 'hidden';
-      taskIdsInput.name = 'task_ids';
-      taskIdsInput.value = doc_ids;
-      form.appendChild(taskIdsInput);
-      
-      // Add csrf_token if it exists
+
+      // Build FormData for the POST
+      const formData = new FormData();
+      formData.append('task_ids', doc_ids.join(','));
       if (typeof odoo !== 'undefined' && odoo.csrf_token) {
-        const csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = 'csrf_token';
-        csrfInput.value = odoo.csrf_token;
-        form.appendChild(csrfInput);
+        formData.append('csrf_token', odoo.csrf_token);
       }
-      
-      // Add access_token if present in URL
-      const urlParams = new URLSearchParams(window.location.search);
-      const accessToken = urlParams.get('access_token');
-      if (accessToken) {
-        const tokenInput = document.createElement('input');
-        tokenInput.type = 'hidden';
-        tokenInput.name = 'access_token';
-        tokenInput.value = accessToken;
-        form.appendChild(tokenInput);
+      const accessToken = new URLSearchParams(window.location.search).get('access_token');
+      if (accessToken) formData.append('access_token', accessToken);
+
+      // Use fetch+blob: handles large zips correctly and keeps the user on the page
+      // when there are no delivrables (instead of navigating to a blank error page).
+      const response = await fetch('/delivrable/download', { method: 'POST', body: formData });
+      const contentType = response.headers.get('Content-Type') || '';
+
+      if (!response.ok || !contentType.includes('application/zip')) {
+        // Server returned an error or no delivrables — show inline, don't navigate away
+        const msg = await response.text();
+        this.displayError(msg || "Aucun livrable disponible pour cette opération.");
+        return;
       }
-      
-      // Submit the form
-      document.body.appendChild(form);
-      form.submit();
-      document.body.removeChild(form);
-      
-      // Hide any previous error messages
+
+      // Trigger browser download from the blob
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'livrables.zip';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
       this.$el.find(".error-message").hide();
-      
+
     } catch (error) {
       console.error("Download error:", error);
-      this.displayError("Erreur lors du téléchargement: " + error.message);
+      this.displayError("Erreur lors du téléchargement : " + error.message);
     }
   },
 

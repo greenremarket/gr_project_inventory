@@ -4,7 +4,9 @@
         <!-- Replace the hr before task_chat to add documents section -->
         <xpath expr="//div[@id='task_chat']/preceding-sibling::hr[1]" position="replace">
             <!-- Show only delivrable documents (with Livrable tag) -->
-            <t t-set="delivrable_docs" t-value="task.document_ids.filtered(lambda d: d.is_delivrable())"/>
+            <!-- task_documents is pre-fetched with sudo() in portal_project.py controller
+                 to bypass portal-user ORM restrictions on documents.document -->
+            <t t-set="delivrable_docs" t-value="task_documents.filtered(lambda d: d.is_delivrable())"/>
             <div t-if="delivrable_docs" class="row mt-4">
                 <div class="col-12">
                     <hr/>
