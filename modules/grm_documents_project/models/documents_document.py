@@ -54,6 +54,16 @@ class Document(models.Model):
             "values": list(values_range.values()),
         }
 
+    def write(self, vals):
+        result = super().write(vals)
+        # When the Delivrable tag is added, generate the attachment access token
+        # so the portal download URL (?access_token=...) works for portal users.
+        if 'tag_ids' in vals:
+            for doc in self:
+                if doc.is_delivrable() and doc.attachment_id and not doc.attachment_id.sudo().access_token:
+                    doc.attachment_id.sudo().generate_access_token()
+        return result
+
     def is_delivrable(self):
         """Check if the document is a delivrable."""
         delivrable_tag = self.env.ref("grm_documents_project.documents_project_delivrable")

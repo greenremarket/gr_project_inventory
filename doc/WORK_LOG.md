@@ -72,6 +72,14 @@ Last updated: 2026-03-30
 - Machine is now operational.
 - Standby pair created: `greenremarket_backup` DB (240 installed modules confirmed) and `odoo_data/filestore/greenremarket_backup`. Active/standby rotation model is now fully operational on this machine.
 
+## 2026-04-01 — Savepoint 5, standby sync, portal fixes (session 7 start)
+- Portal home (`portal_home.py`) fixed: was searching by `user_ids` (internal assignment), portal clients are followers not assignees. Changed to commercial partner follower domain with PD3E tag filter.
+- Document portal downloads fixed: `documents_document.write()` now generates `attachment.access_token` when the Delivrable tag is added. 704/713 existing document attachments had no token (downloads silently failed).
+- `scripts/generate_delivrable_access_tokens.py` added for backfill (found 0 Delivrable documents in local DB — no existing delivrable docs yet).
+- Savepoint 5 created: `dumps/savepoint_5_ebics_portal_fixes_20260401.dump` (14.3 MB, includes 16 EBICS bank statements).
+- `greenremarket_backup` fully refreshed from savepoint 5: DB restored + filestore synced (2261 files each). Both DBs now identical and contain the EBICS statements.
+- Old backup filestore archived as `odoo_data/filestore/greenremarket_backup_pre_sp5`.
+
 ## 2026-03-31 — planned_date_begin fix, Ctrl-C, test coverage (session 6, end)
 - Root cause confirmed via test: `Form()` fires `_onchange_planned_dates` after each field change, not after the whole form is filled. Setting `planned_date_begin` first always wipes it even if `date_deadline` is set next.
 - Fix: creation form now collects `date_deadline` (labeled "Date de début de l'opération"). `date_deadline` has no enterprise onchange that wipes it. `create()` override mirrors `date_deadline` → `planned_date_begin` at midnight server-side.
