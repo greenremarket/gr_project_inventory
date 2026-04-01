@@ -237,6 +237,18 @@ Last updated: 2026-04-01 (session 10, CT 200 deploy)
 - **Fixed**: `pip install 'zope.interface==5.5.2' 'zope.event==4.5.0'` — pinning to gevent 21.12.0-era versions resolved `pkg_resources.DistributionNotFound`.
 - Odoo restarted clean. `curl https://localhost/web/login` → HTTP 200. CT 200 fully operational with gr_portal refresh.
 
+## 2026-04-01 — CT 200 HTTPS, nginx, and routing fixes (session 10, final)
+- **HTTPS redirect bug**: All Odoo controllers were generating `Location: http://` because Odoo's internal connection to nginx is HTTP; `proxy_mode=True` + `X-Forwarded-Proto` were not reliably applied by werkzeug's ProxyFix on this build. Two-pronged fix:
+  1. `gr_portal/controllers/main.py`: read `HTTP_X_FORWARDED_PROTO` from environ, build explicit `https://` URL, pass `local=False` to prevent Odoo stripping the scheme.
+  2. `scripts/ct200_nginx_odoo.conf`: added `proxy_redirect http://go.greenremarket.fr/ https://go.greenremarket.fr/;` — nginx rewrites all `http://` Location headers from Odoo to `https://`. Fixes ALL built-in controllers (website/force, web/login redirect, etc.).
+- **WebSocket 500 errors**: Odoo 17 uses `/websocket` (not `/longpolling`) for the real-time bus. nginx only had `/longpolling → port 8072 (gevent)`. `/websocket` was going to port 8069 (regular workers) → 500. Added `/websocket` location block identical to `/longpolling`. Website editor (which needs the bus) now loads correctly.
+- **Website editor grey screen**: Was caused by `/website/force/1` returning `http://` redirect which triggered `iframefallback`. Fixed by both changes above.
+- **Internal user `/` routing**:
+  - `?enable_editor=1` → pass through to `WebsiteMain().index()` (editor iframe)
+  - Direct visit → redirect to `https://.../my/home` (portal dashboard)
+- **All routing verified working**: unauth → `/web/login`, portal → `/my`, internal direct → `/my/home`, internal+editor → website content.
+- nginx config saved to `scripts/ct200_nginx_odoo.conf` for reproducibility.
+
 ## 2026-04-01 — gr_portal visual refresh from Lovable (session 10)
 - Reviewed Lovable prototype repo `moradigmir/remix-of-green-remarket-portal-refresh` (private).
 - Identified and applied visual changes: GR logo in loader + hero, collage right column removed,

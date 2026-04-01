@@ -14,6 +14,7 @@ Last verified: 2026-04-01
   - DONE: All GRM modules deployed including gr_portal (refreshed 2026-04-01)
   - DONE: DB re-restored from local PG17 dump (charset clean, PG16 replaced by PG17)
   - DONE: zope.interface/zope.event pinned to 5.5.2/4.5.0 to fix gevent 21.12.0 pkg_resources issue
+  - DONE: nginx /websocket location + proxy_redirect (http→https) — Website editor working
   - Router: forward ports 80 + 443 to 192.168.21.200 (still pending)
   - Fix EBICS bank account: UPDATE res_partner_bank SET acc_number=sanitized_acc_number=00021148802 WHERE id=1 on CT 200
   - DNS cutover: point domain(s) to CT 200 public IP

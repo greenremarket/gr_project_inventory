@@ -114,7 +114,10 @@ Last verified: 2026-04-01 (session 9, deployment fixes)
 
 ## Integration status
 - `backup-before-p1-8` is already merged into `main`.
-- `feat/gr-portal-login-cleanup` merged to `main` (2026-04-01). Applied locally (savepoint 7) and on CT 200. CT 200 Odoo active, HTTP 200.
+- `feat/gr-portal-login-cleanup` merged to `main` (2026-04-01). Applied locally (savepoint 7) and on CT 200.
+- CT 200 nginx: `/websocket` location added (Odoo 17 bus), `proxy_redirect` for http→https. Config at `scripts/ct200_nginx_odoo.conf`.
+- CT 200 venv: `zope.interface==5.5.2`, `zope.event==4.5.0` pinned (gevent 21.12.0 compat).
+- CT 200 fully operational: HTTPS redirects correct, WebSocket 101, Website editor working.
 - Branch-first workflow remains in force: new feature work starts from `main` on a dedicated feature branch and merges back after validation.
 
 ## Current safety memory
