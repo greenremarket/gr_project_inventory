@@ -1,6 +1,6 @@
-# CURRENT STATE
+﻿# CURRENT STATE
 Status: active
-Last verified: 2026-04-01 (session 8, deployment)
+Last verified: 2026-04-01 (session 9, deployment fixes)
 
 ## Repository and branch
 - Repository: `greenremarket/gr_project_inventory`
@@ -13,13 +13,13 @@ Last verified: 2026-04-01 (session 8, deployment)
 - Container ID: 200, hostname: odoo-grm, IP: 192.168.21.200/24, gw: 192.168.21.254
 - Proxmox SSH: `ssh root@192.168.21.20` (passwordless via migmi key)
 - Container SSH: `ssh odoo-grm` (passwordless via migmi key, see `~/.ssh/config`)
-- OS: Ubuntu 22.04 LTS, PostgreSQL 16, Python 3.10, Odoo venv at `/opt/odoo/venv`
+- OS: Ubuntu 22.04 LTS, PostgreSQL 17, Python 3.10, Odoo venv at `/opt/odoo/venv`
 - Odoo source: `/opt/odoo/addons_src` (community), `/opt/odoo/enterprise`, `/opt/odoo/grm_repo` (GRM modules)
 - OCA/EBICS addons: `/opt/odoo/extra_addons`
 - Config: `/opt/odoo/odoo.conf` Ã¢â‚¬â€ db_name=greenremarket, proxy_mode=True, workers=4
 - Service: `systemctl status odoo` Ã¢â‚¬â€ enabled, starts on boot
 - MySQL env: correct Aiken credentials (`manager`/`gren2803awb`/`192.168.21.206`) in systemd unit
-- nginx: HTTPS with self-signed cert Ã¢â‚¬â€ replace with real Let's Encrypt once port 80/443 is forwarded from router
+- nginx: HTTPS with Let's Encrypt cert (sartrouville.greenremarket.fr + go.greenremarket.fr, valid 2026-06-30, DNS challenge — no auto-renewal without DNS plugin)
 - Database: `greenremarket` restored from local savepoint, UTF-8 encoding (fr_FR.UTF-8 locale)
 - Filestore: `/opt/odoo/data/filestore/greenremarket` (copied from local)
 - Pending before go-live:
@@ -127,6 +127,7 @@ Last verified: 2026-04-01 (session 8, deployment)
   - `--test-enable --test-tags="logo" --stop-after-init`
 - Full module suite:
   - `--test-tags="/gr_project_inventory"`
+
 
 
 
