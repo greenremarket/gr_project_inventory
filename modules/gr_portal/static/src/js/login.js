@@ -1,86 +1,110 @@
 /** @odoo-module **/
 
-import publicWidget from '@web/legacy/js/public/public_widget';
-
 /**
- * GR Login Widget
+ * Green Remarket — Login Page Widget (Odoo 17)
  *
- * Handles three behaviours on the video-background login page:
- *  1. Page loader: hides once the background video fires `canplaythrough`
- *     (4-second fallback in case the video never loads).
- *  2. "Commencer maintenant" CTA: hides the hero, shows the login form.
- *  3. "Retour" back link: hides the form, restores the hero.
+ * Works WITH grm_website’s existing login template.
+ * grm_website already provides:
+ *   - Password eye toggle (#showPass in .custom-passoword)
+ *   - Pill-shaped inputs ($input-border-radius: 120px)
+ *   - Rounded buttons ($btn-border-radius: 80px)
+ *   - Poppins font
+ *
+ * This widget adds:
+ *   1. Page loader: hides when video is ready (or after 4s fallback)
+ *   2. Hero ↔ Login form toggle with smooth jQuery fade transitions
+ *
+ * Updated 2026-04-01 (Lovable refresh):
+ *   - Loader uses readyState >= 4 check instead of CSS class
+ *   - Transitions use jQuery fadeIn/fadeOut for smooth animation
+ *   - Event selectors changed from data-action to class-based
  */
-publicWidget.registry.GRLogin = publicWidget.Widget.extend({
-    selector: '.o_login_page',
+
+import publicWidget from "@web/legacy/js/public/public_widget";
+
+const GRLoginPage = publicWidget.Widget.extend({
+    selector: ".o_login_page",
 
     events: {
-        'click [data-action="show-login"]': '_onShowLogin',
-        'click [data-action="show-hero"]':  '_onShowHero',
+        "click .o_login_cta":  "_onShowLogin",
+        "click .o_login_back": "_onShowHero",
     },
 
     start() {
         const result = this._super(...arguments);
-        this._initLoader();
+        // Hero, form, and back link are INSIDE .o_login_page — use this.$()
+        this.$hero          = this.$(".o_login_hero");
+        this.$formContainer = this.$(".oe_website_login_container");
+        this.$back          = this.$(".o_login_back");
+        // Loader and video are SIBLINGS of .o_login_page (outside the section).
+        // this.$() only searches within the widget root, so use document-level $().
+        this.$loader = $("#gr_login_loader");
+        this._initVideoLoader();
         return result;
     },
 
-    // ─── Loader ───────────────────────────────────────────────────────────────
+    // ─── Page Loader ───
 
-    _initLoader() {
-        const loader = document.getElementById('gr_login_loader');
-        if (!loader) return;
-
-        const hide = () => {
-            loader.classList.add('o_login_loader_hidden');
-            setTimeout(() => loader.remove(), 600);
-        };
-
-        // Auto-hide after 4 s as a safety fallback
-        const timer = setTimeout(hide, 4000);
-
-        const video = document.getElementById('gr_login_video');
-        if (video) {
-            video.addEventListener('canplaythrough', () => {
-                clearTimeout(timer);
-                hide();
-            }, { once: true });
+    _initVideoLoader() {
+        // video is also outside .o_login_page — use document-level $()
+        const $video = $("video.o_login_video_bg");
+        if (!this.$loader.length) {
+            return; // no loader in DOM, nothing to hide
+        }
+        if (!$video.length) {
+            // No video element — hide loader immediately
+            this._hideLoader();
+            return;
+        }
+        const video = $video[0];
+        // Video already buffered enough
+        if (video.readyState >= 4) {
+            this._hideLoader();
         } else {
-            // No video element on this page — hide immediately
-            clearTimeout(timer);
-            hide();
+            $video.one("canplaythrough", () => this._hideLoader());
+        }
+        // Safety fallback: hide after 4 s regardless
+        this._loaderTimeout = setTimeout(() => this._hideLoader(), 4000);
+    },
+
+    _hideLoader() {
+        if (this._loaderTimeout) {
+            clearTimeout(this._loaderTimeout);
+            this._loaderTimeout = null;
+        }
+        if (this.$loader && this.$loader.length) {
+            this.$loader.fadeOut(500, () => this.$loader.remove());
         }
     },
 
-    // ─── Hero ↔ Form toggle ──────────────────────────────────────────────────
+    // ─── Hero → Login ───
 
     _onShowLogin(ev) {
         ev.preventDefault();
-        const hero      = this.el.querySelector('#gr_login_hero');
-        const container = this.el.querySelector('.oe_website_login_container');
-        const back      = this.el.querySelector('.o_login_back');
-
-        if (hero)      hero.style.display = 'none';
-        if (container) container.style.display = '';
-        if (back)      back.style.display = '';
-
-        // Focus the first input in the form
-        if (container) {
-            const first = container.querySelector('input[autofocus], input[type="email"], input[name="login"]');
-            if (first) first.focus();
-        }
+        this.$hero.fadeOut(200, () => {
+            this.$formContainer.fadeIn(200);
+            this.$back.fadeIn(200);
+            this.$("input[name='login']").trigger("focus");
+        });
     },
+
+    // ─── Login → Hero ───
 
     _onShowHero(ev) {
         ev.preventDefault();
-        const hero      = this.el.querySelector('#gr_login_hero');
-        const container = this.el.querySelector('.oe_website_login_container');
-        const back      = this.el.querySelector('.o_login_back');
+        this.$formContainer.fadeOut(200, () => {
+            this.$back.fadeOut(200);
+            this.$hero.fadeIn(200);
+        });
+    },
 
-        if (hero)      hero.style.display = '';
-        if (container) container.style.display = 'none';
-        if (back)      back.style.display = 'none';
+    destroy() {
+        if (this._loaderTimeout) {
+            clearTimeout(this._loaderTimeout);
+        }
+        this._super(...arguments);
     },
 });
 
-export default publicWidget.registry.GRLogin;
+publicWidget.registry.GRLoginPage = GRLoginPage;
+export default GRLoginPage;
