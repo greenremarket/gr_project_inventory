@@ -1,6 +1,6 @@
 # CURRENT STATE
 Status: active
-Last verified: 2026-04-01 (session 8)
+Last verified: 2026-04-01 (session 8, feature complete)
 
 ## Repository and branch
 - Repository: `greenremarket/gr_project_inventory`
@@ -69,6 +69,8 @@ Last verified: 2026-04-01 (session 8)
 - In `NON-OPERATIONAL` state, only environment bootstrap/recovery actions may be recommended until readiness is restored.
 
 ## Current validated changes
+- `Créer le lot Aiken`: checkbox on Formulaire de lancement d'opération triggers synchronous lot INSERT in `awbc_db.Lots`; non-blocking (bus.bus warning toast on failure). `Créer et aller à la tâche` navigation button. Live-validated 2026-04-01.
+- Erasure cert error fix: `UserError` from `fetch_for_lot` now passes through instead of being swallowed by generic 'Could not connect' message. Live-validated 2026-04-01.
 - P1.8 report/logo work is closed.
 - Portal loader hardening is applied in `grm_website`.
 - `views_simple.xml` re-enabled: tree view exposes `planned_date_begin` as an optional column. Form view keeps `planned_date_begin` invisible â€” the enterprise daterange widget on `date_deadline` already exposes it as the range start.
@@ -103,6 +105,7 @@ Last verified: 2026-04-01 (session 8)
   - `--test-enable --test-tags="logo" --stop-after-init`
 - Full module suite:
   - `--test-tags="/gr_project_inventory"`
+
 
 
 

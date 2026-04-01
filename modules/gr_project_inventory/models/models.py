@@ -947,6 +947,11 @@ class ProjectTask(models.Model):
     
     # Autres champs existants
     lot_name = fields.Char(string='Lot Name')
+    create_aiken_lot = fields.Boolean(
+        string='Créer le lot Aiken',
+        default=False,
+        help='Si coché, crée automatiquement le lot correspondant dans Aiken Workbench à la création de la tâche.',
+    )
     last_asset_tag_number = fields.Integer(string='Last Asset Tag Number', default=0)
     
     # Champs pour l'inventaire interne
@@ -1209,6 +1214,21 @@ class ProjectTask(models.Model):
                     'internal_inventory_id': internal_inventory_id,
                 })
 
+    def action_create_and_open(self):
+        """Called by the 'Créer et aller à la tâche' footer button.
+        Odoo saves the record before calling this, so the task already exists.
+        Returns an act_window that navigates to the full task form.
+        """
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'project.task',
+            'res_id': self.id,
+            'view_mode': 'form',
+            'views': [(False, 'form')],
+            'target': 'current',
+        }
+
     def _generate_client_hint(self):
         """Generate 3-char client hint.
         Priority: client_destination_name → order_giver_id.name → partner_id.name → 'UNK'
@@ -1348,4 +1368,39 @@ class ProjectTask(models.Model):
                         'res_model': 'project.task',
                         'res_id': task.id,
                     })
+        # --- Aiken lot creation (non-blocking) ---
+        if vals.get('create_aiken_lot') and task.lot_name:
+            customer = (
+                task.client_destination_name
+                or (task.order_giver_id and task.order_giver_id.name)
+                or (task.partner_id and task.partner_id.name)
+                or ''
+            )
+            try:
+                self.env['gr.erasure.service'].create_lot(task.lot_name, customer)
+                _logger.info(
+                    '[aiken] Lot %s created in Aiken Workbench for task %s.',
+                    task.lot_name, task.id,
+                )
+            except Exception as exc:  # noqa: BLE001 — intentionally non-blocking
+                _logger.error(
+                    '[aiken] Failed to create lot %s in Aiken Workbench for task %s: %s',
+                    task.lot_name, task.id, exc, exc_info=True,
+                )
+                try:
+                    self.env['bus.bus']._sendone(
+                        self.env.user.partner_id,
+                        'simple_notification',
+                        {
+                            'title': _('Lot Aiken non créé'),
+                            'message': _(
+                                'La tâche a été créée, mais le lot %s n\'a pas pu être '
+                                'créé dans Aiken Workbench.\nErreur : %s'
+                            ) % (task.lot_name, str(exc)),
+                            'type': 'warning',
+                            'sticky': True,
+                        },
+                    )
+                except Exception as bus_exc:
+                    _logger.error('[aiken] Could not send bus notification: %s', bus_exc)
         return task
