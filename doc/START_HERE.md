@@ -1,4 +1,4 @@
-# START HERE
+﻿# START HERE
 Status: active
 Last verified: 2026-03-30
 
@@ -41,7 +41,8 @@ Do not skip this gate, even when the feature request seems straightforward.
 
 ## Read as needed
 - `doc/RUNBOOKS/BACKUP_AND_SWAP.md` — standby refresh, validation, and promotion workflow
-- `doc/RUNBOOKS/WEBSITE_OVERRIDE_RECOVERY.md` — GRM website override recovery
+- `doc/RUNBOOKS/WEBSITE_OVERRIDE_RECOVERY.md`
+- `doc/RUNBOOKS/MODULE_UPDATE.md` — push module code changes or install new modules on CT 200 — GRM website override recovery
 - `doc/DECISIONS/2026-03-26-active-standby-workflow.md` — why the workflow changed from the legacy test-db model
 
 ## Conflict resolution
@@ -56,3 +57,4 @@ Do not skip this gate, even when the feature request seems straightforward.
 - Append to `doc/WORK_LOG.md` when you complete a meaningful step or validation.
 - Update `AGENTS.md` or `doc/DECISIONS/` when the working method itself changes.
 - After committing canonical doc changes, push to remote immediately. Operational and guardrail state must live on the remote to survive across machines and sessions.
+

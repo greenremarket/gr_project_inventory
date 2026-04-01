@@ -81,3 +81,7 @@ dumps/rotation/*
 !dumps/rotation/.gitkeep
 dumps/savepoint_*/
 dumps/pre_*/
+
+# Large binary assets — deploy manually
+*.mp4
+

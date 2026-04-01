@@ -1,4 +1,4 @@
-# NEXT ACTIONS
+ï»¿# NEXT ACTIONS
 Status: active
 Last verified: 2026-04-01
 
@@ -10,9 +10,10 @@ Last verified: 2026-04-01
 ## Product and code backlog
 ### Open
 - **CT 200 go-live checklist**:
-  - Router: forward ports 80 + 443 to 192.168.21.200
-  - Real SSL: `certbot --nginx -d <domain>` on odoo-grm once port 80 is forwarded
-  - Init missing GRM modules: `--init=grm_website,grm_documents_project` on CT 200
+  - DONE: Let's Encrypt SSL obtained (DNS challenge, sartrouville + go.greenremarket.fr, valid 2026-06-30)
+  - DONE: All GRM modules deployed including new gr_portal
+  - DONE: DB re-restored from local PG17 dump (charset clean, PG16 replaced by PG17)
+  - Router: forward ports 80 + 443 to 192.168.21.200 (still pending)
   - Fix EBICS bank account: UPDATE res_partner_bank SET acc_number=sanitized_acc_number=00021148802 WHERE id=1 on CT 200
   - DNS cutover: point domain(s) to CT 200 public IP
   - Proxmox snapshot after first successful smoke-test (`pct snapshot 200 post-golive`)
@@ -27,7 +28,7 @@ Last verified: 2026-04-01
   - `@route()` decorator warnings in `grm_website`
 
 ### Deferred (planned, not started)
-- **grm_website — video background on home/login page**: Replace the current wobbling-pictures layout with a fullscreen video background (video asset already added to static assets). Add a very light translucid green overlay. Scope: `grm_website` templates/CSS only, no Python changes needed. Branch from `main` when ready.
+- **grm_website ï¿½ video background on home/login page**: Replace the current wobbling-pictures layout with a fullscreen video background (video asset already added to static assets). Add a very light translucid green overlay. Scope: `grm_website` templates/CSS only, no Python changes needed. Branch from `main` when ready.
 - Cross-machine kickstart and containerization/swarm roadmap is approved as a future initiative:
   - machine-agnostic local bootstrap on Windows/Linux via Docker Compose
   - agent directive kickstart flow for deterministic startup in Warp/Windsurf
@@ -40,7 +41,7 @@ Last verified: 2026-04-01
 
 ### Confirmed closed
 - odoo_sartrouville deployment probe: completed 2026-04-01. Full probe report in doc/RUNBOOKS/DEPLOYMENT_SARTROUVILLE.md. New deployment target is Proxmox CT 200 (odoo-grm, 192.168.21.200).
-- Créer le lot Aiken depuis le Formulaire de lancement d'opération: implemented and live-validated (2026-04-01). `create_aiken_lot` checkbox on creation form calls `gr.erasure.service.create_lot()` synchronously; non-blocking on Aiken failure (yellow toast + logger.error). ``Créer et aller à la tâche`` navigation button added. Erasure cert misleading error message fixed (UserError now passes through). 36/36 tests passing. Merged to `main` 2026-04-01.
+- Crï¿½er le lot Aiken depuis le Formulaire de lancement d'opï¿½ration: implemented and live-validated (2026-04-01). `create_aiken_lot` checkbox on creation form calls `gr.erasure.service.create_lot()` synchronously; non-blocking on Aiken failure (yellow toast + logger.error). ``Crï¿½er et aller ï¿½ la tï¿½che`` navigation button added. Erasure cert misleading error message fixed (UserError now passes through). 36/36 tests passing. Merged to `main` 2026-04-01.
 - P1.8 logo sizing is closed and should not be reopened without a new explicit request.
 - Lot name length limit is implemented and tested (6-character constraint with validation).
 - EBICS bank keys obtained (HPB called 2026-03-31, `#BANK` section written, FDL download confirmed).
@@ -60,7 +61,7 @@ Last verified: 2026-04-01
 - EBICS fully resolved via Odoo shell scripts (`scripts/`). `sanitized_acc_number` was the real missing fix (SQL update of `acc_number` does not trigger stored field recompute). 16 statements imported for 2026-03-05 to 2026-03-27. Historical gap (2025-06-21 to 2026-03-04) confirmed unavailable via EBICS (code 90005). Account `00021148806` still needs investigation.
 - Shell scripts archived in `scripts/` for reuse.
 - Portal fixes: home follower domain, task_documents template, access token on Delivrable tag, fetch+blob download.
-- Binary zip corruption fixed: isinstance(data, (str, bytes)) — Odoo ORM returns base64 as bytes not str.
+- Binary zip corruption fixed: isinstance(data, (str, bytes)) ï¿½ Odoo ORM returns base64 as bytes not str.
 - `planned_date_begin` persistence fixed and live-validated: creation form collects `date_deadline`; `create()` syncs to `planned_date_begin`. Task form shows "Planned Date" range. 28/28 tests passing.
 - Ctrl-C now stops the server cleanly on Windows via `--dev=reload` (werkzeug reloader). Live-validated.
 - Duplication performance (item 5a): indexes live on both DBs. Closed â€” reopen only if lag reappears in production.
@@ -72,6 +73,7 @@ Last verified: 2026-04-01
 - If status is `NON-OPERATIONAL`, stop at environment bootstrap/recovery guidance; do not recommend or begin feature implementation.
 - Then summarize the operating model, validated state, active backlog, recommended next action, and what must not be touched.
 - If a task changes the database or requires rollout-style validation, use the standby workflow from `doc/CURRENT_STATE.md` and `doc/RUNBOOKS/BACKUP_AND_SWAP.md`.
+
 
 
 

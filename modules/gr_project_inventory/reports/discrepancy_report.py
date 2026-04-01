@@ -129,8 +129,8 @@ class DiscrepancyReportXLSX(models.AbstractModel):
                 image_data = io.BytesIO(base64.b64decode(logo_source))
                 sheet.insert_image('A1', 'logo.png', {
                     'image_data': image_data,
-                    'x_scale': 1.0,
-                    'y_scale': 1.0,
+                    'x_scale': 0.091,
+                    'y_scale': 0.091,
                     'x_offset': 5,
                     'y_offset': 5,
                     'positioning': 1

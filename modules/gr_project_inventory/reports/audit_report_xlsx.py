@@ -3,6 +3,7 @@ from odoo import models
 from odoo.tools.translate import _
 from odoo.exceptions import UserError
 import io
+import base64
 import xlsxwriter
 from datetime import datetime
 
@@ -132,6 +133,21 @@ class AuditReportXLSX(models.AbstractModel):
         sheet.merge_range(0, 0, 0, len(columns) - 1, 
                          f"RAPPORT D'AUDIT - LOT: {lot_name}", 
                          title_format)
+
+        # Insert company logo.
+        # Always prefer logo (user's latest upload) over the potentially stale logo_web.
+        company = self.env.company
+        logo_source = company.logo or company.logo_web
+        if logo_source:
+            image_data = io.BytesIO(base64.b64decode(logo_source))
+            sheet.insert_image('A1', 'logo.png', {
+                'image_data': image_data,
+                'x_scale': 0.091,
+                'y_scale': 0.091,
+                'x_offset': 5,
+                'y_offset': 5,
+                'positioning': 1
+            })
 
         # Write headers
         for col_idx, (header, _) in enumerate(columns):

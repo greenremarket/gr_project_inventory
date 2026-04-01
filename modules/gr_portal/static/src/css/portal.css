@@ -1,0 +1,481 @@
+/*
+ * Green Remarket — gr_portal login styles
+ *
+ * Covers: page loader, video background, dark overlay, hero section,
+ * image collage, pill-shaped form inputs, CTA / submit buttons,
+ * forgot-password link, back link.
+ *
+ * Color reference (matches grm_website primary_variables.scss o-color-1):
+ *   --gr-green:       #A4C73C
+ *   --gr-green-dark:  #7a9c1e
+ *   --gr-green-muted: #eef5d5
+ */
+
+:root {
+    --gr-green:       #A4C73C;
+    --gr-green-dark:  #7a9c1e;
+    --gr-green-light: #bdd962;
+    --gr-green-muted: #eef5d5;
+}
+
+/* ═══════════════════════════════════════════════
+   PAGE LOADER
+   ═══════════════════════════════════════════════ */
+
+.o_login_loader {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    transition: opacity 0.5s ease;
+}
+
+.o_login_loader.o_login_loader_hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.o_login_loader_inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.o_login_loader_icon {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    background: var(--gr-green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: gr-pulse 1.5s ease-in-out infinite;
+}
+
+.o_login_loader_icon .fa {
+    color: #fff;
+    font-size: 1.5rem;
+}
+
+.o_login_loader_spinner .fa {
+    color: var(--gr-green);
+    font-size: 1.25rem;
+}
+
+.o_login_loader_text {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #6c757d;
+}
+
+@keyframes gr-pulse {
+    0%, 100% { transform: scale(1);    opacity: 1;   }
+    50%       { transform: scale(1.05); opacity: 0.8; }
+}
+
+/* ═══════════════════════════════════════════════
+   VIDEO BACKGROUND + OVERLAY
+   (positioned relative to .o_login_page, which
+   has position:relative set below)
+   ═══════════════════════════════════════════════ */
+
+.o_login_video_bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.o_login_overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.20);
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════
+   LOGIN PAGE SECTION
+   ═══════════════════════════════════════════════ */
+
+.o_login_page {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Row inside the section must sit above the video */
+.o_login_page > .container {
+    position: relative;
+    z-index: 10;
+}
+
+/* ═══════════════════════════════════════════════
+   LEFT COLUMN
+   ═══════════════════════════════════════════════ */
+
+.o_login_left {
+    padding: 3rem 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+@media (min-width: 992px) {
+    .o_login_left {
+        padding: 3rem 4rem 3rem 2rem;
+    }
+}
+
+/* ═══════════════════════════════════════════════
+   HERO SECTION
+   ═══════════════════════════════════════════════ */
+
+.o_login_hero {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.o_login_hero_logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.o_login_hero_logo_icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: var(--gr-green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.o_login_hero_logo_icon .fa {
+    color: #fff;
+    font-size: 1.1rem;
+}
+
+.o_login_hero_logo_text {
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: #fff;
+}
+
+.o_login_hero_subtitle {
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.75);
+    font-weight: 500;
+    margin: 0;
+}
+
+.o_login_hero_title {
+    font-size: clamp(2.25rem, 5vw, 3.75rem);
+    font-weight: 700;
+    line-height: 1.1;
+    margin: 0;
+    color: #fff;
+}
+
+/* "Remarket." highlighted in brand green */
+.o_login_hero_title .text-o-color-1 {
+    color: var(--gr-green);
+}
+
+.o_login_hero_cta {
+    padding-top: 0.5rem;
+}
+
+/* ═══════════════════════════════════════════════
+   CTA BUTTON
+   ═══════════════════════════════════════════════ */
+
+.o_login_cta.btn.btn-primary {
+    background: var(--gr-green) !important;
+    border-color: var(--gr-green) !important;
+    border-radius: 9999px !important;
+    padding: 0.8rem 2rem !important;
+    font-weight: 500;
+    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s, border-color 0.2s;
+    color: #fff !important;
+}
+
+.o_login_cta.btn.btn-primary:hover,
+.o_login_cta.btn.btn-primary:focus {
+    background: var(--gr-green-dark) !important;
+    border-color: var(--gr-green-dark) !important;
+}
+
+/* ═══════════════════════════════════════════════
+   LOGIN FORM CONTAINER
+   — labels are hidden by grm_website login.scss;
+     restore them for the new pill-form design.
+   ═══════════════════════════════════════════════ */
+
+.o_login_page .oe_website_login_container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.o_login_page .oe_website_login_container h1 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 0.25rem;
+}
+
+/* Restore labels hidden by grm_website scss */
+.o_login_page .oe_website_login_container label {
+    display: block !important;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0.35rem;
+}
+
+/* ═══════════════════════════════════════════════
+   PILL-SHAPED INPUTS (email + password)
+   ═══════════════════════════════════════════════ */
+
+.o_login_input.form-control {
+    border-radius: 9999px !important;
+    padding: 0.875rem 1.5rem !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(8px);
+    font-size: 0.95rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    color: #212529 !important;
+}
+
+.o_login_input.form-control::placeholder {
+    color: #6c757d;
+}
+
+.o_login_input.form-control:focus {
+    border-color: var(--gr-green) !important;
+    box-shadow: 0 0 0 0.2rem rgba(164, 199, 60, 0.3) !important;
+    outline: none;
+}
+
+/* Password field is inside a .custom-passoword input-group — keep pill shape */
+.o_login_page .custom-passoword {
+    position: relative;
+}
+
+.o_login_page .custom-passoword #password.o_login_input {
+    padding-right: 3rem !important;
+}
+
+.o_login_page .custom-passoword #showPass {
+    background: transparent;
+    border: none;
+    position: absolute;
+    right: 1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 9;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 0;
+}
+
+.o_login_page .custom-passoword #showPass:hover {
+    color: #212529;
+}
+
+/* ═══════════════════════════════════════════════
+   FORGOT PASSWORD LINK
+   ═══════════════════════════════════════════════ */
+
+.o_login_forgot {
+    font-size: 0.75rem !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+    text-decoration: none !important;
+    font-weight: 400 !important;
+    transition: color 0.2s;
+}
+
+.o_login_forgot:hover {
+    color: var(--gr-green) !important;
+    text-decoration: none !important;
+}
+
+/* ═══════════════════════════════════════════════
+   SUBMIT BUTTON
+   ═══════════════════════════════════════════════ */
+
+.o_login_submit.btn.btn-primary {
+    border-radius: 9999px !important;
+    padding: 0.875rem 2rem !important;
+    font-weight: 500;
+    font-size: 1rem;
+    background: var(--gr-green) !important;
+    border-color: var(--gr-green) !important;
+    color: #fff !important;
+    transition: background-color 0.2s, border-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.o_login_submit.btn.btn-primary:hover,
+.o_login_submit.btn.btn-primary:focus {
+    background: var(--gr-green-dark) !important;
+    border-color: var(--gr-green-dark) !important;
+}
+
+/* ═══════════════════════════════════════════════
+   BACK LINK
+   ═══════════════════════════════════════════════ */
+
+.o_login_back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.7) !important;
+    text-decoration: none !important;
+    transition: color 0.2s;
+    margin-top: 0.75rem;
+}
+
+.o_login_back:hover {
+    color: #fff !important;
+    text-decoration: none !important;
+}
+
+/* ═══════════════════════════════════════════════
+   IMAGE COLLAGE (right column)
+   ═══════════════════════════════════════════════ */
+
+.o_login_collage {
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+
+.o_login_collage_inner {
+    position: relative;
+    width: 100%;
+    max-width: 30rem;
+    height: 480px;
+}
+
+@media (min-width: 1200px) {
+    .o_login_collage_inner {
+        height: 540px;
+    }
+}
+
+.o_login_collage_img {
+    position: absolute;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.o_login_collage_img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.o_login_collage_img_1 {
+    top: 0;
+    left: 0;
+    width: 55%;
+    height: 48%;
+}
+
+.o_login_collage_img_2 {
+    bottom: 0;
+    left: 0;
+    width: 48%;
+    height: 45%;
+}
+
+.o_login_collage_img_3 {
+    top: 10%;
+    right: 0;
+    width: 50%;
+    height: 55%;
+}
+
+/* Floating brand pill (decorative dot cluster with leaf) */
+.o_login_brand_pill {
+    position: absolute;
+    bottom: 32%;
+    left: 42%;
+    z-index: 10;
+    background: var(--gr-green);
+    border-radius: 9999px;
+    padding: 0.6rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+.o_login_brand_pill .fa {
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+/* Bottom-right brand badge */
+.o_login_brand_badge {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: var(--gr-green-muted);
+    border-radius: 1rem;
+    padding: 0.65rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+}
+
+.o_login_brand_badge_icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--gr-green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.o_login_brand_badge_icon .fa {
+    color: #fff;
+    font-size: 0.8rem;
+}
+
+.o_login_brand_badge span {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--gr-green-dark);
+    white-space: nowrap;
+}
