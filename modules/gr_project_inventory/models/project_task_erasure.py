@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import models
+from odoo.exceptions import UserError
 
 class ProjectTaskErasure(models.Model):
     _inherit = 'project.task'
@@ -7,7 +8,6 @@ class ProjectTaskErasure(models.Model):
     def action_generate_erasure_certificate(self):
         self.ensure_one()
         import logging
-        from odoo.exceptions import UserError
         logger = logging.getLogger(__name__)
 
         if not self.lot_name:
@@ -16,6 +16,8 @@ class ProjectTaskErasure(models.Model):
 
         try:
             rows = self.env['gr.erasure.service'].fetch_for_lot(self.lot_name)
+        except UserError:
+            raise  # specific messages ("No erased drives", "Lot not found", …) pass through as-is
         except Exception as e:
             logger.error('Error fetching erasure rows for lot %s: %s', self.lot_name, str(e), exc_info=True)
             raise UserError('Could not connect to Aiken or fetch erasure data. Please contact your administrator.')
