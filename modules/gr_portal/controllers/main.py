@@ -2,6 +2,7 @@
 from odoo import http
 from odoo.http import request
 from odoo.addons.web.controllers.home import Home as WebHome
+from odoo.addons.website.controllers.main import Website as WebsiteMain
 try:
     from odoo.addons.web.controllers.utils import is_user_internal
 except ImportError:
@@ -39,7 +40,10 @@ class GRPortalHome(http.Controller):
             return request.redirect(url('/web/login'), local=False)
         if request.env.user.has_group('base.group_portal'):
             return request.redirect(url('/my'), local=False)
-        return request.redirect(url('/web'), local=False)
+        # Internal / admin users: pass through to the normal website controller.
+        # This is required for the Website backend editor iframe to work
+        # (redirecting to /web inside an iframe breaks due to X-Frame-Options).
+        return WebsiteMain().index(**kw)
 
 
 class GRPortalLogin(WebHome):
