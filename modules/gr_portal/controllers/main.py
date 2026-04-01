@@ -24,13 +24,22 @@ class GRPortalHome(http.Controller):
 
     @http.route('/', type='http', auth='public', website=True, sitemap=False)
     def home(self, **kw):
+        # Werkzeug builds the Location header using the internal request scheme
+        # (always http when behind nginx), ignoring X-Forwarded-Proto.
+        # This produces "Location: http://..." which modern browsers block as
+        # an HTTPS→HTTP downgrade. Read the forwarded proto explicitly.
+        environ = request.httprequest.environ
+        scheme = environ.get('HTTP_X_FORWARDED_PROTO') or request.httprequest.scheme
+        host   = request.httprequest.host
+
+        def url(path):
+            return f'{scheme}://{host}{path}'
+
         if request.env.user._is_public():
-            return request.redirect('/web/login')
+            return request.redirect(url('/web/login'), local=False)
         if request.env.user.has_group('base.group_portal'):
-            return request.redirect('/my')
-        # Internal / admin user → backend (avoid /odoo which may not exist
-        # as a registered route in all 17.0 builds and falls to website 404)
-        return request.redirect('/web')
+            return request.redirect(url('/my'), local=False)
+        return request.redirect(url('/web'), local=False)
 
 
 class GRPortalLogin(WebHome):
