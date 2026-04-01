@@ -15,10 +15,13 @@ def zip_binary_objects(objects_dict):
                 zip_path = f"{ext}/{file['name']}"
                 # Ensure data is bytes, not base64 string or boolean
                 data = file["data"]
-                if isinstance(data, str):
+                # Odoo's ir.attachment.datas always returns base64-encoded BYTES
+                # (not str) from the ORM. isinstance(data, str) misses this case.
+                # Binary files (PDF, XLSX) were being written as raw base64 text.
+                if isinstance(data, (str, bytes)):
                     data = base64.b64decode(data)
                 elif isinstance(data, bool) or data is None:
-                    continue  # Skip empty files
+                    continue  # Skip empty/False attachments
                 zf.writestr(zip_path, data)
     return buffer.getvalue()
 

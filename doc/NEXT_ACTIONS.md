@@ -49,6 +49,8 @@ Last verified: 2026-03-31
 - Creation form date field fixed: `planned_date_begin` (start date) replaces `date_deadline` in "Formulaire de lancement d'opération".
 - EBICS fully resolved via Odoo shell scripts (`scripts/`). `sanitized_acc_number` was the real missing fix (SQL update of `acc_number` does not trigger stored field recompute). 16 statements imported for 2026-03-05 to 2026-03-27. Historical gap (2025-06-21 to 2026-03-04) confirmed unavailable via EBICS (code 90005). Account `00021148806` still needs investigation.
 - Shell scripts archived in `scripts/` for reuse.
+- Portal fixes: home follower domain, task_documents template, access token on Delivrable tag, fetch+blob download.
+- Binary zip corruption fixed: isinstance(data, (str, bytes)) � Odoo ORM returns base64 as bytes not str.
 - `planned_date_begin` persistence fixed and live-validated: creation form collects `date_deadline`; `create()` syncs to `planned_date_begin`. Task form shows "Planned Date" range. 28/28 tests passing.
 - Ctrl-C now stops the server cleanly on Windows via `--dev=reload` (werkzeug reloader). Live-validated.
 - Duplication performance (item 5a): indexes live on both DBs. Closed — reopen only if lag reappears in production.
@@ -60,3 +62,4 @@ Last verified: 2026-03-31
 - If status is `NON-OPERATIONAL`, stop at environment bootstrap/recovery guidance; do not recommend or begin feature implementation.
 - Then summarize the operating model, validated state, active backlog, recommended next action, and what must not be touched.
 - If a task changes the database or requires rollout-style validation, use the standby workflow from `doc/CURRENT_STATE.md` and `doc/RUNBOOKS/BACKUP_AND_SWAP.md`.
+
