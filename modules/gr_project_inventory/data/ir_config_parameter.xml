@@ -1,15 +1,15 @@
 <odoo noupdate="1">
     <record id="param_gr_workbench_host" model="ir.config_parameter">
         <field name="key">gr.workbench_host</field>
-        <field name="value"></field>
+        <field name="value">192.168.21.206</field>
     </record>
     <record id="param_gr_workbench_port" model="ir.config_parameter">
         <field name="key">gr.workbench_port</field>
-        <field name="value"></field>
+        <field name="value">3306</field>
     </record>
     <record id="param_gr_workbench_user" model="ir.config_parameter">
         <field name="key">gr.workbench_user</field>
-        <field name="value"></field>
+        <field name="value">awbadmin</field>
     </record>
     <record id="param_gr_workbench_pwd" model="ir.config_parameter">
         <field name="key">gr.workbench_pwd</field>
