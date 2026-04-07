@@ -140,6 +140,7 @@ class TestLaunchFormDocumentsWorkflow:
             # Le comportement serveur testaé (sync partner_id) est valideé via RPC apres
             # la creation de la tache — c'est le meme chemin de code.
             page.locator("#name_0").fill(task_name)
+            page.locator("#client_destination_name_0").fill("EcoSolutions Test")
 
             # 3. Ajouter une pièce jointe dans le formulaire lui-même
             page.locator("input[name='ufile']").set_input_files(str(filepath))
