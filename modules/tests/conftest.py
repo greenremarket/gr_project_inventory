@@ -28,9 +28,14 @@ PORTAL_PASSWORD = os.environ.get("PORTAL_PASSWORD", "TestGrm2026!")
 ODOO_DB = os.environ.get("ODOO_DB", "greenremarket")
 
 # Rôles backend — defaults = admin (toujours actif sur CT201 et CT202).
-# operateur@ et superviseur@ sont archivés sur les deux instances pour
-# ne pas consommer de sièges licence Odoo Enterprise.
-# Pour tester un rôle spécifique, passer OPERATOR_USER/SUPERVISOR_USER en env.
+# operateur@ et superviseur@ sont archivés (active=False) sur les deux instances
+# pour ne pas consommer de sièges Odoo Enterprise (payants par user interne actif).
+#
+# Pour tester un rôle spécifique en dev, re-activer temporairement sur CT202 :
+#   python scripts/seed_test_users.py --activate
+# Puis ré-archiver après la session :
+#   python scripts/seed_test_users.py --archive
+# NE JAMAIS --activate sur CT201 PROD.
 INTERNAL_USER = os.environ.get("INTERNAL_USER", "admin@greenremarket.fr")
 INTERNAL_PASSWORD = os.environ.get("INTERNAL_PASSWORD", "Payasugo187!odoo")
 OPERATOR_USER = os.environ.get("OPERATOR_USER", "admin@greenremarket.fr")
