@@ -1229,9 +1229,27 @@ class ProjectTask(models.Model):
     def action_create_and_open(self):
         """Called by the 'Créer et aller à la tâche' footer button.
         Odoo saves the record before calling this, so the task already exists.
+        Ensures the PD3E tag is assigned so the task is portal-visible.
         Returns an act_window that navigates to the full task form.
         """
         self.ensure_one()
+        # The portal controller filters strictly on the PD3E tag.
+        # This is the primary and most reliable place to assign it because
+        # self is the concrete saved task — no context dependency.
+        pd3e_tag = self.env['project.tags'].sudo().search(
+            [('name', 'ilike', 'PD3E')], limit=1
+        )
+        if pd3e_tag and pd3e_tag not in self.tag_ids:
+            self.write({'tag_ids': [fields.Command.link(pd3e_tag.id)]})
+            _logger.info(
+                'PD3E tag assigned to task %s via action_create_and_open.', self.id
+            )
+        elif not pd3e_tag:
+            _logger.warning(
+                'PD3E tag not found while processing task %s from launch form; '
+                'task will not be portal-visible until manually tagged.',
+                self.id,
+            )
         return {
             'type': 'ir.actions.act_window',
             'res_model': 'project.task',
@@ -1352,6 +1370,24 @@ class ProjectTask(models.Model):
             task._auto_generate_lot_name_if_empty()
         else:
             task = super(ProjectTask, self).create(vals)
+
+        # Tasks created from the launch form must be portal-visible by default.
+        # The portal controller filters strictly on the project tag PD3E.
+        # If this tag is absent, the operation will not appear on /my or /my/operations
+        # even if the user later uploads and tags deliverable documents correctly.
+        if self.env.context.get('gr_creation_form'):
+            pd3e_tag = self.env['project.tags'].sudo().search(
+                [('name', 'ilike', 'PD3E')], limit=1
+            )
+            if pd3e_tag:
+                if pd3e_tag not in task.tag_ids:
+                    task.write({'tag_ids': [fields.Command.link(pd3e_tag.id)]})
+            else:
+                _logger.warning(
+                    "PD3E tag not found while creating task %s from launch form; "
+                    "task will not be portal-visible until manually tagged.",
+                    task.id,
+                )
 
         if temp_attachments:
             for command in temp_attachments:
