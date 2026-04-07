@@ -191,7 +191,15 @@ class TestLaunchFormDocumentsWorkflow:
             synced = x("project.task", "read", [[task_id]], {"fields": ["partner_id", "order_giver_id"]})[0]
             assert synced["partner_id"], (
                 f"partner_id non synchro depuis order_giver_id={synced['order_giver_id']} — "
-                "le commanditaire ne verra pas l'operation sur son portail. "
+                "le commanditaire ne verra pas l'operation sur son portail."
+            )
+            # Verifier que task_portal_ok=True sur le commercial_partner.
+            # Sans ce flag, le filtre portail bloque la visibilite malgre PD3E + partner_id.
+            cp_id = synced["partner_id"][0]
+            cp_data = x("res.partner", "read", [[cp_id]], {"fields": ["name", "task_portal_ok"]})[0]
+            assert cp_data["task_portal_ok"], (
+                f"task_portal_ok=False sur {cp_data['name']} (id={cp_id}) — "
+                "l'operation sera invisible sur le portail. "
                 "Verifier action_create_and_open dans models.py."
             )
 
