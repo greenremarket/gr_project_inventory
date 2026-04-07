@@ -9,6 +9,35 @@ Last updated: 2026-04-07 (session 14, documents tag fix investigation)
 - Task 599 n'a pas de sous-dossier dédié (`documents_folder_id = NULL`), documents dans dossier 6 "General" (enfant de 5 "Projects").
 - Plan : branch `fix/documents-task-folder`, implémenter les stubs, ajouter test Playwright end-to-end tag→livrable, valider sur CT202, puis déployer CT201.
 - SSH config : `odoo-staging` renommé → `odoo-prod`.
+- Branch `fix/documents-task-folder` créée. Correctif implémenté dans `gr_project_inventory` :
+  - `models/documents_document.py` : `search_panel_select_range`, `write()`, `is_delivrable()`
+  - `models/documents_folder.py` : `task_ids`
+  - `models/models.py` (`project.task`) : `documents_folder_id = related=False`, `_init_documents_folder()`, `_prepare_documents_folder()`, override `action_view_documents_project_task()`
+  - version module `17.0.4.0.0` → `17.0.4.1.0`
+- Déploiement CT202 effectué (`scp -r modules/gr_project_inventory .../grm_repo/modules/`), `.pyc` nettoyés côté serveur.
+- Premier `--update gr_project_inventory` CT202 bloqué par un problème **pré-existant** : orphelin `ir_model_data(module='base', name='module_grm_website')` provoquant `UniqueViolation` pendant `Module.update_list()`.
+- Correctif infra CT202 appliqué : suppression de l'orphelin `module_grm_website`, relance `--update gr_project_inventory` OK. `ir_module_module.latest_version = 17.0.4.1.0` confirmé sur CT202.
+- Odoo CT202 redémarré et validé HTTP 200 sur `/web/login`.
+- Nouveau test Playwright réécrit pour couvrir le **vrai flow métier** :
+  1. login backend
+  2. upload d'une vraie pièce jointe via le chatter
+  3. clic smart button Documents
+  4. sélection du document dérivé
+  5. tagging UI `PJ > Livrable` + `PJ > Inventaire`
+  6. vérification ORM des tags
+  7. vérification portail
+  8. tentative de téléchargement `/my/operations/<id>/deliverable/inventaire`
+- Correctif Playwright appliqué : le téléchargement immédiat portail est géré via `expect_download` + `try/except` autour du `goto`.
+- Résultat CT202 : `test_workflow_document_tagging.py` **vert** (`1 passed`) contre `http://sartrouville.greenremarket.fr:8070`.
+- Limitation de l'env de test CT202 : le compte `operateur@greenremarket.fr` n'entre pas de manière stable sur `/web` en headless. Le flow backend Documents est donc testé avec `admin@greenremarket.fr` pour l'instant.
+- Déploiement prod CT201 effectué : copie du module `gr_project_inventory`, purge de l'orphelin `ir_model_data(base, module_grm_website)` qui bloquait `update_list()`, puis `--update gr_project_inventory` OK.
+- Prod confirmée en `gr_project_inventory 17.0.4.1.0`.
+- Vérification fonctionnelle prod non destructive via XML-RPC sur la tâche 599 (CICLAD) :
+  - avant : `documents_folder_id = False`
+  - appel `action_view_documents_project_task()`
+  - après : `documents_folder_id = General / CICLAD`
+  - action retournée : `ir.actions.act_window` sur `documents.document`
+- Conclusion : le correctif Documents est déployé et activé en prod. La prochaine démo Samy doit passer par le flow normal : pièce jointe → bouton Documents → tags PJ.
 
 ## 2026-04-06 — CT202 env test + alertes + communication équipe (sessions 11-13)
 - CT202 créé par clone linked de CT201 (snapshot `pre-ct202-test-20260407`), IP 192.168.21.202, `odoo-test` dans SSH config.

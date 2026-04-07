@@ -12,12 +12,10 @@ Last verified: 2026-04-07
 - **[CRITIQUE] Fix documents task folder + test Playwright** :
   Cause : stubs `documents_document.py` / `documents_folder.py` vides + `search_panel_select_range` manquant → panneau gauche Documents ne filtre pas sur le dossier de la tâche.
   Symptome : documents visibles uniquement dans "Espace de travail > Tous", tags PJ inaccessibles dans le bon contexte.
-  Plan :
-  - Branch `fix/documents-task-folder`
-  - Implémenter `documents_document.py` (search_panel_select_range, write, is_delivrable)
-  - Implémenter `documents_folder.py` (task_ids), ajouter documents_folder_id+init sur ProjectTask
-  - Ajouter test Playwright : admin tag document → portail client voit le livrable
-  - Déployer sur CT202, valider, puis CT201
+  Statut : **FERMÉ**
+  - Correctif module livré en prod (`gr_project_inventory` v17.0.4.1.0)
+  - CT202 validé par test Playwright réel : pièce jointe chatter → Documents → tags UI `PJ > Livrable` + `PJ > Inventaire` → portail client → téléchargement inventaire
+  - CT201 validé fonctionnellement sur tâche 599 (CICLAD) : `documents_folder_id` initialisé par l'action Documents (`General / CICLAD`)
 - **[CRITIQUE] Cron backup quotidien CT201** : script `backup_to_cloud.sh` prêt et testé. Planifier `0 3 * * *` via `crontab -e` sur CT201.
 - **[INFRA] Cron snapshot Proxmox quotidien** : planifier sur vms1 `pct snapshot 201 daily-$(date +%Y%m%d)` chaque nuit, conserver 7 snapshots.
 - **Tag PD3E automatique sur les opérations créées via le formulaire** : les opérations créées via le Formulaire de lancement d'opération doivent automatiquement recevoir le tag PD3E si ce n'est pas déjà le cas. Fix: dans `gr_project_inventory`, surcharger `create()` ou ajouter le tag dans le contexte du formulaire.
