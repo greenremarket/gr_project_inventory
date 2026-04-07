@@ -175,6 +175,10 @@ class TestKarimSignup:
                 f"Après signup, URL inattendue: {page.url}"
             )
 
+            # Déconnexion avant de tester le login (fix: /web/login redirige vers /my si déjà connecté)
+            page.goto(f"{BASE_URL}/web/session/logout")
+            page.wait_for_load_state("load")
+
             # Maintenant tester le login avec le nouveau mot de passe
             page.goto(f"{BASE_URL}/web/login")
             page.wait_for_load_state("load")
