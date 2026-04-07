@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Green Remarket Project Inventory',
-    'version': '17.0.4.3.0',
+    'version': '17.0.4.4.0',
     'category': 'Project',
     'summary': 'RSE tracking, site management, document links, and deliverable indicators on project tasks',
     'description': """

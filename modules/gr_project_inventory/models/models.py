@@ -1262,6 +1262,16 @@ class ProjectTask(models.Model):
                 'for task %s via action_create_and_open.',
                 commercial.name, self.id,
             )
+            # S'assurer que le partenaire est marqué visible sur le portail.
+            # task_portal_ok=False bloque le filtre portail malgré le tag PD3E
+            # et le partner_id. Un manager qui choisit un commanditaire veut
+            # que ce client voie l'opération.
+            if hasattr(commercial, 'task_portal_ok') and not commercial.task_portal_ok:
+                commercial.sudo().write({'task_portal_ok': True})
+                _logger.info(
+                    'task_portal_ok enabled on partner %s for portal visibility.',
+                    commercial.name,
+                )
         return {
             'type': 'ir.actions.act_window',
             'res_model': 'project.task',
