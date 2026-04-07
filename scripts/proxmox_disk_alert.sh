@@ -1,6 +1,6 @@
 #!/bin/bash
 # proxmox_disk_alert.sh — Alerte espace disque LVM Proxmox
-# Cron : 0 * * * * /usr/local/bin/proxmox_disk_alert.sh  (toutes les heures)
+# Cron : 5 * * * * /usr/local/bin/proxmox_disk_alert.sh  (5 min apres chaque heure, evite collision logrotate/dpkg a 00:00)
 #
 # v2 — fixes:
 #   1. Retry lvs jusqu'a 3 fois avant d'alerter (evite les faux positifs
@@ -12,8 +12,8 @@ ALERT_EMAIL="morad@greenremarket.fr"
 THIN_POOL="pve/data"   # VG/nom du thin pool Proxmox
 THRESHOLD_PCT=80       # Alerte si thin pool utilise > 80%
 HOSTNAME=$(hostname)
-MAX_RETRIES=3
-RETRY_DELAY=10         # secondes entre chaque essai
+MAX_RETRIES=6
+RETRY_DELAY=15  # secondes entre chaque essai (total 90s max)
 
 # --- Lecture du thin pool data% avec retry ---
 DATA_PCT=""
