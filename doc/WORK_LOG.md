@@ -1,43 +1,102 @@
-# WORK LOG
+﻿# WORK LOG
 Status: active
-Last updated: 2026-04-01 (session 10, CT 200 deploy)
+Last updated: 2026-04-07 (session 14, documents tag fix investigation)
 
-## 2026-03-23 â€” Database recovery
+## 2026-04-07 â€” Investigation bug tags documents + tÃ¢che 599 (session 14)
+- DÃ©mo Samy Miladi : impossible d'assigner le tag PJ > Inventaire Ã  un document depuis la tÃ¢che 599 (CICLAD).
+- Diagnostic via SSH CT201 : tags PJ (Livrable/RSE/Inventaire/Audit/Effacement, ids 40-44) **existent bien** en base.
+- Cause racine : `grm_documents_project.models.documents_document.search_panel_select_range` absorbÃ© comme stub vide dans `gr_project_inventory` â†’ le panneau gauche Documents ne filtre plus sur le dossier de la tÃ¢che â†’ navigation impossible sans passer par "Espace de travail > Tous".
+- Task 599 n'a pas de sous-dossier dÃ©diÃ© (`documents_folder_id = NULL`), documents dans dossier 6 "General" (enfant de 5 "Projects").
+- Plan : branch `fix/documents-task-folder`, implÃ©menter les stubs, ajouter test Playwright end-to-end tagâ†’livrable, valider sur CT202, puis dÃ©ployer CT201.
+- SSH config : `odoo-staging` renommÃ© â†’ `odoo-prod`.
+- Branch `fix/documents-task-folder` crÃ©Ã©e. Correctif implÃ©mentÃ© dans `gr_project_inventory` :
+  - `models/documents_document.py` : `search_panel_select_range`, `write()`, `is_delivrable()`
+  - `models/documents_folder.py` : `task_ids`
+  - `models/models.py` (`project.task`) : `documents_folder_id = related=False`, `_init_documents_folder()`, `_prepare_documents_folder()`, override `action_view_documents_project_task()`
+  - version module `17.0.4.0.0` â†’ `17.0.4.1.0`
+- DÃ©ploiement CT202 effectuÃ© (`scp -r modules/gr_project_inventory .../grm_repo/modules/`), `.pyc` nettoyÃ©s cÃ´tÃ© serveur.
+- Premier `--update gr_project_inventory` CT202 bloquÃ© par un problÃ¨me **prÃ©-existant** : orphelin `ir_model_data(module='base', name='module_grm_website')` provoquant `UniqueViolation` pendant `Module.update_list()`.
+- Correctif infra CT202 appliquÃ© : suppression de l'orphelin `module_grm_website`, relance `--update gr_project_inventory` OK. `ir_module_module.latest_version = 17.0.4.1.0` confirmÃ© sur CT202.
+- Odoo CT202 redÃ©marrÃ© et validÃ© HTTP 200 sur `/web/login`.
+- Nouveau test Playwright rÃ©Ã©crit pour couvrir le **vrai flow mÃ©tier** :
+  1. login backend
+  2. upload d'une vraie piÃ¨ce jointe via le chatter
+  3. clic smart button Documents
+  4. sÃ©lection du document dÃ©rivÃ©
+  5. tagging UI `PJ > Livrable` + `PJ > Inventaire`
+  6. vÃ©rification ORM des tags
+  7. vÃ©rification portail
+  8. tentative de tÃ©lÃ©chargement `/my/operations/<id>/deliverable/inventaire`
+- Correctif Playwright appliquÃ© : le tÃ©lÃ©chargement immÃ©diat portail est gÃ©rÃ© via `expect_download` + `try/except` autour du `goto`.
+- RÃ©sultat CT202 : `test_workflow_document_tagging.py` **vert** (`1 passed`) contre `http://sartrouville.greenremarket.fr:8070`.
+- Limitation de l'env de test CT202 : le compte `operateur@greenremarket.fr` n'entre pas de maniÃ¨re stable sur `/web` en headless. Le flow backend Documents est donc testÃ© avec `admin@greenremarket.fr` pour l'instant.
+- DÃ©ploiement prod CT201 effectuÃ© : copie du module `gr_project_inventory`, purge de l'orphelin `ir_model_data(base, module_grm_website)` qui bloquait `update_list()`, puis `--update gr_project_inventory` OK.
+- Prod confirmÃ©e en `gr_project_inventory 17.0.4.1.0`.
+- VÃ©rification fonctionnelle prod non destructive via XML-RPC sur la tÃ¢che 599 (CICLAD) :
+  - avant : `documents_folder_id = False`
+  - appel `action_view_documents_project_task()`
+  - aprÃ¨s : `documents_folder_id = General / CICLAD`
+  - action retournÃ©e : `ir.actions.act_window` sur `documents.document`
+- Conclusion : le correctif Documents est dÃ©ployÃ© et activÃ© en prod. La prochaine dÃ©mo Samy doit passer par le flow normal : piÃ¨ce jointe â†’ bouton Documents â†’ tags PJ.
+
+## 2026-04-06 â€” CT202 env test + alertes + communication Ã©quipe (sessions 11-13)
+- CT202 crÃ©Ã© par clone linked de CT201 (snapshot `pre-ct202-test-20260407`), IP 192.168.21.202, `odoo-test` dans SSH config.
+- web.base.url CT202 â†’ `http://sartrouville.greenremarket.fr:8070`, `auth_signup_uninvited=b2c`.
+- CT202 accessible publiquement sur port 8070 pour tests de MatÃ©o.
+- Alerte Proxmox disk space : script cron sur vms1 (LVM VG free < 1 GB â†’ mail via postfix relay IONOS). TestÃ© OK.
+- Message postÃ© dans tÃ¢che Odoo id=442 (projet inventaire) : contexte EBICS rÃ©tabli, instructions CT202, sÃ©paration test rapprochement / test email factures fournisseurs. Destinataires : Armand, LoÃ¯c, Samy.
+- BoÃ®te test IONOS `factures-fournisseurs-test@greenremarket.fr` identifiÃ©e comme prochaine Ã©tape pour tests MatÃ©o sans impacter la prod.
+
+## 2026-04-06 â€” EBICS automatisation complÃ¨te CT201 (session 11)
+- `ebics_daily.py` dÃ©ployÃ© sur CT201 : lock flock, calcul date_from = MAX(ebics_file.date_to WHERE state=done)+1, split 30j, nettoyage orphelins, notification dual-channel (Odoo mail.mail + postfix fallback).
+- `ebics_watchdog.py` dÃ©ployÃ© : cron 09h00 UTC, contrÃ´le sentinelle `.ebics_last_success` (seuil 3j), `.ebics_alert`, et MAX(date_to) >= J-4.
+- Cron activÃ© : `0 1 * * *` pour ebics_daily, `0 9 * * *` pour watchdog.
+- Catch-up 2026-04-01 â†’ J-2 effectuÃ© : nouveaux relevÃ©s importÃ©s, solde vÃ©rifiÃ©.
+- Runbook `doc/RUNBOOKS/EBICS.md` crÃ©Ã© avec procÃ©dure de reprise step-by-step.
+
+## 2026-04-05 â€” Backup quotidien SharePoint via rclone CT201 (session 10 suite)
+- rclone installÃ© (version officielle) sur CT201.
+- Config rclone copiÃ©e depuis legacy server `.93`, token OAuth renouvellÃ© via `rclone authorize` interactif (client_secret Azure AD expirÃ©).
+- Script `backup_to_cloud.sh` dÃ©ployÃ© sur CT201 : pg_dump + tar filestore + upload SharePoint sous dossiers datÃ©s + rotation locale (7j) et distante (30j).
+- Test manuel : upload rÃ©ussi (20 MB dump + 748 MB filestore) vers SharePoint.
+- Cron en attente de planification : `0 3 * * *`.
+
+## 2026-03-23 Ã¢â‚¬â€ Database recovery
 - Restored the project after dump-format confusion by using the correct PostgreSQL restore method for plain SQL dumps.
 - Recovered the active database as `greenremarket`.
 - Re-established the working Odoo environment and preserved data integrity.
 - Historical evidence: `doc/archive/COMPLETE_HANDOFF_FULL_PROJECT.md`
 
-## 2026-03-23 â€” Snapshot restore and promotion
+## 2026-03-23 Ã¢â‚¬â€ Snapshot restore and promotion
 - Loaded a production snapshot into an isolated working database and filestore.
 - Installed/upgraded `gr_project_inventory`, `grm_website`, and `grm_documents_project`.
 - Validated startup and module tests, deactivated unsafe website editor-style overrides, and promoted the snapshot to active.
 - Historical evidence: `doc/archive/HANDOFF_PROD_SNAPSHOT_SWITCH_20260323.txt`
 
-## 2026-03-23 â€” Dashboard and initial P1.8 rollout
+## 2026-03-23 Ã¢â‚¬â€ Dashboard and initial P1.8 rollout
 - Promoted the GR menu root to a top-level app entry.
 - Added report logo tests and applied the initial P1.8 report changes.
 - Validated targeted logo tests and the full `/gr_project_inventory` suite before rollout.
 - Historical evidence: `doc/archive/HANDOFF_PROD_SNAPSHOT_SWITCH_20260323.txt`
 
-## 2026-03-26 â€” Rotation workflow adopted and stabilized
+## 2026-03-26 Ã¢â‚¬â€ Rotation workflow adopted and stabilized
 - Normalized active/standby DB aliases to `greenremarket` and `greenremarket_backup`.
 - Normalized matching filestore aliases and completed a bidirectional swap drill.
 - Hardened the portal loader and aligned the remaining logo scale mismatch to `1.0`.
 - Revalidated targeted logo tests and the full `/gr_project_inventory` suite.
 - Historical evidence: `doc/archive/HANDOFF_PROD_SNAPSHOT_SWITCH_20260323.txt`
 
-## 2026-03-28 â€” Canonical takeover docs introduced
+## 2026-03-28 Ã¢â‚¬â€ Canonical takeover docs introduced
 - Added the canonical takeover chain under `doc/`.
 - Archived stale operational docs under `doc/archive/`.
 - Established `doc/START_HERE.md` as the entrypoint for future agents.
 
-## 2026-03-28 â€” Failed live takeover test
+## 2026-03-28 Ã¢â‚¬â€ Failed live takeover test
 - A live `oz agent run` test was mistakenly used with the vague prompt `resume work on this project`.
 - The agent treated that prompt as authorization to implement work, created branch `fix/backlog-fixes`, committed changes, and pushed them.
 - That outcome is now treated as a guardrail failure case, not as accepted project progress.
 
-## 2026-03-28 â€” Backlog test review completed
+## 2026-03-28 Ã¢â‚¬â€ Backlog test review completed
 - Reviewed active backlog items against existing test coverage in `gr_project_inventory/tests/`.
 - **Lot name length**: Confirmed implemented and tested via `test_lot_name_generation.py`:
   - 6-character maximum constraint enforced (`test_lot_name_length_constraint_6_chars`)
@@ -48,7 +107,7 @@ Last updated: 2026-04-01 (session 10, CT 200 deploy)
 - **Client bug in form**: No tests found; needs clarification on specific issue.
 - Moved "Lot name length" from Open to Confirmed closed in `doc/NEXT_ACTIONS.md`.
 
-## 2026-03-31 â€” migmi machine bootstrap (session 4)
+## 2026-03-31 Ã¢â‚¬â€ migmi machine bootstrap (session 4)
 - Repo refactored: `gr_project_inventory`, `grm_documents_project`, `grm_website` moved to `modules/`.
 - `third_party_modules/` and `ebics_keys/` directories created with `.gitkeep`; contents gitignored.
 - `portal_gr` removed from all references (no longer exists; replaced by `grm_*` in `modules/`).
@@ -61,78 +120,78 @@ Last updated: 2026-04-01 (session 10, CT 200 deploy)
 - Savepoint 0: extracted to `dumps/savepoint_0_production_20260331/` (immutable baseline).
 - DB `greenremarket_incoming` created and restored from `dump.sql`. Filestore copied to `odoo_data/filestore/greenremarket_incoming/`. 2252 files confirmed.
 - Savepoint 1: `dumps/savepoint_1_restored_raw.dump` (pg_dump -Fc of raw restored DB).
-- Next: website cleanup â†’ savepoint 2 â†’ module upgrade â†’ savepoint 3 â†’ promote to `greenremarket`.
+- Next: website cleanup Ã¢â€ â€™ savepoint 2 Ã¢â€ â€™ module upgrade Ã¢â€ â€™ savepoint 3 Ã¢â€ â€™ promote to `greenremarket`.
 - Website cleanup done: 4 editor-style overrides deactivated (template_header_default, header_text_element, footer_custom, footer_copyright_company_name). Count confirmed 0.
 - Savepoint 2: `dumps/savepoint_2_cleaned.dump`.
 - Missing pip dependencies discovered and installed: `pymysql>=1.1`, `fintech`, `pdfminer.six`. Added to `requirements.txt`.
-- `views_simple.xml` commented out in manifest â€” `date_deadline` xpath fails on this enterprise version. Added as open backlog item.
+- `views_simple.xml` commented out in manifest Ã¢â‚¬â€ `date_deadline` xpath fails on this enterprise version. Added as open backlog item.
 - gr modules upgraded/installed: `gr_project_inventory` 17.0.1.2, `grm_website` 17.0.1.1.3, `grm_documents_project` 17.0.1.1.2. `account_ebics` and `account_ebics_oe` synced.
 - Savepoint 3: `dumps/savepoint_3_upgraded.dump`.
-- DB renamed `greenremarket_incoming` â†’ `greenremarket`. Filestore promoted. Old March 30 filestore archived as `greenremarket_prior_march30`.
+- DB renamed `greenremarket_incoming` Ã¢â€ â€™ `greenremarket`. Filestore promoted. Old March 30 filestore archived as `greenremarket_prior_march30`.
 - Machine is now operational.
 - Standby pair created: `greenremarket_backup` DB (240 installed modules confirmed) and `odoo_data/filestore/greenremarket_backup`. Active/standby rotation model is now fully operational on this machine.
 
-## 2026-04-01 â€” Savepoint 5, standby sync, portal fixes (session 7 start)
+## 2026-04-01 Ã¢â‚¬â€ Savepoint 5, standby sync, portal fixes (session 7 start)
 - Portal home (`portal_home.py`) fixed: was searching by `user_ids` (internal assignment), portal clients are followers not assignees. Changed to commercial partner follower domain with PD3E tag filter.
 - Document portal downloads fixed: `documents_document.write()` now generates `attachment.access_token` when the Delivrable tag is added. 704/713 existing document attachments had no token (downloads silently failed).
-- `scripts/generate_delivrable_access_tokens.py` added for backfill (found 0 Delivrable documents in local DB â€” no existing delivrable docs yet).
+- `scripts/generate_delivrable_access_tokens.py` added for backfill (found 0 Delivrable documents in local DB Ã¢â‚¬â€ no existing delivrable docs yet).
 - Savepoint 5 created: `dumps/savepoint_5_ebics_portal_fixes_20260401.dump` (14.3 MB, includes 16 EBICS bank statements).
 - `greenremarket_backup` fully refreshed from savepoint 5: DB restored + filestore synced (2261 files each). Both DBs now identical and contain the EBICS statements.
 - Old backup filestore archived as `odoo_data/filestore/greenremarket_backup_pre_sp5`.
 
-## 2026-03-31 â€” planned_date_begin fix, Ctrl-C, test coverage (session 6, end)
+## 2026-03-31 Ã¢â‚¬â€ planned_date_begin fix, Ctrl-C, test coverage (session 6, end)
 - Root cause confirmed via test: `Form()` fires `_onchange_planned_dates` after each field change, not after the whole form is filled. Setting `planned_date_begin` first always wipes it even if `date_deadline` is set next.
-- Fix: creation form now collects `date_deadline` (labeled "Date de dÃ©but de l'opÃ©ration"). `date_deadline` has no enterprise onchange that wipes it. `create()` override mirrors `date_deadline` â†’ `planned_date_begin` at midnight server-side.
+- Fix: creation form now collects `date_deadline` (labeled "Date de dÃƒÂ©but de l'opÃƒÂ©ration"). `date_deadline` has no enterprise onchange that wipes it. `create()` override mirrors `date_deadline` Ã¢â€ â€™ `planned_date_begin` at midnight server-side.
 - `default_get` override: when `gr_creation_form` context flag is present, pre-fills `date_deadline` to today+1 so the form always opens with a valid date (prevents onchange wipe on first keypress).
 - `--dev=reload` added to startup command: werkzeug dev reloader handles Ctrl-C on Windows.
 - 28/28 tests passing. New tests: `test_planned_date_begin_wiped_without_deadline` (documents bug), `test_create_syncs_planned_date_from_deadline` (validates fix), `test_explicit_planned_date_begin_is_not_overwritten`.
 
-## 2026-03-31 â€” EBICS full resolution + statement import (session 6, late)
+## 2026-03-31 Ã¢â‚¬â€ EBICS full resolution + statement import (session 6, late)
 - Root cause of "No financial journal found" identified: `sanitized_acc_number` is a stored computed field. SQL update to `acc_number` does NOT trigger a recompute. Both `acc_number` and `sanitized_acc_number` on `res_partner_bank` id=1 now set to `00021148802` on both DBs.
 - EBICS 91116 on FDL with end date 2026-03-31: bank considers that delivery "consumed" (receipt acknowledged). Shifting end date to 2026-03-30 bypassed the block.
 - Z53 (camt.053 CIC-specific) rejected with 91005 INVALID_ORDER_TYPE. C53 rejected with functional error. FDL/cfonb120 is the only working format at CIC for this EBICS contract.
 - 16 bank statements imported: 2026-03-05 through 2026-03-27.
 - Historical gap 2025-06-21 to 2026-03-04: confirmed unavailable via EBICS (code 90005 EBICS_NO_DOWNLOAD_DATA_AVAILABLE). CIC only retains ~30 days of CFONB in EBICS FDL. This gap must be imported manually from CIC online banking export.
 - Shell scripts created in `scripts/` for reuse: `ebics_download_camt053.py`, `ebics_debug.py`, `ebics_try_formats.py`, `ebics_process_file.py`, `ebics_reprocess.py`, `ebics_missing_range.py`.
-- Creation form date field: `planned_date_begin` replaces `date_deadline` in "Formulaire de lancement d'opÃ©ration".
+- Creation form date field: `planned_date_begin` replaces `date_deadline` in "Formulaire de lancement d'opÃƒÂ©ration".
 
-## 2026-03-31 â€” lot_name generation, view layout, EBICS, bank config (session 6 final)
+## 2026-03-31 Ã¢â‚¬â€ lot_name generation, view layout, EBICS, bank config (session 6 final)
 - `lot_name` generation priority fixed: `_generate_client_hint` now tries `client_destination_name` first (the free-text destinataire field), then `order_giver_id.name`, then `partner_id.name`, then falls back to `UNK`. Logic, uniqueness, and 6-char constraints unchanged.
 - `test_lot_name_generation.py` updated: `test_client_hint_from_client_destination_name` and `test_client_destination_overrides_order_giver` added. 25/25 tests passing.
-- `lot_name` form layout fixed: xpath was targeting `//field[@name='date_deadline']` position=after which placed the field inside `div#date_deadline_and_recurring_task` (d-inline-flex), causing MOR601 to appear on the date row. Changed to target `//div[@id='date_deadline_and_recurring_task']` position=after â€” now a proper labeled row.
+- `lot_name` form layout fixed: xpath was targeting `//field[@name='date_deadline']` position=after which placed the field inside `div#date_deadline_and_recurring_task` (d-inline-flex), causing MOR601 to appear on the date row. Changed to target `//div[@id='date_deadline_and_recurring_task']` position=after Ã¢â‚¬â€ now a proper labeled row.
 - `views_simple.xml` form view override removed: making `planned_date_begin` visible inside the flex div corrupted the entire date row. The enterprise daterange widget already exposes it. Tree column kept.
 - Bank journal (BNK1): `acc_number` updated from IBAN `FR76 1027 8061 6400 0202 5770 259` to raw BBAN `00021148802` (what EBICS CFONB file sends). IBAN-to-BBAN mismatch was the root cause of "No financial journal found" errors on all 17 transactions. IBAN confirmation from CIC still pending.
-- `bank_statements_source` set to `undefined`, `account_online_account_id`/`account_online_link_id` cleared â€” removes "Reconnecter la banque" button on both DBs.
-- Startup command fixed with `--max-cron-threads=0` â€” prevents Windows cron thread crash (`pg_conn.poll()` incompatibility). HTTP server is unaffected.
+- `bank_statements_source` set to `undefined`, `account_online_account_id`/`account_online_link_id` cleared Ã¢â‚¬â€ removes "Reconnecter la banque" button on both DBs.
+- Startup command fixed with `--max-cron-threads=0` Ã¢â‚¬â€ prevents Windows cron thread crash (`pg_conn.poll()` incompatibility). HTTP server is unaffected.
 
-## 2026-03-31 â€” Duplication performance fix, test skip, db indexes (session 6 continued)
+## 2026-03-31 Ã¢â‚¬â€ Duplication performance fix, test skip, db indexes (session 6 continued)
 - Root cause of ~15s duplication delay: `gr_internal_inventory` and `gr_client_inventory` had only primary-key indexes; lookups by `task_id` were full table scans.
 - Added `index=True` on `gr.internal.inventory.task_id`, `client_inventory_id`, `created_at` and `gr.client.inventory.task_id`.
-- `test_date_field.py` marked with `@unittest.skip` â€” the tests were broken placeholders (empty field names from cherry-pick) and were causing test run failures.
+- `test_date_field.py` marked with `@unittest.skip` Ã¢â‚¬â€ the tests were broken placeholders (empty field names from cherry-pick) and were causing test run failures.
 - Both DBs upgraded; 4 new indexes confirmed in `pg_indexes`.
 
-## 2026-03-31 â€” views_simple.xml fix and icecat audit (session 6)
+## 2026-03-31 Ã¢â‚¬â€ views_simple.xml fix and icecat audit (session 6)
 - `views_simple.xml` was disabled because both its views tried to add `planned_date_begin` to views where enterprise already added it (invisible), causing a duplicate-field conflict.
-- Form view fixed: now inherits `project_enterprise.project_task_view_form`, uses xpath `//div[@id='date_deadline_and_recurring_task']/field[@name='planned_date_begin']` to flip `invisible=0` and set `string="Date de dÃ©but"`.
+- Form view fixed: now inherits `project_enterprise.project_task_view_form`, uses xpath `//div[@id='date_deadline_and_recurring_task']/field[@name='planned_date_begin']` to flip `invisible=0` and set `string="Date de dÃƒÂ©but"`.
 - Tree view fixed: inherits `project.view_task_tree2`, uses xpath `//field[@name='planned_date_begin']` to set `column_invisible=0` and `optional=show` (field was added `column_invisible="True"` by enterprise to `project_task_view_tree_base`, which is the parent).
 - `project_enterprise` added to `gr_project_inventory` depends in `__manifest__.py`.
 - `views_simple.xml` re-enabled in manifest.
 - Both `greenremarket_backup` and `greenremarket` upgraded cleanly (no errors, only known warnings).
-- `odoo_icecat_connector` confirmed already `uninstalled` in both DBs â€” no action needed.
+- `odoo_icecat_connector` confirmed already `uninstalled` in both DBs Ã¢â‚¬â€ no action needed.
 
-## 2026-03-31 â€” First functional validation session (session 5)
+## 2026-03-31 Ã¢â‚¬â€ First functional validation session (session 5)
 - First browser validation on `greenremarket_backup`. Core module features confirmed working.
 - Menu fix: Project Inventory reverted to under Project app (`views.xml` `parent="project.menu_main_pm"` restored; incorrect standalone app change reverted and applied to both DBs).
 - EBICS: HPB called, `#BANK` section written to `ebics_keys/greenremarket/120558690001_keys`. FDL file download confirmed working.
-- Open Banking cron jobs (IDs 38, 39, 40, 41) disabled on both `greenremarket` and `greenremarket_backup` â€” were crashing every 5 minutes due to invalid PSD2 tokens from production.
+- Open Banking cron jobs (IDs 38, 39, 40, 41) disabled on both `greenremarket` and `greenremarket_backup` Ã¢â‚¬â€ were crashing every 5 minutes due to invalid PSD2 tokens from production.
 - EBICS safe import start date established: 2025-06-21 (day after last Open Banking transaction).
 - `pdfminer.six` removed from `requirements.txt` (cryptography conflict with Odoo's `==3.4.8` pin).
-- CI workflow (`odoo-ci.yml`) fixed: updated module path `gr_project_inventory/` â†’ `modules/gr_project_inventory/`, fixed dependency install order to preserve cryptography pin.
+- CI workflow (`odoo-ci.yml`) fixed: updated module path `gr_project_inventory/` Ã¢â€ â€™ `modules/gr_project_inventory/`, fixed dependency install order to preserve cryptography pin.
 - 23/23 tests passing after all fixes.
 - Savepoint 4: `dumps/savepoint_4_ready_to_use_20260331.dump` + `odoo_data/filestore/greenremarket_backup` (standby).
 - `BACKUP_AND_SWAP.md` updated with exact Windows PowerShell commands including `source\*` filestore copy pattern.
 
-## 2026-03-28 â€” Guardrail docs patched and branching model established (session 3)
+## 2026-03-28 Ã¢â‚¬â€ Guardrail docs patched and branching model established (session 3)
 - External research pass confirmed design alignment with AGENTS.md community standard, guardrails.md Signs architecture, OpenAI Codex AGENTS.md discovery model, and GitHub Agentic Workflows 3-layer guardrail pattern.
 - Four gaps identified and addressed: structured 5-section resume report format, privilege boundaries (safe vs. requires approval), push-and-sync requirement, backlog closure criteria requiring test evidence.
 - Added Git and branching model: `main` as stable integration branch, feature branches per task, agents check current branch on resume.
@@ -140,27 +199,27 @@ Last updated: 2026-04-01 (session 10, CT 200 deploy)
 - Updated `doc/CURRENT_STATE.md` to reflect `main`-first model and pending consolidation of `backup-before-p1-8`.
 - Code fixes from artifact branch `fix/backlog-client-form-duplication-start-date` cherry-picked onto `backup-before-p1-8` (copy=False on created_at/created_by_id, remove duplicate client field, add views_simple.xml to manifest).
 
-## 2026-03-28 â€” Deferred platform roadmap captured for later execution
+## 2026-03-28 Ã¢â‚¬â€ Deferred platform roadmap captured for later execution
 - Added a deferred backlog item in `doc/NEXT_ACTIONS.md` to preserve the cross-machine kickstart and containerization/swarm initiative.
 - Explicitly documented future execution mode: create a dedicated feature branch from `main`, implement in phases, validate, and merge when ready.
 
-## 2026-03-28 â€” Mandatory feature intake gate added
+## 2026-03-28 Ã¢â‚¬â€ Mandatory feature intake gate added
 - Updated guardrail workflow to require a strict pre-implementation sequence for first-pass feature work: research/probing, written plan, then explicit developer approval.
 - Added the same gate to the canonical startup guidance so future sessions enforce it consistently before branching or coding.
 - Updated current-state documentation to reflect this as active operating policy.
 
-## 2026-03-29 â€” Resume consistency gate and stale state fix
+## 2026-03-29 Ã¢â‚¬â€ Resume consistency gate and stale state fix
 - Added a mandatory resume consistency gate in guardrails: canonical docs must be cross-checked against live git state before any recommended next action is produced.
 - Added a hard prohibition against recommending merge/cherry-pick/push steps unless same-session git verification proves they are still pending.
 - Replaced stale `doc/CURRENT_STATE.md` pending-integration text with verified integration status for `backup-before-p1-8`.
 
-## 2026-03-30 â€” Environment readiness hard gate enforced for resume flows
+## 2026-03-30 Ã¢â‚¬â€ Environment readiness hard gate enforced for resume flows
 - Added a mandatory resume-time environment readiness probe requirement in `AGENTS.md` and `doc/START_HERE.md`.
 - Defined `NON-OPERATIONAL` behavior: agents must report missing prerequisites first and stop at environment bootstrap/recovery guidance.
 - Updated `doc/CURRENT_STATE.md` and `doc/NEXT_ACTIONS.md` so backlog/code-task recommendations are blocked until local prerequisites are confirmed present.
 
-## 2026-04-01 — Report logo fix (session 7 continued)
-- company.logo = related to partner_id.image_1920 (filestore). EMPTY in this DB — image_1920 not restored from production dump.
+## 2026-04-01 â€” Report logo fix (session 7 continued)
+- company.logo = related to partner_id.image_1920 (filestore). EMPTY in this DB â€” image_1920 not restored from production dump.
 - company.logo_web = 17,704 bytes stored directly in res_company table. Always present.
 - Fixed both internal_inventory_report.py and discrepancy_report.py to use logo_web first, logo as fallback.
 - Fixed scale regression: was 0.125 (P1.8 broke this), restored to 1.0. logo_web is 180px so 1.0 is correct.
@@ -175,32 +234,32 @@ Last updated: 2026-04-01 (session 10, CT 200 deploy)
 - To enable Aiken locally: populate the \gr.workbench_*\ params via Settings -> Technical -> System Parameters, or set MYSQL_* env vars before starting Odoo.
 
 
-## 2026-04-01 — Savepoint 6 and Créer le lot Aiken planning (session 8)
+## 2026-04-01 â€” Savepoint 6 and CrÃ©er le lot Aiken planning (session 8)
 - Savepoint 6 created: `dumps/savepoint_6_pre_aiken_lot_20260401.dump` (full dump of active `greenremarket`).
 - Old standby pair archived: DB renamed to `greenremarket_backup_20260401`; filestore moved to `odoo_data/filestore/greenremarket_backup_20260401`.
 - New `greenremarket_backup` (DB + filestore) is now a fresh mirror of `greenremarket` as of 2026-04-01.
 - Aiken Workbench MySQL probing completed (read-only): `Lots` table has no AUTO_INCREMENT on `LotID`; `Params` is 352 bytes of ASCII '0'; current max `LotID` is 1177; `Lots_Owners` confirms `AIKEN` (ID=1) as the owner for GRM operations.
-- Warp plan created: "Créer le lot Aiken depuis le Formulaire de lancement d'opération".
+- Warp plan created: "CrÃ©er le lot Aiken depuis le Formulaire de lancement d'opÃ©ration".
 - Next: branch from `main` and implement the `create_aiken_lot` checkbox feature.
 
-## 2026-04-01 — Créer le lot Aiken + erasure fix (session 8, feature complete)
-- `create_aiken_lot` Boolean field on `project.task`; checkbox in Formulaire de lancement d'opération.
-- `gr.erasure.service.create_lot()`: transactional INSERT (duplicate check + MAX(LotID)+1 + Params=352×'0').
-- Non-blocking hook in `project.task.create()`: MySQL failure → `_logger.error` + `bus.bus` yellow sticky warning toast; task always created.
-- `action_create_and_open()`: "Créer et aller à la tâche" navigates to full task form after save.
-- Custom footer: Créer et aller à la tâche (primary) / Créer (save) / Annuler (cancel).
+## 2026-04-01 â€” CrÃ©er le lot Aiken + erasure fix (session 8, feature complete)
+- `create_aiken_lot` Boolean field on `project.task`; checkbox in Formulaire de lancement d'opÃ©ration.
+- `gr.erasure.service.create_lot()`: transactional INSERT (duplicate check + MAX(LotID)+1 + Params=352Ã—'0').
+- Non-blocking hook in `project.task.create()`: MySQL failure â†’ `_logger.error` + `bus.bus` yellow sticky warning toast; task always created.
+- `action_create_and_open()`: "CrÃ©er et aller Ã  la tÃ¢che" navigates to full task form after save.
+- Custom footer: CrÃ©er et aller Ã  la tÃ¢che (primary) / CrÃ©er (save) / Annuler (cancel).
 - Erasure cert error message fixed: `UserError` from `fetch_for_lot` now passes through; only unexpected errors show generic "Could not connect" message.
 - Live-validated: lot MOR601 created in Aiken, navigation works, correct error on cert with no erasures.
 - 36/36 tests passing. Branch feat/aiken-lot-creation merged to main.
 
-## 2026-04-01 — CT 200 deployment on Proxmox (session 8, deployment)
+## 2026-04-01 â€” CT 200 deployment on Proxmox (session 8, deployment)
 - Proxmox host vms1 (192.168.21.20) probed: 32 cores, 62 GB RAM, 5.3 TB LVM thin pool, Ubuntu 24.04 on host.
 - SSH key (ed25519) generated on Windows and deployed to Proxmox host and CT 200. `odoo-grm` added to ~/.ssh/config.
 - CT 200 created: Ubuntu 22.04, 4 cores, 4 GB RAM, 60 GB disk, IP 192.168.21.200, hostname odoo-grm.
 - Full Odoo 17 Enterprise stack installed: PostgreSQL 16, Python 3.10 venv, wkhtmltopdf 0.12.6, nginx, gevent, psycopg2, all Odoo/GRM requirements.
 - Community source cloned to /opt/odoo/addons_src. Enterprise (462 MB) transferred via scp. OCA/EBICS modules cloned.
 - GRM modules cloned from GitHub: gr_project_inventory, grm_website, grm_documents_project at /opt/odoo/grm_repo/modules.
-- Database restored: plain SQL dump streamed from local PG17 to CT 200 PG16. Encoding bug fixed (SQL_ASCII → UTF-8): locale-gen fr_FR.UTF-8, recreated DB, re-imported.
+- Database restored: plain SQL dump streamed from local PG17 to CT 200 PG16. Encoding bug fixed (SQL_ASCII â†’ UTF-8): locale-gen fr_FR.UTF-8, recreated DB, re-imported.
 - Filestore copied from local odoo_data/filestore/greenremarket to CT 200 /opt/odoo/data/filestore/.
 - Module upgrade (gr_project_inventory) applied on CT 200 to pick up create_aiken_lot and all recent changes.
 - Systemd service: /etc/systemd/system/odoo.service, enabled, auto-restarts. Correct Aiken MySQL credentials in Environment.
@@ -209,47 +268,47 @@ Last updated: 2026-04-01 (session 10, CT 200 deploy)
 - Odoo responds HTTP/HTTPS 200. Accents rendering correctly after UTF-8 fix.
 - Pending before go-live: router NAT, certbot real cert, --init grm_website+grm_documents_project, EBICS bank account BBAN fix, DNS cutover, Proxmox snapshot.
 
-## 2026-04-01 — CT 200 deployment fixes (session 9)
+## 2026-04-01 â€” CT 200 deployment fixes (session 9)
 - Charset bug root cause: previous deployment used SSH pipe (pg_dump | ssh psql) which mangled UTF-8 bytes in transit. Local data was always clean.
-- Fix: pg_dump -Fc on local PG17 → scp dump to server → pg_restore natively on server. No pipe, no encoding loss.
+- Fix: pg_dump -Fc on local PG17 â†’ scp dump to server â†’ pg_restore natively on server. No pipe, no encoding loss.
 - PostgreSQL 16 removed from CT 200; PostgreSQL 17 installed and configured on port 5432. pg_restore version now matches dump format (1.16).
-- DB re-restored cleanly: octet_length != char_length confirmed for accented chars (e.g. données: octet=30, char=29).
+- DB re-restored cleanly: octet_length != char_length confirmed for accented chars (e.g. donnÃ©es: octet=30, char=29).
 - All 4 GRM modules redeployed via scp: gr_project_inventory, grm_website, grm_documents_project, gr_portal (new module added from feature/portal-login-revamp).
 - Let's Encrypt cert obtained via DNS challenge for sartrouville.greenremarket.fr + go.greenremarket.fr (valid 2026-06-30). nginx updated to use real cert.
 - Filestore synced from local odoo_data/filestore/greenremarket to /opt/odoo/data/filestore/greenremarket.
 - Odoo restarted and confirmed active.
-- Remaining go-live blockers: router NAT (80/443 → 192.168.21.200), EBICS bank account BBAN fix, DNS cutover, Proxmox snapshot.
+- Remaining go-live blockers: router NAT (80/443 â†’ 192.168.21.200), EBICS bank account BBAN fix, DNS cutover, Proxmox snapshot.
 
-## 2026-04-01 — CT 200 gr_portal deploy + pre-existing gevent issue (session 10, late)
-- `scp -r modules/gr_portal/ odoo-grm:/opt/odoo/grm_repo/modules/` — all files transferred OK (new logo, portal.js, portal_templates.xml, controllers).
+## 2026-04-01 â€” CT 200 gr_portal deploy + pre-existing gevent issue (session 10, late)
+- `scp -r modules/gr_portal/ odoo-grm:/opt/odoo/grm_repo/modules/` â€” all files transferred OK (new logo, portal.js, portal_templates.xml, controllers).
 - `--update gr_portal` ran on CT 200 with no template or code errors.
 - Odoo will not restart: `pkg_resources.DistributionNotFound: The 'zope.interface' distribution was not found`.
-- This is a **pre-existing venv issue**, not caused by gr_portal. Odoo was running continuously since session 9 without restart — issue was masked.
+- This is a **pre-existing venv issue**, not caused by gr_portal. Odoo was running continuously since session 9 without restart â€” issue was masked.
 - Debugging steps taken:
   - Confirmed `import zope.interface` and `import gevent` both work fine
   - `zope_interface-8.2.dist-info` exists with valid METADATA
   - Error originates from `gevent 21.12.0` entry_point loading: `plugin.load()` calls `pkg_resources.require(['zope.interface'])` and the working_set can't resolve it
-  - setuptools upgraded 59.6.0 → 82.0.1 (broke pkg_resources entirely) → downgraded to 70.3.0
-  - `pip install zope` run during debug — added full Zope 6.0 ecosystem (side effect, should be cleaned up)
+  - setuptools upgraded 59.6.0 â†’ 82.0.1 (broke pkg_resources entirely) â†’ downgraded to 70.3.0
+  - `pip install zope` run during debug â€” added full Zope 6.0 ecosystem (side effect, should be cleaned up)
   - gevent 21.12.0 has no version pin on zope packages (just `Requires-Dist: zope.interface`)
-  - `import gevent` → clean exit 0
+  - `import gevent` â†’ clean exit 0
 - CT 200 current venv: setuptools=70.3.0, gevent=21.12.0, greenlet=1.1.2, zope.interface=8.2
-- **Fixed**: `pip install 'zope.interface==5.5.2' 'zope.event==4.5.0'` — pinning to gevent 21.12.0-era versions resolved `pkg_resources.DistributionNotFound`.
-- Odoo restarted clean. `curl https://localhost/web/login` → HTTP 200. CT 200 fully operational with gr_portal refresh.
+- **Fixed**: `pip install 'zope.interface==5.5.2' 'zope.event==4.5.0'` â€” pinning to gevent 21.12.0-era versions resolved `pkg_resources.DistributionNotFound`.
+- Odoo restarted clean. `curl https://localhost/web/login` â†’ HTTP 200. CT 200 fully operational with gr_portal refresh.
 
-## 2026-04-01 — CT 200 HTTPS, nginx, and routing fixes (session 10, final)
+## 2026-04-01 â€” CT 200 HTTPS, nginx, and routing fixes (session 10, final)
 - **HTTPS redirect bug**: All Odoo controllers were generating `Location: http://` because Odoo's internal connection to nginx is HTTP; `proxy_mode=True` + `X-Forwarded-Proto` were not reliably applied by werkzeug's ProxyFix on this build. Two-pronged fix:
   1. `gr_portal/controllers/main.py`: read `HTTP_X_FORWARDED_PROTO` from environ, build explicit `https://` URL, pass `local=False` to prevent Odoo stripping the scheme.
-  2. `scripts/ct200_nginx_odoo.conf`: added `proxy_redirect http://go.greenremarket.fr/ https://go.greenremarket.fr/;` — nginx rewrites all `http://` Location headers from Odoo to `https://`. Fixes ALL built-in controllers (website/force, web/login redirect, etc.).
-- **WebSocket 500 errors**: Odoo 17 uses `/websocket` (not `/longpolling`) for the real-time bus. nginx only had `/longpolling → port 8072 (gevent)`. `/websocket` was going to port 8069 (regular workers) → 500. Added `/websocket` location block identical to `/longpolling`. Website editor (which needs the bus) now loads correctly.
+  2. `scripts/ct200_nginx_odoo.conf`: added `proxy_redirect http://go.greenremarket.fr/ https://go.greenremarket.fr/;` â€” nginx rewrites all `http://` Location headers from Odoo to `https://`. Fixes ALL built-in controllers (website/force, web/login redirect, etc.).
+- **WebSocket 500 errors**: Odoo 17 uses `/websocket` (not `/longpolling`) for the real-time bus. nginx only had `/longpolling â†’ port 8072 (gevent)`. `/websocket` was going to port 8069 (regular workers) â†’ 500. Added `/websocket` location block identical to `/longpolling`. Website editor (which needs the bus) now loads correctly.
 - **Website editor grey screen**: Was caused by `/website/force/1` returning `http://` redirect which triggered `iframefallback`. Fixed by both changes above.
 - **Internal user `/` routing**:
-  - `?enable_editor=1` → pass through to `WebsiteMain().index()` (editor iframe)
-  - Direct visit → redirect to `https://.../my/home` (portal dashboard)
-- **All routing verified working**: unauth → `/web/login`, portal → `/my`, internal direct → `/my/home`, internal+editor → website content.
+  - `?enable_editor=1` â†’ pass through to `WebsiteMain().index()` (editor iframe)
+  - Direct visit â†’ redirect to `https://.../my/home` (portal dashboard)
+- **All routing verified working**: unauth â†’ `/web/login`, portal â†’ `/my`, internal direct â†’ `/my/home`, internal+editor â†’ website content.
 - nginx config saved to `scripts/ct200_nginx_odoo.conf` for reproducibility.
 
-## 2026-04-01 — gr_portal visual refresh from Lovable (session 10)
+## 2026-04-01 â€” gr_portal visual refresh from Lovable (session 10)
 - Reviewed Lovable prototype repo `moradigmir/remix-of-green-remarket-portal-refresh` (private).
 - Identified and applied visual changes: GR logo in loader + hero, collage right column removed,
   layout centered (col-lg-6 col-xl-5), `fa-chevron-right` CTA icon (avoids `grm_website` SVG override).
@@ -259,13 +318,13 @@ Last updated: 2026-04-01 (session 10, CT 200 deploy)
 - `login.js` replaced: jQuery fadeIn/fadeOut transitions, `readyState >= 4` loader check, proper `destroy()`.
 - New `portal.js` (Odoo 17 `@odoo-module`): staggered fade-in on portal tile cards.
 - New `portal_templates.xml`: welcome banner injected before `grm_website.portal_my_home_custom`
-  (NOT `portal.portal_my_home` — grm_website overrides the /my route directly).
+  (NOT `portal.portal_my_home` â€” grm_website overrides the /my route directly).
 - `__manifest__.py`: version 17.0.1.1.0, added `portal` dep, `portal_templates.xml`, `portal.js`.
 - `GR-Logo-2026-RVB.png` (55 KB) downloaded via `gh api` + PowerShell base64 decode (repo is private).
 - Lovable errors caught and fixed: wrong `inherit_id`, `dashboard_metrics` undefined variable,
   `portal_my_home_community` broken XPath, `portal_my_orders` missing `sale` dep,
-  Tailwind classes → Bootstrap 5, FA5/FA6 icons → FA4, `assets.xml` old-style loading dropped,
-  `portal.js` `odoo.define` → `@odoo-module`.
+  Tailwind classes â†’ Bootstrap 5, FA5/FA6 icons â†’ FA4, `assets.xml` old-style loading dropped,
+  `portal.js` `odoo.define` â†’ `@odoo-module`.
 - Branch: `feat/gr-portal-login-cleanup` (6 commits). Smoke-tested visually on local DB. Merged to `main`.
 
 ### Bug fixes found during smoke-test (same session):
@@ -275,11 +334,11 @@ Last updated: 2026-04-01 (session 10, CT 200 deploy)
 - **Hero blocks reset_password/signup** (`login_templates.xml`): Hero and back link now wrapped in
   `<t t-if="is_login">` where `is_login = 'reset_password' not in path and 'signup' not in path`.
   Form container gets `display:none` only on `/web/login`; visible immediately on other auth pages.
-- **`/` showed grm_website landing** (`controllers/main.py` — new file):
+- **`/` showed grm_website landing** (`controllers/main.py` â€” new file):
   Added `GRPortalHome` controller overriding `GET /` with `website=True`:
-    - Unauthenticated → `/web/login`
-    - Portal user → `/my`
-    - Internal user → `/web` (NOT `/odoo` — that URL falls through to website 404 catch-all)
+    - Unauthenticated â†’ `/web/login`
+    - Portal user â†’ `/my`
+    - Internal user â†’ `/web` (NOT `/odoo` â€” that URL falls through to website 404 catch-all)
   Added `GRPortalLogin(WebHome)` overriding `_login_redirect`:
     - Portal users land on `/my` after login (not `/` which would loop)
     - Internal users get standard backend redirect
@@ -308,3 +367,4 @@ Last updated: 2026-04-01 (session 10, CT 200 deploy)
   `odoo_data/filestore/greenremarket_backup_pre_sp6`.
 - DB safety rule clarified in `doc/CURRENT_STATE.md`: never run --init/--update
   on `greenremarket_backup`; it is the clean fallback only.
+
