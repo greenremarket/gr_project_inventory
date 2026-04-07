@@ -1250,6 +1250,18 @@ class ProjectTask(models.Model):
                 'task will not be portal-visible until manually tagged.',
                 self.id,
             )
+        # Sync partner_id depuis order_giver_id si pas déjà renseigné.
+        # Le portail filtre sur partner_id (commercial_partner du user connecté).
+        # Sans ce sync, les opérations créées via le formulaire sont invisibles
+        # sur le portail même si elles ont le tag PD3E.
+        if not self.partner_id and self.order_giver_id:
+            commercial = self.order_giver_id.commercial_partner_id or self.order_giver_id
+            self.write({'partner_id': commercial.id})
+            _logger.info(
+                'partner_id set to %s (commercial partner of order_giver_id) '
+                'for task %s via action_create_and_open.',
+                commercial.name, self.id,
+            )
         return {
             'type': 'ir.actions.act_window',
             'res_model': 'project.task',

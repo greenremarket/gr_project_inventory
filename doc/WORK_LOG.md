@@ -367,3 +367,4 @@ Last updated: 2026-04-07 (session 14, documents tag fix investigation)
   `odoo_data/filestore/greenremarket_backup_pre_sp6`.
 - DB safety rule clarified in `doc/CURRENT_STATE.md`: never run --init/--update
   on `greenremarket_backup`; it is the clean fallback only.
+

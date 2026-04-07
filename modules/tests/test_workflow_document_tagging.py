@@ -134,9 +134,12 @@ class TestLaunchFormDocumentsWorkflow:
                 f"Le formulaire de lancement ne s'est pas ouvert, URL: {page.url}"
             )
 
-            # 2. Remplir les infos minimales du formulaire
+            # 2. Remplir les infos minimales du formulaire (nom uniquement).
+            # order_giver_id est un Many2one : l'interaction autocomplete dans un formulaire
+            # target:new est trop fragile en Playwright (le dropdown interfere avec le submit).
+            # Le comportement serveur testaé (sync partner_id) est valideé via RPC apres
+            # la creation de la tache — c'est le meme chemin de code.
             page.locator("#name_0").fill(task_name)
-            page.locator("#client_destination_name_0").fill("Morad Test")
 
             # 3. Ajouter une pièce jointe dans le formulaire lui-même
             page.locator("input[name='ufile']").set_input_files(str(filepath))
@@ -176,12 +179,20 @@ class TestLaunchFormDocumentsWorkflow:
             assert task_data["tag_ids"], "La tâche créée via le formulaire n'a aucun tag; PD3E attendu"
             task_lot_name = task_data.get("lot_name") or task_name  # lot_name = ref portail
 
-            # 5b. Lier la tâche au partenaire EcoSolutions pour que le portail client la voie.
-            # En prod, le responsable saisit le commanditaire (order_giver_id) dans le formulaire ;
-            # ici on simule ce lien via RPC pour valider la visibilité portail sans dépendre
-            # d'une interaction UI Many2one complexe dans le dialogue.
-            ECOSOLUTIONS_PARTNER_ID = 320  # EcoSolutions commercial partner (stable sur CT202)
-            x("project.task", "write", [[task_id], {"partner_id": ECOSOLUTIONS_PARTNER_ID}])
+            # 5b. Tester le sync order_giver_id -> partner_id (comportement serveur cle).
+            # Le responsable definit le commanditaire dans le formulaire -> le commanditaire
+            # doit voir l'operation sur son portail. On simule ce comportement via RPC :
+            # set order_giver_id (EcoSolutions, partenaire stable CT202), puis appel
+            # action_create_and_open qui doit syncer partner_id.
+            ECOSOLUTIONS_ID = 320  # partenaire stable sur CT202
+            x("project.task", "write", [[task_id], {"order_giver_id": ECOSOLUTIONS_ID}])
+            x("project.task", "action_create_and_open", [[task_id]])
+            synced = x("project.task", "read", [[task_id]], {"fields": ["partner_id", "order_giver_id"]})[0]
+            assert synced["partner_id"], (
+                f"partner_id non synchro depuis order_giver_id={synced['order_giver_id']} — "
+                "le commanditaire ne verra pas l'operation sur son portail. "
+                "Verifier action_create_and_open dans models.py."
+            )
 
             # 6. Ouvrir Documents depuis la vraie tâche créée
             docs_button = page.locator(".oe_stat_button").filter(has_text="Documents").first
