@@ -1,6 +1,36 @@
 # WORK LOG
 Status: active
-Last updated: 2026-04-01 (session 10, CT 200 deploy)
+Last updated: 2026-04-07 (session 14, documents tag fix investigation)
+
+## 2026-04-07 — Investigation bug tags documents + tâche 599 (session 14)
+- Démo Samy Miladi : impossible d'assigner le tag PJ > Inventaire à un document depuis la tâche 599 (CICLAD).
+- Diagnostic via SSH CT201 : tags PJ (Livrable/RSE/Inventaire/Audit/Effacement, ids 40-44) **existent bien** en base.
+- Cause racine : `grm_documents_project.models.documents_document.search_panel_select_range` absorbé comme stub vide dans `gr_project_inventory` → le panneau gauche Documents ne filtre plus sur le dossier de la tâche → navigation impossible sans passer par "Espace de travail > Tous".
+- Task 599 n'a pas de sous-dossier dédié (`documents_folder_id = NULL`), documents dans dossier 6 "General" (enfant de 5 "Projects").
+- Plan : branch `fix/documents-task-folder`, implémenter les stubs, ajouter test Playwright end-to-end tag→livrable, valider sur CT202, puis déployer CT201.
+- SSH config : `odoo-staging` renommé → `odoo-prod`.
+
+## 2026-04-06 — CT202 env test + alertes + communication équipe (sessions 11-13)
+- CT202 créé par clone linked de CT201 (snapshot `pre-ct202-test-20260407`), IP 192.168.21.202, `odoo-test` dans SSH config.
+- web.base.url CT202 → `http://sartrouville.greenremarket.fr:8070`, `auth_signup_uninvited=b2c`.
+- CT202 accessible publiquement sur port 8070 pour tests de Matéo.
+- Alerte Proxmox disk space : script cron sur vms1 (LVM VG free < 1 GB → mail via postfix relay IONOS). Testé OK.
+- Message posté dans tâche Odoo id=442 (projet inventaire) : contexte EBICS rétabli, instructions CT202, séparation test rapprochement / test email factures fournisseurs. Destinataires : Armand, Loïc, Samy.
+- Boîte test IONOS `factures-fournisseurs-test@greenremarket.fr` identifiée comme prochaine étape pour tests Matéo sans impacter la prod.
+
+## 2026-04-06 — EBICS automatisation complète CT201 (session 11)
+- `ebics_daily.py` déployé sur CT201 : lock flock, calcul date_from = MAX(ebics_file.date_to WHERE state=done)+1, split 30j, nettoyage orphelins, notification dual-channel (Odoo mail.mail + postfix fallback).
+- `ebics_watchdog.py` déployé : cron 09h00 UTC, contrôle sentinelle `.ebics_last_success` (seuil 3j), `.ebics_alert`, et MAX(date_to) >= J-4.
+- Cron activé : `0 1 * * *` pour ebics_daily, `0 9 * * *` pour watchdog.
+- Catch-up 2026-04-01 → J-2 effectué : nouveaux relevés importés, solde vérifié.
+- Runbook `doc/RUNBOOKS/EBICS.md` créé avec procédure de reprise step-by-step.
+
+## 2026-04-05 — Backup quotidien SharePoint via rclone CT201 (session 10 suite)
+- rclone installé (version officielle) sur CT201.
+- Config rclone copiée depuis legacy server `.93`, token OAuth renouvellé via `rclone authorize` interactif (client_secret Azure AD expiré).
+- Script `backup_to_cloud.sh` déployé sur CT201 : pg_dump + tar filestore + upload SharePoint sous dossiers datés + rotation locale (7j) et distante (30j).
+- Test manuel : upload réussi (20 MB dump + 748 MB filestore) vers SharePoint.
+- Cron en attente de planification : `0 3 * * *`.
 
 ## 2026-03-23 â€” Database recovery
 - Restored the project after dump-format confusion by using the correct PostgreSQL restore method for plain SQL dumps.

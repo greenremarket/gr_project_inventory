@@ -150,6 +150,18 @@ class GrClientInventory(models.Model):
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
+
+# Import centralized config (gr_portal must be installed)
+try:
+    from odoo.addons.gr_portal.const import DELIVERABLE_CONFIG
+except ImportError:
+    import logging as _logging
+    _logging.getLogger(__name__).warning(
+        "gr_portal not installed — deliverable indicators disabled. "
+        "Install gr_portal to enable has_*/count_* fields on project.task."
+    )
+    DELIVERABLE_CONFIG = {}
+
 class InternalInventoryWizard(models.TransientModel):
     _name = 'internal.inventory.wizard'
     _description = 'Wizard for Creating Internal Inventory from Client Inventory'
@@ -1404,3 +1416,293 @@ class ProjectTask(models.Model):
                 except Exception as bus_exc:
                     _logger.error('[aiken] Could not send bus notification: %s', bus_exc)
         return task
+
+    # ── RSE tracking fields ──
+    rse_total_units = fields.Integer(
+        string='Total unités traitées',
+        default=0,
+        help="Nombre total d'unités traitées dans cette opération"
+    )
+    rse_reuse_units = fields.Integer(
+        string='Unités réemploi',
+        default=0,
+        help="Nombre d'unités orientées vers le réemploi"
+    )
+    rse_recycle_units = fields.Integer(
+        string='Unités recyclage',
+        default=0,
+        help="Nombre d'unités orientées vers le recyclage"
+    )
+    rse_co2_saved_kg = fields.Float(
+        string='CO₂ économisé (kg)',
+        default=0.0,
+        digits=(12, 2),
+        help="Kilogrammes de CO₂ économisés grâce à cette opération"
+    )
+
+    # ── Deliverable indicators (computed) ──
+    has_rapport_rse = fields.Boolean(
+        string='Rapport RSE',
+        compute='_compute_deliverable_status',
+        store=False,
+    )
+    has_inventaire = fields.Boolean(
+        string='Inventaire',
+        compute='_compute_deliverable_status',
+        store=False,
+    )
+    has_certificat_audit = fields.Boolean(
+        string="Certificat d'audit",
+        compute='_compute_deliverable_status',
+        store=False,
+    )
+    has_certificat_effacement = fields.Boolean(
+        string="Certificat d'effacement",
+        compute='_compute_deliverable_status',
+        store=False,
+    )
+
+    count_rapport_rse = fields.Integer(
+        string='Nb matchs Rapport RSE',
+        compute='_compute_deliverable_status',
+        store=False,
+    )
+    count_inventaire = fields.Integer(
+        string='Nb matchs Inventaire',
+        compute='_compute_deliverable_status',
+        store=False,
+    )
+    count_certificat_audit = fields.Integer(
+        string="Nb matchs Certificat d'audit",
+        compute='_compute_deliverable_status',
+        store=False,
+    )
+    count_certificat_effacement = fields.Integer(
+        string="Nb matchs Certificat d'effacement",
+        compute='_compute_deliverable_status',
+        store=False,
+    )
+
+    @api.depends('document_ids', 'document_ids.tag_ids')
+    def _compute_deliverable_status(self):
+        """Compute has_* and count_* for each deliverable type."""
+        for task in self:
+            for slug, config in DELIVERABLE_CONFIG.items():
+                field_suffix = slug.replace('-', '_')
+                count = self._count_deliverable_matches(task, config)
+                setattr(task, f'has_{field_suffix}', count > 0)
+                setattr(task, f'count_{field_suffix}', count)
+
+    def _count_deliverable_matches(self, task, config):
+        """Count documents/attachments matching a deliverable config.
+
+        Strategy:
+          1. Search task.document_ids by tag (priority)
+          2. Fallback: ir.attachment regex on filename
+        Returns the total candidate count.
+        """
+        candidates = 0
+
+        # Strategy 1: document_ids by tag
+        if hasattr(task, 'document_ids') and task.document_ids:
+            for doc in task.document_ids:
+                if doc.tag_ids and any(
+                    config['tag'].lower() in tag.name.lower()
+                    for tag in doc.tag_ids
+                ):
+                    candidates += 1
+
+        # Strategy 2: fallback ir.attachment regex (only if no tag matches)
+        if not candidates:
+            attachments = self.env['ir.attachment'].sudo().search([
+                ('res_model', '=', 'project.task'),
+                ('res_id', '=', task.id),
+            ])
+            pattern = re.compile(config['regex'], re.IGNORECASE)
+            for att in attachments:
+                if att.name and pattern.search(att.name):
+                    candidates += 1
+
+        return candidates
+
+    # ── Site de traitement ──
+    site_id = fields.Many2one(
+        'gr.site',
+        string='Site GR',
+        help='Site de traitement de cette opération.',
+        tracking=True,
+    )
+
+    # ── Deliverable indicators v2 : tagged-only + warning non-tague ──
+    # Surcharge les has_* de v1 (qui incluaient le fallback regex).
+    # has_* = True UNIQUEMENT si document avec bon tag (pas fallback seul)
+    # untagged_* = True si fichier present par nom mais sans tag -> warning
+    has_rapport_rse = fields.Boolean(
+        string='Rapport RSE',
+        compute='_compute_deliverable_status',
+        store=False,
+    )
+    has_inventaire = fields.Boolean(
+        string='Inventaire',
+        compute='_compute_deliverable_status',
+        store=False,
+    )
+    has_certificat_audit = fields.Boolean(
+        string="Certificat d'audit",
+        compute='_compute_deliverable_status',
+        store=False,
+    )
+    has_certificat_effacement = fields.Boolean(
+        string="Certificat d'effacement",
+        compute='_compute_deliverable_status',
+        store=False,
+    )
+    untagged_rapport_rse = fields.Boolean(
+        string='Rapport RSE non tague',
+        compute='_compute_deliverable_status',
+        store=False,
+    )
+    untagged_inventaire = fields.Boolean(
+        string='Inventaire non tague',
+        compute='_compute_deliverable_status',
+        store=False,
+    )
+    untagged_certificat_audit = fields.Boolean(
+        string="Certificat d'audit non tague",
+        compute='_compute_deliverable_status',
+        store=False,
+    )
+    untagged_certificat_effacement = fields.Boolean(
+        string="Certificat d'effacement non tague",
+        compute='_compute_deliverable_status',
+        store=False,
+    )
+
+    def _count_deliverable_tagged(self, task, config):
+        """Count documents with the correct tag (STRICT — no fallback regex).
+        Returns count of tag-matched documents only.
+        Un fichier sans tag ne compte PAS, meme si son nom matche le regex.
+        """
+        if not hasattr(task, 'document_ids') or not task.document_ids:
+            return 0
+        candidates = 0
+        for doc in task.document_ids:
+            if doc.tag_ids and any(
+                config['tag'].lower() in tag.name.lower()
+                for tag in doc.tag_ids
+            ):
+                candidates += 1
+        return candidates
+
+    def _count_deliverable_fallback(self, task, config):
+        """Count attachments matching by filename regex (no tag check).
+        Used to detect 'present but not tagged' (warning state).
+        Ne rentre en jeu QUE si aucun doc tague n'est trouve.
+        """
+        attachments = self.env['ir.attachment'].sudo().search([
+            ('res_model', '=', 'project.task'),
+            ('res_id', '=', task.id),
+        ])
+        pattern = re.compile(config['regex'], re.IGNORECASE)
+        candidates = 0
+        for att in attachments:
+            if att.name and pattern.search(att.name):
+                candidates += 1
+        return candidates
+
+    @api.depends('document_ids', 'document_ids.tag_ids')
+    def _compute_deliverable_status(self):
+        """Compute has_*, count_*, untagged_* — version corrigee.
+
+        Semantique :
+          has_*      = True si document AVEC le bon tag (STRICT, sans fallback)
+          count_*    = nombre de documents avec le bon tag
+          untagged_* = True si fichier present par nom (regex) mais SANS tag correct
+                       -> affiche un warning cote UI, pas une coche verte
+
+        Surcharge la v1 qui confondait tagged et fallback dans has_*.
+        Python utilise la derniere definition dans la classe.
+        """
+        for task in self:
+            for slug, config in DELIVERABLE_CONFIG.items():
+                field_suffix = slug.replace('-', '_')
+                tagged = self._count_deliverable_tagged(task, config)
+                fallback = self._count_deliverable_fallback(task, config) if not tagged else 0
+                setattr(task, f'has_{field_suffix}', tagged > 0)
+                setattr(task, f'count_{field_suffix}', tagged)
+                setattr(task, f'untagged_{field_suffix}', tagged == 0 and fallback > 0)
+
+
+
+
+
+    # ── Documents folder (dédié par tâche) ──
+    # Override du related standard de documents_project : chaque tâche a son propre
+    # sous-dossier au lieu d'hériter du dossier du projet. Sans ce override, toutes
+    # les tâches d'un projet partagent le même dossier et le panneau gauche ne
+    # filtre pas correctement.
+    documents_folder_id = fields.Many2one(
+        'documents.folder',
+        string='Task Documents Folder',
+        related=False,
+    )
+
+    shared_document_ids = fields.One2many(
+        'documents.document',
+        compute='_compute_shared_document_ids',
+        string='Shared Documents',
+        help='Documents visibles dans le portail client',
+    )
+
+    @api.depends('document_ids')
+    def _compute_shared_document_ids(self):
+        """Rend tous les documents de la tâche visibles en portail."""
+        for task in self:
+            task.shared_document_ids = task.document_ids
+
+    def action_view_documents_project_task(self):
+        """Override : initialise le dossier de la tâche avant d'ouvrir les Documents."""
+        if not self.documents_folder_id:
+            self._init_documents_folder()
+        return super().action_view_documents_project_task()
+
+    def _get_document_folder(self):
+        """Retourne le dossier de la tâche, en le créant si nécessaire."""
+        return self.documents_folder_id or self._init_documents_folder()
+
+    def _init_documents_folder(self):
+        """Crée un sous-dossier dédié à cette tâche dans les Documents."""
+        folder = self.env['documents.folder'].create(self._prepare_documents_folder())
+        self.documents_folder_id = folder.id
+        return folder
+
+    def _prepare_documents_folder(self):
+        """Valeurs pour créer le dossier de la tâche.
+
+        Le dossier parent est celui du projet. Si le projet n'a pas encore de
+        dossier, on utilise le dossier racine Projets de documents_project.
+        """
+        parent_folder_id = (
+            self.project_id.documents_folder_id.id
+            if self.project_id and self.project_id.documents_folder_id
+            else self.env.ref('documents_project.documents_project_folder').id
+        )
+        return {
+            'name': self.name,
+            'parent_folder_id': parent_folder_id,
+            'task_ids': [fields.Command.link(self.id)],
+        }
+
+
+class GrSite(models.Model):
+    _name = 'gr.site'
+    _description = 'Site GR'
+
+    name = fields.Char(string='Nom', required=True)
+    address = fields.Text(string='Adresse')
+    partner_id = fields.Many2one('res.partner', string='Contact site')
+    active = fields.Boolean(default=True)
+
+    _sql_constraints = [
+        ('name_unique', 'UNIQUE(name)', 'Le nom du site doit être unique.')
+    ]

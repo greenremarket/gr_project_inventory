@@ -1,51 +1,61 @@
-# __manifest__.py
-
+# -*- coding: utf-8 -*-
 {
-    'name': 'Green Remarket Project Inventory Management',
-    'version': '1.2',
-    'category': 'Inventory',
-    'summary': 'Manage client and internal inventories within project tasks and track discrepancies.',
+    'name': 'Green Remarket Project Inventory',
+    'version': '17.0.4.1.0',
+    'category': 'Project',
+    'summary': 'RSE tracking, site management, document links, and deliverable indicators on project tasks',
     'description': """
-        This module allows you to manage client-provided inventories and internal inventories within project tasks. It provides functionality to check for discrepancies between the client and internal inventories, identifying missing and extra items.
+Green Remarket Project Inventory v4.0
+======================================
+Consolidated backend module. Absorbed grm_documents_project.
+
+Features:
+- RSE tracking fields (total units, reuse, recycle, CO₂)
+- Deliverable indicators (has_*/count_* computed from document tags)
+- gr.site, gr.chassis, gr.observation models
+- Document management (folders, documents linking — stubs, sync from target)
+- Deliverable download routes (stubs, sync from target)
     """,
-    'author': 'Morad Igmir',
-    'company': 'Green Remarket',
-    'website': 'https://greenremarket.fr/',
-    'depends': ['base', 'project', 'project_enterprise', 'report_xlsx', 'report_xlsx_helper', 'stock', 'barcodes'],
+    'author': 'Morad IGMIR',
+    'website': 'https://greenremarket.fr',
+    'depends': [
+        'project', 'project_enterprise', 'documents', 'documents_project',
+        'barcodes', 'report_xlsx', 'report_xlsx_helper',
+    ],
     'data': [
+        # Security
+        'security/gr_groups.xml',
         'security/ir.model.access.csv',
-        'reports/discrepancy_report.xml',
-        'reports/internal_inventory_report.xml',
-        'views/views.xml',
-        'views/views_simple.xml',
-        'views/res_config_settings_view.xml',
-        'views/audit_report_xlsx_wizard_view.xml',
+        'security/gr_rules.xml',
+        # Reference data (CRITIQUE : référencés par des données de production)
         'data/product_type_data.xml',
         'data/chassis_data.xml',
-        'data/deliverable_data.xml',
         'data/manufacturer_data.xml',
+        'data/deliverable_data.xml',
         'data/barcode_nomenclature.xml',
-        # Erasure certificate feature additions:
+        'data/barcode_data.xml',
+        'data/ir_sequence_data.xml',
         'data/ir_config_parameter.xml',
+        # Livrables documents (absorbé depuis grm_documents_project)
+        'data/documents_facet_data.xml',
+        'data/documents_tag_data.xml',
+        # Vues héritées existantes
+        'views/views.xml',
+        'views/res_config_settings_view.xml',
+        'views/audit_report_xlsx_wizard_view.xml',
         'views/task_erasure_button.xml',
+        # Rapports (PDF + XLSX via OCA report_xlsx)
+        'reports/discrepancy_report.xml',
+        'reports/internal_inventory_report.xml',
         'reports/paperformat_erasure.xml',
         'reports/report_action.xml',
         'reports/erasure_certificate.xml',
-    ],
-    'report': [
-        'reports/audit_report_xlsx.py',
-    ],
-    'qweb': [
-        'reports/erasure_certificate.xml',
-    ],
-    'demo': [
-        'tests/__init__.py',
-        'tests/test_lot_name_generation.py',
+        # Nouvelles vues RSE/sites (source de vérité = Lovable)
+        'views/gr_site_views.xml',
+        'views/project_task_views.xml',
     ],
     'installable': True,
-    'application': True,
+    'application': False,
+    'auto_install': False,
     'license': 'LGPL-3',
-    'external_dependencies': {
-        'python': ['pymysql>=1.1'],
-    },
 }
