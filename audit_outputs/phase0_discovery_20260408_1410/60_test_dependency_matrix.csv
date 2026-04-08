@@ -1,0 +1,26 @@
+test_path,category,required_data,required_secrets,required_services,blocking_reason,confidence
+tests/conftest.py,fixture,seeded-users,ODOO_BASE_URL+PORTAL_PASSWORD+OPERATOR_PASSWORD+SUPERVISOR_PASSWORD,live-odoo-17,shared fixture file — not a test itself,HIGH
+tests/test_login.py,e2e-requires-seeded-data,seeded-users (client@ecosolutions.fr),PORTAL_PASSWORD,live-odoo-17+postgresql,requires seeded portal user to exist in DB,HIGH
+tests/test_login_signup_ux.py,e2e-requires-seeded-data,seeded-users,PORTAL_PASSWORD,live-odoo-17+postgresql,tests portal signup flow — requires live Odoo with portal module,HIGH
+tests/test_smoke_admin.py,e2e-requires-seeded-data,admin-user,ODOO_ADMIN_PASSWORD,live-odoo-17+postgresql,smoke test — requires running Odoo + admin access,HIGH
+tests/test_dashboard.py,e2e-requires-prod-like-dataset,seeded-users+dashboard-data,OPERATOR_PASSWORD,live-odoo-17+enterprise-modules+postgresql,depends on dashboard module (enterprise) + seeded data,HIGH
+tests/test_operations.py,e2e-requires-prod-like-dataset,gr_internal_inventory-data,OPERATOR_PASSWORD,live-odoo-17+gr_project_inventory,requires operations records in DB,HIGH
+tests/test_operation_detail.py,e2e-requires-prod-like-dataset,gr_internal_inventory-data,OPERATOR_PASSWORD,live-odoo-17+gr_project_inventory,requires specific operation record in DB,HIGH
+tests/test_orders.py,e2e-requires-prod-like-dataset,sale_order-data,OPERATOR_PASSWORD,live-odoo-17+gr_project_inventory,requires sales orders in DB,HIGH
+tests/test_order_detail.py,e2e-requires-prod-like-dataset,sale_order-data,OPERATOR_PASSWORD,live-odoo-17+gr_project_inventory,requires specific sale order record,HIGH
+tests/test_invoices.py,e2e-requires-prod-like-dataset,account_move-data,OPERATOR_PASSWORD,live-odoo-17+enterprise-modules+postgresql,requires invoice records (account_move),HIGH
+tests/test_invoice_detail.py,e2e-requires-prod-like-dataset,account_move-data,OPERATOR_PASSWORD,live-odoo-17+enterprise-modules+postgresql,requires specific invoice record,HIGH
+tests/test_deliverable_indicators.py,e2e-requires-prod-like-dataset,gr_internal_inventory+deliverable-data,OPERATOR_PASSWORD,live-odoo-17+gr_project_inventory,depends on deliverable workflow data,HIGH
+tests/test_pickup_request.py,e2e-requires-prod-like-dataset,gr_internal_inventory-data,PORTAL_PASSWORD,live-odoo-17+gr_project_inventory,portal pickup request — requires live workflow data,HIGH
+tests/test_security.py,e2e-requires-seeded-data,seeded-users (all 3 roles),PORTAL_PASSWORD+OPERATOR_PASSWORD+SUPERVISOR_PASSWORD,live-odoo-17+postgresql,role-based access tests — needs all seeded users,HIGH
+tests/test_account.py,e2e-requires-prod-like-dataset+enterprise,account_move+account_move_line-data,OPERATOR_PASSWORD,live-odoo-17+enterprise-modules+postgresql,accounting module tests — enterprise required,HIGH
+tests/test_csr_reports.py,e2e-requires-prod-like-dataset,csr/rse-data,SUPERVISOR_PASSWORD,live-odoo-17+gr_project_inventory,CSR report data must be pre-seeded,HIGH
+tests/test_rse_dashboard.py,e2e-requires-prod-like-dataset,rse-data,SUPERVISOR_PASSWORD,live-odoo-17+gr_project_inventory,RSE dashboard data — requires seeded RSE records,HIGH
+tests/test_workflow_client.py,e2e-workflow-full,seeded-client-workflow,PORTAL_PASSWORD,live-odoo-17+gr_project_inventory+gr_portal,full client workflow — portal + backend coordination,HIGH
+tests/test_workflow_deliverables.py,e2e-workflow-full,deliverable-workflow-data,OPERATOR_PASSWORD+SUPERVISOR_PASSWORD,live-odoo-17+gr_project_inventory,deliverable state machine — requires seeded and running workflow,HIGH
+tests/test_workflow_document_tagging.py,e2e-workflow-full,documents+tags-data,OPERATOR_PASSWORD,live-odoo-17+gr_project_inventory+enterprise-modules,document tagging workflow — enterprise documents module,HIGH
+tests/test_workflow_full_e2e.py,e2e-workflow-full,all-roles+all-workflow-data,PORTAL_PASSWORD+OPERATOR_PASSWORD+SUPERVISOR_PASSWORD,live-odoo-17+gr_project_inventory+enterprise-modules,complete end-to-end — requires all seeded data + enterprise,HIGH
+tests/test_workflow_karim_full.py,e2e-workflow-full+flaky,karim-user+workflow-data,PORTAL_PASSWORD,live-odoo-17+gr_project_inventory,named user test — coupling to specific user in DB; flaky risk,MEDIUM
+tests/test_workflow_operator.py,e2e-workflow-full,operator-workflow-data,OPERATOR_PASSWORD,live-odoo-17+gr_project_inventory,operator side of workflow,HIGH
+tests/test_workflow_signup_karim.py,e2e-workflow-full+flaky,signup-flow+karim-user,PORTAL_PASSWORD,live-odoo-17+gr_project_inventory+gr_portal,tests signup for named user — state-dependent; flaky if user already exists,MEDIUM
+tests/test_workflow_supervisor.py,e2e-workflow-full,supervisor-workflow-data,SUPERVISOR_PASSWORD,live-odoo-17+gr_project_inventory,supervisor approval workflow,HIGH

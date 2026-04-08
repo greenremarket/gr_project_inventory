@@ -1,0 +1,97 @@
+{
+  "audit_timestamp": "2026-04-08T14:10:22Z",
+  "environments": {
+    "local": {
+      "database": {
+        "engine": "PostgreSQL 17",
+        "host": "localhost:5432",
+        "auth": "scram-sha-256 (password required)",
+        "databases_present": "UNKNOWN — psql not in PATH, password not provided",
+        "note": "Local PG running but DB catalog not queried. Dumps present in E:\\Dev\\gr_project_inventory\\dumps\\"
+      },
+      "dumps": {
+        "location": "E:\\Dev\\gr_project_inventory\\dumps",
+        "total_files": 35,
+        "prod_dump": {"name": "prod.dump", "size_mb": 19.17, "date": "2026-04-06T22:46:50"},
+        "filestore_archive": {"name": "filestore_prod.tar.gz", "size_mb": 742.75, "date": "2026-04-06T22:47:16"},
+        "checkpoints": {
+          "count": 8,
+          "latest": {"name": "checkpoint_ux_login_signup_fixed.dump", "size_mb": 13.87, "date": "2026-04-07T07:22:13"},
+          "note": "Checkpoint dumps are stripped/smaller dev DB snapshots (~13.8MB vs 19MB prod)"
+        },
+        "original_sql": {"name": "greenremarket_actual.sql", "size_mb": 22.36, "date": "2026-03-30"},
+        "restore_method": "MANUAL — pg_restore or psql, no automation observed locally"
+      },
+      "filestore": {
+        "local_path": "E:\\Dev\\gr_project_inventory\\odoo_data",
+        "size": "UNKNOWN — not measured in this audit",
+        "prod_archive_available": true,
+        "prod_archive_path": "E:\\Dev\\gr_project_inventory\\dumps\\filestore_prod.tar.gz",
+        "prod_archive_size_mb": 742.75
+      }
+    },
+    "ct201": {
+      "database": {
+        "engine": "PostgreSQL 17.9",
+        "name": "greenremarket",
+        "host": "localhost:5432",
+        "size_mb": 131,
+        "auth": "peer (local socket, postgres user)",
+        "captured_at": "2026-04-08T14:15:00Z"
+      },
+      "top_30_tables": [
+        {"rank": 1,  "table": "mail_message",                            "size": "14 MB"},
+        {"rank": 2,  "table": "ir_model_data",                           "size": "8528 kB"},
+        {"rank": 3,  "table": "ir_ui_view",                              "size": "6760 kB"},
+        {"rank": 4,  "table": "ir_model_fields",                         "size": "4992 kB"},
+        {"rank": 5,  "table": "ir_attachment",                           "size": "4864 kB"},
+        {"rank": 6,  "table": "project_task",                            "size": "4016 kB"},
+        {"rank": 7,  "table": "mail_mail",                               "size": "3640 kB"},
+        {"rank": 8,  "table": "mail_followers",                          "size": "3152 kB"},
+        {"rank": 9,  "table": "account_move_line",                       "size": "2456 kB"},
+        {"rank": 10, "table": "gr_internal_inventory",                   "size": "2336 kB", "note": "CUSTOM"},
+        {"rank": 11, "table": "ir_module_module",                        "size": "1960 kB"},
+        {"rank": 12, "table": "account_move",                            "size": "1824 kB"},
+        {"rank": 13, "table": "mail_followers_mail_message_subtype_rel", "size": "1600 kB"},
+        {"rank": 14, "table": "gr_print_job",                            "size": "1560 kB", "note": "CUSTOM"},
+        {"rank": 15, "table": "account_bank_statement_line",             "size": "1288 kB"},
+        {"rank": 16, "table": "ir_model_constraint",                     "size": "1168 kB"},
+        {"rank": 17, "table": "crm_lead",                                "size": "1000 kB"},
+        {"rank": 18, "table": "mail_tracking_value",                     "size": "936 kB"},
+        {"rank": 19, "table": "mail_notification",                       "size": "816 kB"},
+        {"rank": 20, "table": "ir_module_module_dependency",             "size": "784 kB"},
+        {"rank": 21, "table": "sale_order_line",                         "size": "744 kB"},
+        {"rank": 22, "table": "ir_model",                                "size": "688 kB"},
+        {"rank": 23, "table": "account_account",                         "size": "632 kB"},
+        {"rank": 24, "table": "ir_act_window",                           "size": "576 kB"},
+        {"rank": 25, "table": "stock_move",                              "size": "552 kB"},
+        {"rank": 26, "table": "ir_model_fields_selection",               "size": "512 kB"},
+        {"rank": 27, "table": "res_partner",                             "size": "488 kB"},
+        {"rank": 28, "table": "project_task_user_rel",                   "size": "400 kB"},
+        {"rank": 29, "table": "product_template",                        "size": "400 kB"},
+        {"rank": 30, "table": "sale_order",                              "size": "376 kB"}
+      ],
+      "filestore": {
+        "path": "/opt/odoo/data/filestore",
+        "size_mb": 861,
+        "file_count": 2318,
+        "note": "Moderate size — feasible for containerised volume mount"
+      },
+      "backup_layout": {
+        "local_staging_backup": "/opt/odoo/backup_staging/",
+        "cloud_backup_script": "/opt/odoo/backup_to_cloud.sh",
+        "schedule": "Daily at 03:00 UTC",
+        "log": "/var/log/odoo/backup_cloud.log",
+        "cloud_destination": "UNKNOWN — backup_to_cloud.sh not inspected",
+        "retention": "UNKNOWN — script not read",
+        "restore_timings": "No historical timing logs found. Estimated: ~2-5 min for 131MB DB + 861MB filestore."
+      },
+      "data_gravity_assessment": {
+        "db_size": "131 MB — SMALL, easy to containerise",
+        "filestore_size": "861 MB — MODERATE, needs volume or object storage strategy",
+        "restore_risk": "LOW for DB. MEDIUM for filestore (path coupling to /opt/odoo/data/filestore hardcoded in Odoo config).",
+        "cross_env_parity": "LOCAL dumps are ~13-19MB (stripped). PROD is 131MB. Delta = prod data not in local dev snapshots."
+      }
+    }
+  }
+}

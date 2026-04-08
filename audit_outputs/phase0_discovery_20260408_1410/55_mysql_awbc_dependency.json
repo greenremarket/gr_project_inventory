@@ -1,0 +1,278 @@
+{
+  "audit_timestamp": "2026-04-08T14:42:00Z",
+  "title": "External MySQL Dependency — awbc_db",
+  "summary": "The Odoo service on CT201 and CT202 depends at runtime on an external MySQL 8.0 database on host 192.168.21.206. This database (awbc_db) is an ITAD/hardware refurbishment tracking platform (AWB Client system). gr_project_inventory reads from it via PyMySQL to generate hardware device reports (CPU, RAM, storage, grade, COA, photos) for each processed unit.",
+  "connection": {
+    "host": "192.168.21.206",
+    "port": 3306,
+    "database": "awbc_db",
+    "user": "manager",
+    "password": "***REDACTED***",
+    "charset": "latin1 / latin1_swedish_ci",
+    "engine": "MySQL 8.0.42",
+    "reachable_from": ["CT201", "CT202"],
+    "reachable_from_local": "UNKNOWN — not tested",
+    "credentials_location": "/etc/systemd/system/odoo.service (Environment= directives, PLAINTEXT)",
+    "python_driver": "PyMySQL==1.1.2 (installed in venv on all environments)"
+  },
+  "database_metrics": {
+    "total_size_mb": 352.69,
+    "captured_at": "2026-04-08T14:42:34Z"
+  },
+  "tables": [
+    {
+      "name": "Units_Pictures",
+      "rows": 739,
+      "size_mb": 311.656,
+      "engine": "InnoDB",
+      "note": "DOMINANT TABLE — device photos as LONGBLOB. 88% of total DB size."
+    },
+    {
+      "name": "Units_Devices",
+      "rows": 133654,
+      "size_mb": 37.047,
+      "engine": "InnoDB",
+      "note": "Per-component hardware scan records. ~18 rows per unit on average. Categories: CPU, RAM, STORAGE, LCD, BATTERY, BOARD, COA, VIDEO, KEYBOARD, OPTICAL, WEBCAM."
+    },
+    {
+      "name": "Units",
+      "rows": 7447,
+      "size_mb": 1.703,
+      "engine": "InnoDB",
+      "note": "Core asset/unit record. One row per physical device. Contains Grade, SerialNumber, Chassis, Manufacturer, Model, WarehLocation, HwID, ObservCodes."
+    },
+    {
+      "name": "Zap_Units_Devices",
+      "rows": 1834,
+      "size_mb": 0.656,
+      "engine": "InnoDB",
+      "note": "Refurbished/replacement component records (Zap = replacement pass)"
+    },
+    {
+      "name": "Zap_Units_Pictures",
+      "rows": 3,
+      "size_mb": 0.516,
+      "engine": "InnoDB"
+    },
+    {
+      "name": "Clients_Formats",
+      "rows": 19,
+      "size_mb": 0.469,
+      "engine": "InnoDB",
+      "note": "Report format definitions (blob/longblob params). Used to configure export formats per client."
+    },
+    {
+      "name": "Lots",
+      "rows": 149,
+      "size_mb": 0.094,
+      "engine": "InnoDB",
+      "note": "Lot/batch records. Each lot groups multiple Units. Fields: LotID, Number, Owner, Customer, Description, Status, Created, Uploaded."
+    },
+    {
+      "name": "Zap_Units",
+      "rows": 98,
+      "size_mb": 0.031,
+      "engine": "InnoDB"
+    },
+    {
+      "name": "Lots_Owners",
+      "rows": 5,
+      "size_mb": 0.016,
+      "engine": "InnoDB",
+      "note": "Owner/ITAD partner reference table. Fields: ID, Name, Common, Itad, Data(longblob)."
+    },
+    {
+      "name": "OSImages",
+      "rows": 13,
+      "size_mb": 0.016,
+      "engine": "InnoDB",
+      "note": "OS image catalog for restoration procedures."
+    },
+    {
+      "name": "Clients_Params",
+      "rows": 23,
+      "size_mb": 0.016,
+      "engine": "InnoDB"
+    },
+    {
+      "name": "Clients_Type",
+      "rows": 0,
+      "size_mb": 0.016,
+      "engine": "InnoDB"
+    },
+    {
+      "name": "Devices_Data",
+      "rows": 0,
+      "size_mb": 0.016,
+      "engine": "InnoDB"
+    }
+  ],
+  "views": [
+    {
+      "name": "Units_Reports",
+      "definer": "manager@%",
+      "purpose": "PRIMARY REPORT VIEW — pivots Units + Units_Devices across all hardware categories into a flat per-unit row. Consumed by gr_project_inventory to generate technical device reports.",
+      "columns_produced": [
+        "UnitID", "LotID", "AssetTag", "Created", "ProductType", "Manufacturer", "Model",
+        "Chassis", "PartNumber", "SerialNumber",
+        "DisplaySize", "Resolution",
+        "Processor", "ProcSpeed", "ProcGen", "ProcNumber",
+        "RAM", "RAM1-4 Model/Serial/Type/Size",
+        "Storage1/2 Size/Type/Model/Serial",
+        "Optical", "Keyb", "Webcam",
+        "BatteryModel", "BatteryDuration", "BatterySize",
+        "Videocard", "Videocard2",
+        "COA", "COANumber", "NewCOANumber",
+        "OSRestored", "ObservCodes", "ObservNotes", "Grade", "Audited",
+        "Exported", "PictureID", "User",
+        "MBmfg", "MBmodel", "MBserial", "MBversion",
+        "CPUsocket", "IMEI", "HwID", "WarehLocation", "PackGroupNumber"
+      ],
+      "note": "Uses stored function FREFURB() to switch between original (Grade/ObservCodes/User/Audited) and refurbished (RGrade/RObservCodes/RUser/RAudited) component data. Character set: latin1 — ENCODING RISK for French accented text."
+    },
+    {
+      "name": "NEW_Units_Reports",
+      "definer": "root@localhost",
+      "purpose": "Superset of Units_Reports — adds HwID, BatterySize, Videocard2, WarehLocation, PackGroupNumber. Likely the current production view used by gr_project_inventory.",
+      "note": "Defined by root@localhost, not manager@% — different privilege chain than Units_Reports."
+    },
+    {
+      "name": "Units_Reports_LotParam",
+      "engine": null,
+      "note": "Lot-level parameter report view — not deeply inspected."
+    },
+    {
+      "name": "Units_Reports_PackageParam",
+      "engine": null,
+      "note": "Package parameter report view."
+    },
+    {
+      "name": "Units_Reports_UnitParam",
+      "engine": null,
+      "note": "Unit parameter report view."
+    },
+    {
+      "name": "UserStats",
+      "engine": null,
+      "note": "User activity statistics view."
+    },
+    {
+      "name": "ExpCodesData",
+      "engine": null,
+      "note": "Export codes data view."
+    }
+  ],
+  "key_table_schemas": {
+    "Units": {
+      "columns": [
+        {"field": "UnitID", "type": "int", "key": "PRI"},
+        {"field": "LotID", "type": "int", "key": "MUL"},
+        {"field": "ProductType", "type": "varchar(20)"},
+        {"field": "Manufacturer", "type": "varchar(60)"},
+        {"field": "Model", "type": "varchar(80)"},
+        {"field": "PartNumber", "type": "varchar(60)"},
+        {"field": "SerialNumber", "type": "varchar(60)"},
+        {"field": "Chassis", "type": "varchar(16)"},
+        {"field": "Exported", "type": "int", "default": 0},
+        {"field": "PictureID", "type": "int", "default": 0},
+        {"field": "AssetTag", "type": "varchar(50)"},
+        {"field": "Grade", "type": "varchar(10)"},
+        {"field": "ObservCodes", "type": "varchar(255)"},
+        {"field": "ObservNotes", "type": "varchar(255)"},
+        {"field": "OSRestored", "type": "varchar(60)"},
+        {"field": "RGrade", "type": "varchar(10)", "note": "Refurbished grade"},
+        {"field": "RObservCodes", "type": "varchar(255)"},
+        {"field": "RObservNotes", "type": "varchar(255)"},
+        {"field": "RUser", "type": "varchar(16)"},
+        {"field": "RAudited", "type": "datetime"},
+        {"field": "WarehLocation", "type": "varchar(20)"},
+        {"field": "PackGroupType", "type": "varchar(20)"},
+        {"field": "PackGroupNumber", "type": "int", "default": 0},
+        {"field": "User", "type": "varchar(16)"},
+        {"field": "HwID", "type": "varchar(60)"},
+        {"field": "Created", "type": "datetime"},
+        {"field": "Audited", "type": "datetime"}
+      ]
+    },
+    "Units_Devices": {
+      "columns": [
+        {"field": "ID", "type": "int", "key": "PRI", "extra": "auto_increment"},
+        {"field": "UnitID", "type": "int", "key": "MUL"},
+        {"field": "Category", "type": "varchar(30)", "key": "MUL", "note": "CPU|RAM|STORAGE|LCD|BATTERY|BOARD|COA|VIDEO|KEYBOARD|OPTICAL|WEBCAM"},
+        {"field": "Manufacturer", "type": "varchar(60)"},
+        {"field": "Model", "type": "varchar(80)"},
+        {"field": "Serial", "type": "varchar(60)"},
+        {"field": "Size", "type": "varchar(60)"},
+        {"field": "Speed", "type": "varchar(60)"},
+        {"field": "Info1", "type": "varchar(255)"},
+        {"field": "Info2", "type": "varchar(255)"},
+        {"field": "Info3", "type": "varchar(255)"},
+        {"field": "Didx", "type": "int", "key": "MUL", "default": 0, "note": "Component index (0=first, 1=second etc.)"},
+        {"field": "Refurbished", "type": "int", "default": 0},
+        {"field": "Erased", "type": "int", "default": 0},
+        {"field": "Tested", "type": "int", "default": 0},
+        {"field": "Type", "type": "int", "default": 0},
+        {"field": "Data", "type": "longblob", "null": true}
+      ]
+    },
+    "Lots": {
+      "columns": [
+        {"field": "LotID", "type": "int", "key": "PRI"},
+        {"field": "Number", "type": "varchar(30)"},
+        {"field": "Owner", "type": "varchar(60)"},
+        {"field": "Customer", "type": "varchar(60)"},
+        {"field": "Description", "type": "varchar(255)"},
+        {"field": "Status", "type": "int"},
+        {"field": "Params", "type": "blob"},
+        {"field": "Created", "type": "datetime"},
+        {"field": "Uploaded", "type": "datetime", "null": true}
+      ]
+    }
+  },
+  "odoo_integration": {
+    "python_access_method": "PyMySQL==1.1.2 (direct SQL queries from gr_project_inventory models)",
+    "connection_injected_via": "systemd Environment= vars (MYSQL_HOST, MYSQL_PORT, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE)",
+    "primary_use": "Pulling Units_Reports / NEW_Units_Reports view data to populate hardware specification fields in Odoo project tasks / inventory records",
+    "secondary_use": "Lots and Lots_Owners for batch/lot context in reports",
+    "criticality": "CRITICAL — without this connection, gr_project_inventory cannot generate hardware reports for processed units. Core business output depends on it.",
+    "failure_mode": "If 192.168.21.206 is unreachable or credentials change, all report generation in gr_project_inventory silently fails or raises MySQL exceptions"
+  },
+  "risks": [
+    {
+      "id": "MYSQL-R01",
+      "title": "Credentials in plaintext systemd unit — both CT201 and CT202",
+      "severity": "HIGH",
+      "note": "Any process with root/sudo on the container can read the password."
+    },
+    {
+      "id": "MYSQL-R02",
+      "title": "192.168.21.206 is an undocumented host — not in SSH config, not in known_hosts",
+      "severity": "HIGH",
+      "note": "No information on what server this is, who operates it, what its backup/HA story is, or whether it is accessible from any future CI/container environment."
+    },
+    {
+      "id": "MYSQL-R03",
+      "title": "latin1 charset — encoding risk for French text",
+      "severity": "MEDIUM",
+      "note": "The Units_Reports view uses latin1/latin1_swedish_ci. French accented characters in Manufacturer/Model/ObservNotes may be mangled when read into Python 3 (UTF-8). Must be handled in the PyMySQL connection config."
+    },
+    {
+      "id": "MYSQL-R04",
+      "title": "FREFURB() stored function — state-dependent view output",
+      "severity": "MEDIUM",
+      "note": "The Units_Reports view calls FREFURB() stored function to decide which grade/observation/user fields to return. The output of the view depends on the server-side session state. This makes the view non-deterministic from a consumer perspective without understanding the function."
+    },
+    {
+      "id": "MYSQL-R05",
+      "title": "Units_Pictures LONGBLOB data — 311MB in DB",
+      "severity": "LOW",
+      "note": "Device photos are stored as LONGBLOB in MySQL. If gr_project_inventory ever reads these, it will be slow and memory-intensive. Should be offloaded to object storage if used."
+    },
+    {
+      "id": "MYSQL-R06",
+      "title": "No access from local dev — cannot test report generation locally",
+      "severity": "MEDIUM",
+      "note": "192.168.21.206 is only reachable from inside the 192.168.21.x network (CT201/CT202). Local dev cannot connect to awbc_db without a tunnel. Report-related code paths are untestable locally."
+    }
+  ]
+}

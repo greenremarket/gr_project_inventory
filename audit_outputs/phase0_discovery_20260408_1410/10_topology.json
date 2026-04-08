@@ -1,0 +1,132 @@
+{
+  "audit_timestamp": "2026-04-08T14:10:22Z",
+  "environments": [
+    {
+      "id": "local",
+      "label": "Local Dev — edgar",
+      "role": "Developer workstation",
+      "reachable": true,
+      "host": {
+        "hostname": "edgar",
+        "os": "Microsoft Windows 11 Home",
+        "os_version": "10.0.26200",
+        "os_build": "26200",
+        "os_arch": "64-bit",
+        "kernel": "NT 10.0.26200 (Windows 11)",
+        "manufacturer": "Acer",
+        "model": "Predator PH315-54",
+        "last_boot": "2026-04-06T03:52:57+02:00"
+      },
+      "hardware": {
+        "cpu_model": "11th Gen Intel Core i7-11800H @ 2.30GHz",
+        "cpu_cores": 8,
+        "cpu_logical": 16,
+        "cpu_max_mhz": 2304,
+        "ram_gb": 23.8,
+        "drives": [
+          {"letter": "C", "total_gb": 475.89, "used_gb": 459.14, "free_gb": 16.75, "note": "CRITICALLY LOW"},
+          {"letter": "D", "total_gb": 931.5, "used_gb": 327.08, "free_gb": 604.41},
+          {"letter": "E", "total_gb": 476.88, "used_gb": 254.65, "free_gb": 222.23, "note": "Primary dev drive"},
+          {"letter": "G", "total_gb": 475.89, "used_gb": 459.98, "free_gb": 15.91, "note": "Mirrored/shadow of C"}
+        ]
+      },
+      "timezone": "Romance Standard Time (UTC+01:00)",
+      "locale": "en-GB",
+      "network": {
+        "interfaces": [
+          {
+            "name": "Killer(R) Wi-Fi 6 AX1650i",
+            "ipv4": "192.168.1.91",
+            "ipv6_local": "fe80::148b:d24c:2d22:865%23",
+            "dns_suffix": "home"
+          },
+          {
+            "name": "Hyper-V Virtual Ethernet Adapter",
+            "ipv4": "172.19.16.1",
+            "note": "WSL virtual switch"
+          },
+          {
+            "name": "Killer E2600 Gigabit Ethernet Controller",
+            "note": "Physical ethernet, no IP seen"
+          }
+        ]
+      },
+      "shell": "pwsh 5.1.26100.8115"
+    },
+    {
+      "id": "ct201",
+      "label": "CT201 — odoo-staging (current prod/staging)",
+      "role": "Active Odoo 17 production/staging server",
+      "reachable": true,
+      "ssh_alias": "odoo-prod",
+      "ssh_via": "odoo-grm (ProxyJump)",
+      "internal_ip": "192.168.21.201",
+      "host": {
+        "hostname": "odoo-staging",
+        "os": "Ubuntu 22.04 LTS (Jammy Jellyfish)",
+        "os_version": "22.04",
+        "kernel": "Linux 6.5.11-4-pve (Proxmox VE)",
+        "hypervisor": "Proxmox VE LXC container",
+        "container_id": 201
+      },
+      "hardware": {
+        "cpu_model": "Intel Xeon E5-2620 v4 @ 2.10GHz",
+        "cpu_vcpus": 4,
+        "ram_gb": 4.0,
+        "ram_used_gb": 1.2,
+        "ram_available_gb": 2.8,
+        "swap_gb": 1.0,
+        "disk_root_total_gb": 59,
+        "disk_root_used_gb": 9.5,
+        "disk_root_free_gb": 47,
+        "disk_device": "/dev/mapper/pve-vm--201--disk--0"
+      },
+      "uptime": "1 day, 5h19m",
+      "up_since": "2026-04-07T22:18:57Z",
+      "timezone": "UTC",
+      "network": {
+        "public_dns": ["sartrouville.greenremarket.fr", "go.greenremarket.fr"],
+        "internal_ip": "192.168.21.201",
+        "jump_host": "odoo-grm"
+      }
+    },
+    {
+      "id": "ct200",
+      "label": "CT200 — odoo-grm (jump host / reverse proxy)",
+      "role": "Jump host, public nginx reverse proxy",
+      "reachable": true,
+      "ssh_alias": "odoo-grm",
+      "internal_ip": "192.168.21.200",
+      "public_dns": "sartrouville.greenremarket.fr",
+      "public_dns_alt": "wh.greenremarket.fr",
+      "note": "CT200 is NOT a dedicated standby Odoo server. It is the public-facing jump host at 192.168.21.200. Hostname resolves to 'odoo-grm'.",
+      "host": {
+        "hostname": "odoo-grm",
+        "os": "Ubuntu 22.04 LTS (Jammy Jellyfish)",
+        "kernel": "Linux 6.5.11-4-pve (Proxmox VE)",
+        "hypervisor": "Proxmox VE LXC container",
+        "container_id": 200
+      },
+      "uptime": "7 days, 10h20m",
+      "up_since": "2026-04-01T03:49:09Z"
+    },
+    {
+      "id": "proxmox",
+      "label": "Proxmox hypervisor",
+      "role": "LXC hypervisor hosting CT200 and CT201",
+      "reachable": "UNKNOWN — not directly audited",
+      "ssh_alias": "proxmox",
+      "internal_ip": "192.168.21.20",
+      "note": "Accessible via SSH through odoo-grm. Not audited in this session."
+    },
+    {
+      "id": "ct202",
+      "label": "CT202 — odoo-test (possible test container)",
+      "role": "UNKNOWN",
+      "reachable": "NOT_PROBED",
+      "ssh_alias": "odoo-test",
+      "internal_ip": "192.168.21.202",
+      "note": "SSH config entry exists. Not probed in this audit session. CONFIDENCE: LOW"
+    }
+  ]
+}

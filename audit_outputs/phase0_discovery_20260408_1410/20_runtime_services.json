@@ -1,0 +1,163 @@
+{
+  "audit_timestamp": "2026-04-08T14:10:22Z",
+  "environments": {
+    "local": {
+      "odoo": {
+        "running": false,
+        "note": "No Odoo process running locally. Development targets CT201 via SSH tunnel. odoo_ls_server.exe is Windsurf IDE extension only.",
+        "launch_mode": "N/A",
+        "local_odoo_path": "E:\\Dev\\gr_project_inventory\\odoo\\odoo-bin",
+        "config_path": "NONE (no active local odoo.conf found)",
+        "addons_path": "UNKNOWN — no active config",
+        "venv": "E:\\Dev\\gr_project_inventory\\.venv_odoo",
+        "python_version": "3.11.9"
+      },
+      "postgresql": {
+        "version": "PostgreSQL 17 (Windows, service name: postgresql-x64-17)",
+        "status": "RUNNING",
+        "start_type": "Automatic",
+        "data_dir": "C:\\Program Files\\PostgreSQL\\17\\data",
+        "config_file": "C:\\Program Files\\PostgreSQL\\17\\data\\postgresql.conf",
+        "hba_file": "C:\\Program Files\\PostgreSQL\\17\\data\\pg_hba.conf",
+        "port": 5432,
+        "listening": "0.0.0.0:5432 and [::]:5432",
+        "auth_method": "scram-sha-256 (all connections)",
+        "psql_in_path": false
+      },
+      "nginx": {
+        "running": false,
+        "note": "No nginx on Windows local host. nginx configs present in scripts/ for reference/deployment."
+      },
+      "wsl": {
+        "service": "WSLService",
+        "status": "RUNNING",
+        "start_type": "Automatic",
+        "note": "WSL2 active but no Odoo Linux services observed running inside it."
+      },
+      "wkhtmltopdf": {
+        "installed": false,
+        "path": "NOT FOUND",
+        "note": "BLOCKER: PDF generation not possible locally."
+      },
+      "listening_ports": {
+        "5432": "PostgreSQL"
+      },
+      "cron_jobs": [],
+      "docker": {
+        "present": false,
+        "note": "migmir-odoo18/ directory contains Docker artifacts from Oct 2025 but Docker Desktop not confirmed running."
+      }
+    },
+    "ct201": {
+      "odoo": {
+        "running": true,
+        "version": "17.0.0 FINAL",
+        "launch_mode": "systemd service (odoo.service)",
+        "service_file": "/etc/systemd/system/odoo.service",
+        "enabled": true,
+        "status": "active (running)",
+        "pid": 16793,
+        "user": "odoo",
+        "group": "odoo",
+        "exec_start": "/opt/odoo/venv/bin/python3 /opt/odoo/addons_src/odoo-bin -c /opt/odoo/odoo.conf",
+        "up_since": "2026-04-07T22:18:57Z",
+        "workers": 4,
+        "gevent_worker": true,
+        "cron_threads": 1,
+        "restart_policy": "always (RestartSec=10)",
+        "config_path": "/opt/odoo/odoo.conf",
+        "addons_path": [
+          "/opt/odoo/addons_src/addons",
+          "/opt/odoo/enterprise",
+          "/opt/odoo/extra_addons",
+          "/opt/odoo/extra_addons/account_ebics_repo",
+          "/opt/odoo/extra_addons/bank_statement_import_repo",
+          "/opt/odoo/extra_addons/account_reconcile_repo",
+          "/opt/odoo/extra_addons/l10n_france_repo",
+          "/opt/odoo/oca_addons/reporting-engine",
+          "/opt/odoo/grm_repo/modules"
+        ],
+        "data_dir": "/opt/odoo/data",
+        "db_name": "greenremarket",
+        "db_host": "localhost",
+        "db_port": 5432,
+        "db_user": "odoo",
+        "db_password": "***REDACTED***",
+        "admin_passwd": "***REDACTED***",
+        "proxy_mode": true,
+        "list_db": false,
+        "logfile": "/opt/odoo/logs/odoo.log",
+        "log_level": "warn",
+        "limit_time_cpu": 600,
+        "limit_time_real": 1200,
+        "wkhtmltopdf_path": "/usr/local/bin/wkhtmltopdf",
+        "environment_vars": {
+          "PATH": "/opt/odoo/venv/bin:/bin:/sbin:/usr/bin:/usr/sbin",
+          "MYSQL_HOST": "192.168.21.206",
+          "MYSQL_PORT": 3306,
+          "MYSQL_USER": "manager",
+          "MYSQL_PASSWORD": "***REDACTED***",
+          "MYSQL_DATABASE": "awbc_db",
+          "NOTE": "SECURITY RISK: External MySQL credentials stored as plaintext systemd env vars"
+        }
+      },
+      "postgresql": {
+        "version": "PostgreSQL 17.9 (Ubuntu 17.9-1.pgdg22.04+1)",
+        "status": "active (running)",
+        "enabled": true,
+        "data_dir": "/var/lib/postgresql/17/main",
+        "config_file": "/etc/postgresql/17/main/postgresql.conf",
+        "max_connections": 100,
+        "shared_buffers": "128MB",
+        "port": 5432,
+        "auth_method": "peer (local socket)"
+      },
+      "nginx": {
+        "version": "UNKNOWN (not queried)",
+        "status": "active (running)",
+        "enabled": true,
+        "pid": 145,
+        "workers": 4,
+        "config_file": "/etc/nginx/sites-enabled/odoo",
+        "server_names": ["sartrouville.greenremarket.fr", "go.greenremarket.fr"],
+        "tls": {
+          "certificate": "/etc/letsencrypt/live/sartrouville.greenremarket.fr/fullchain.pem",
+          "private_key": "/etc/letsencrypt/live/sartrouville.greenremarket.fr/privkey.pem",
+          "not_before": "2026-04-01T04:02:45Z",
+          "not_after": "2026-06-30T04:02:44Z",
+          "days_remaining": 83,
+          "subject": "CN=sartrouville.greenremarket.fr",
+          "protocol": "TLSv1.2 TLSv1.3"
+        },
+        "upstream_odoo": "127.0.0.1:8069",
+        "upstream_chat": "127.0.0.1:8072",
+        "client_max_body_size": "100M"
+      },
+      "wkhtmltopdf": {
+        "installed": true,
+        "path": "/usr/local/bin/wkhtmltopdf",
+        "version": "0.12.6.1",
+        "patched_qt": true
+      },
+      "cron_jobs": [
+        {"schedule": "0 3 * * *", "command": "/bin/bash /opt/odoo/backup_to_cloud.sh", "log": "/var/log/odoo/backup_cloud.log", "user": "root"},
+        {"schedule": "0 1 * * *", "command": "/usr/bin/python3 /opt/odoo/ebics_daily.py", "log": "/var/log/odoo/ebics_daily.log", "user": "root"},
+        {"schedule": "0 9 * * *", "command": "/usr/bin/python3 /opt/odoo/ebics_watchdog.py", "log": "/var/log/odoo/ebics_daily.log", "user": "root"}
+      ],
+      "listening_ports": {
+        "80": "nginx HTTP (redirects to 443)",
+        "443": "nginx HTTPS",
+        "5432": "PostgreSQL",
+        "8069": "Odoo HTTP (internal only)",
+        "8072": "Odoo WebSocket/longpolling (internal only)"
+      }
+    },
+    "ct200": {
+      "role": "Jump host and public reverse proxy",
+      "note": "CT200 (192.168.21.200 / odoo-grm) is NOT running Odoo. Services not deeply audited.",
+      "odoo": {"running": false},
+      "nginx": {"running": "LIKELY — serves public TLS termination and acts as entry point for traffic destined for CT201"},
+      "ssh_relay": true
+    }
+  }
+}

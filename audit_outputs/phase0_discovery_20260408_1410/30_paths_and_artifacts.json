@@ -1,0 +1,146 @@
+{
+  "audit_timestamp": "2026-04-08T14:10:22Z",
+  "environments": {
+    "local": {
+      "odoo_ce_source": {
+        "path": "E:\\Dev\\gr_project_inventory\\odoo",
+        "version": "17.0.0",
+        "note": "Full Odoo CE source clone"
+      },
+      "odoo_enterprise": {
+        "path": "E:\\Dev\\gr_project_inventory\\enterprise",
+        "note": "Full enterprise module set, cloned 2026-03-31, ~300+ modules"
+      },
+      "custom_modules": {
+        "path": "E:\\Dev\\gr_project_inventory\\modules",
+        "modules": [
+          {"name": "gr_project_inventory", "last_modified": "2026-04-08T00:24:54", "note": "Main business module"},
+          {"name": "gr_portal", "last_modified": "2026-04-07T19:01:56", "note": "Portal / customer-facing module"},
+          {"name": "grm_documents_project", "last_modified": "2026-03-31T21:06:32", "note": "DELETED in working tree"},
+          {"name": "grm_website", "last_modified": "2026-03-31T21:06:31"}
+        ],
+        "archived": "_archived_20260406/"
+      },
+      "third_party_modules": {
+        "path": "E:\\Dev\\gr_project_inventory\\third_party_modules",
+        "repos": [
+          {"name": "account_ebics_repo", "note": "Noviat EBICS integration"},
+          {"name": "account_reconcile_repo", "note": "OCA bank reconciliation"},
+          {"name": "bank_statement_import_repo", "note": "OCA bank statement imports"},
+          {"name": "l10n_france_repo", "note": "OCA France localisation"},
+          {"name": "reporting-engine", "note": "OCA reporting engine (xlsx, qweb etc.)"}
+        ]
+      },
+      "venv": {
+        "path": "E:\\Dev\\gr_project_inventory\\.venv_odoo",
+        "python": "3.11.9",
+        "created": "2026-03-30"
+      },
+      "odoo_data_dir": {
+        "path": "E:\\Dev\\gr_project_inventory\\odoo_data",
+        "note": "Local filestore and session data"
+      },
+      "dumps_dir": {
+        "path": "E:\\Dev\\gr_project_inventory\\dumps",
+        "files_count": 35,
+        "notable": [
+          {"name": "prod.dump", "size_mb": 19.17, "date": "2026-04-06"},
+          {"name": "filestore_prod.tar.gz", "size_mb": 742.75, "date": "2026-04-06"},
+          {"name": "checkpoint_ux_login_signup_fixed.dump", "size_mb": 13.87, "date": "2026-04-07"},
+          {"name": "greenremarket_actual.sql", "size_mb": 22.36, "date": "2026-03-30"}
+        ],
+        "total_dump_count": 35,
+        "oldest_dump": "greenremarket_actual.sql (2026-03-30)",
+        "newest_dump": "checkpoint_ux_login_signup_fixed.dump (2026-04-07)"
+      },
+      "ebics_keys_dir": {
+        "path": "E:\\Dev\\gr_project_inventory\\ebics_keys",
+        "note": "EBICS key material. Paths confirmed, contents NOT inspected.",
+        "last_modified": "2026-03-31T20:02:05"
+      },
+      "security_dir": {
+        "path": "E:\\Dev\\gr_project_inventory\\security",
+        "last_modified": "2026-03-30"
+      },
+      "scripts_dir": {
+        "path": "E:\\Dev\\gr_project_inventory\\scripts",
+        "notable": [
+          "bootstrap_odoo_lxc.sh",
+          "ct200_nginx_odoo.conf",
+          "nginx_odoo_grm.conf",
+          "ebics_daily.py",
+          "ebics_watchdog.py",
+          "seed_test_users.py",
+          "backup/"
+        ]
+      },
+      "react_dashboard": {
+        "path": "E:\\Dev\\greenremarket-dashboard-v3",
+        "type": "React+Vite+TypeScript",
+        "package_manager": "bun"
+      },
+      "stale_docker_setup": {
+        "path": "C:\\Users\\migmi\\migmir-odoo18",
+        "note": "Docker Compose + k8s artifacts from Oct 2025. Not active. Contains postgres-data/ directory."
+      }
+    },
+    "ct201": {
+      "odoo_root": "/opt/odoo",
+      "odoo_ce_source": {
+        "path": "/opt/odoo/addons_src",
+        "note": "Contains odoo-bin and addons/ subdirectory"
+      },
+      "odoo_enterprise": {
+        "path": "/opt/odoo/enterprise",
+        "note": "~600 enterprise modules"
+      },
+      "custom_modules": {
+        "path": "/opt/odoo/grm_repo/modules",
+        "modules": ["gr_project_inventory", "gr_portal", "grm_documents_project", "grm_website"]
+      },
+      "third_party_extra": {
+        "path": "/opt/odoo/extra_addons",
+        "repos": ["account_ebics_repo", "bank_statement_import_repo", "account_reconcile_repo", "l10n_france_repo"]
+      },
+      "oca_addons": {
+        "path": "/opt/odoo/oca_addons",
+        "repos": ["reporting-engine"]
+      },
+      "venv": {
+        "path": "/opt/odoo/venv",
+        "python": "3.10.12"
+      },
+      "data_dir": {
+        "path": "/opt/odoo/data",
+        "subdirs": ["addons", "filestore", "sessions"]
+      },
+      "filestore": {
+        "path": "/opt/odoo/data/filestore",
+        "size_mb": 861,
+        "file_count": 2318
+      },
+      "logs": {
+        "path": "/opt/odoo/logs",
+        "files": [{"name": "odoo.log", "size": "1.6M"}]
+      },
+      "ebics_keys_dir": {
+        "path": "/opt/odoo/ebics_keys",
+        "note": "EBICS keys directory confirmed. Contents NOT inspected."
+      },
+      "backup_local": {
+        "path": "/opt/odoo/backup_staging",
+        "note": "Local staging backup directory managed by backup_to_cloud.sh"
+      },
+      "scripts": [
+        "/opt/odoo/backup_to_cloud.sh",
+        "/opt/odoo/ebics_daily.py",
+        "/opt/odoo/ebics_watchdog.py",
+        "/opt/odoo/ebics_catchup.py"
+      ],
+      "config": "/opt/odoo/odoo.conf",
+      "service_unit": "/etc/systemd/system/odoo.service",
+      "nginx_config": "/etc/nginx/sites-enabled/odoo",
+      "tls_cert_dir": "/etc/letsencrypt/live/sartrouville.greenremarket.fr/"
+    }
+  }
+}
