@@ -1,11 +1,27 @@
 ﻿# NEXT ACTIONS
 Status: active
-Last verified: 2026-04-07 (session 15)
+Last verified: 2026-04-08 (Phase 0 discovery audit)
 
 ## Operating priorities
 1. Keep `greenremarket_backup` in sync with active before any risky work (standby exists and is current as of 2026-03-31).
 2. Keep the matching filestore pair aligned with any DB refresh or swap.
 3. Preserve access to the `enterprise` companion repository.
+
+## Phase 0 — Reproducible environment (containerisation)
+**Discovery audit COMPLETED 2026-04-08** — see `audit_outputs/phase0_discovery_20260408_1410/PHASE0_DISCOVERY_REPORT.md`
+
+### Phase 0 blockers (must resolve before implementation can start)
+- **[P0-CRITICAL] CT202 has no staging identity** — identical DB/filestore/nginx hostnames as CT201. Must assign distinct hostname (test.greenremarket.fr), separate dbfilter, and reset DB before CT202 is safe for test use.
+- **[P0-CRITICAL] All 3 environments have dirty git trees** — no clean baseline commit to build a reproducible image from.
+- **[P0-HIGH] Enterprise Git token undocumented** — CI/automated builds cannot clone enterprise without a stored secret.
+- **[P0-HIGH] awbc_db (192.168.21.206) host unaudited** — need HA/backup story, availability SLA, and confirmation it is reachable from the target container network.
+- **[P0-HIGH] EBICS key import procedure undocumented** — any fresh deployment will fail EBICS without a documented key onboarding runbook.
+- **[P0-MEDIUM] OCA repos unpinned** — add commit SHA pins for all 5 third_party repos.
+- **[P0-MEDIUM] gevent missing from local venv** — cannot run Odoo in multi-worker mode locally.
+- **[P0-MEDIUM] psql not in Windows PATH** — `C:\Program Files\PostgreSQL\17\bin` must be added.
+- **[P0-MEDIUM] MySQL latin1 encoding** — PyMySQL connection config must set `charset=latin1` / decode with care for French text in awbc_db.
+
+---
 
 ## Product and code backlog
 ### Open
@@ -31,11 +47,11 @@ Last verified: 2026-04-07 (session 15)
   - `@route()` decorator warnings in `grm_website`
 
 ### Deferred (planned, not started)
-- Cross-machine kickstart and containerization/swarm roadmap is approved as a future initiative:
+- Phase 0 implementation (Docker Compose + CI/CD) — promoted from deferred to **active planning**. Discovery audit done. Resolve Phase 0 blockers above before implementation begins.
   - machine-agnostic local bootstrap on Windows/Linux via Docker Compose
   - agent directive kickstart flow for deterministic startup in Warp/Windsurf
   - swarm-target architecture with scalable Odoo, PostgreSQL persistent storage, Nginx reverse proxy, and cache service
-- When promoted from deferred to active, create a dedicated feature branch from `main`, implement in phases, validate, and merge back per the branching model.
+- When ready to implement, create a dedicated feature branch from `main`.
 
 ### Pending review
 - Client form bug (item 5c): pending live confirmation from user on test server.

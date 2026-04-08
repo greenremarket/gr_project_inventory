@@ -1,6 +1,6 @@
 ﻿# CURRENT STATE
 Status: active
-Last verified: 2026-04-01 (session 9, deployment fixes)
+Last verified: 2026-04-08 (Phase 0 discovery audit)
 
 ## Repository and branch
 - Repository: `greenremarket/gr_project_inventory`
@@ -8,28 +8,37 @@ Last verified: 2026-04-01 (session 9, deployment fixes)
 - New feature work: branch from `main`, name after the task, merge back when done
 - Canonical operational docs are Git-tracked in `doc/`.
 
-## Deployment Ã¢â‚¬â€ Proxmox CT 200 (odoo-grm)
-- New Odoo 17 Enterprise container created 2026-04-01 on Proxmox host vms1 (192.168.21.20).
-- Container ID: 200, hostname: odoo-grm, IP: 192.168.21.200/24, gw: 192.168.21.254
-- Proxmox SSH: `ssh root@192.168.21.20` (passwordless via migmi key)
-- Container SSH: `ssh odoo-grm` (passwordless via migmi key, see `~/.ssh/config`)
-- OS: Ubuntu 22.04 LTS, PostgreSQL 17, Python 3.10, Odoo venv at `/opt/odoo/venv`
-- Odoo source: `/opt/odoo/addons_src` (community), `/opt/odoo/enterprise`, `/opt/odoo/grm_repo` (GRM modules)
+## Infrastructure topology (Proxmox at 192.168.21.20)
+
+### CT200 — odoo-grm (jump host / public proxy)
+- Container ID: 200, hostname: odoo-grm, IP: 192.168.21.200
+- Role: public-facing SSH relay + nginx TLS termination. NOT an Odoo server.
+- SSH: `ssh odoo-grm` (see `~/.ssh/config`)
+- Uptime: 7+ days as of 2026-04-08
+
+### CT201 — odoo-staging (ACTIVE PRODUCTION)
+- Container ID: 201, hostname: odoo-staging, IP: 192.168.21.201
+- SSH: `ssh odoo-prod` (via ProxyJump odoo-grm)
+- OS: Ubuntu 22.04 LTS, Python 3.10.12, PostgreSQL 17.9
+- Odoo 17.0.0, venv: `/opt/odoo/venv`, source: `/opt/odoo/addons_src`
+- Enterprise: `/opt/odoo/enterprise`, GRM modules: `/opt/odoo/grm_repo/modules`
 - OCA/EBICS addons: `/opt/odoo/extra_addons`
-- Config: `/opt/odoo/odoo.conf` Ã¢â‚¬â€ db_name=greenremarket, proxy_mode=True, workers=4
-- Service: `systemctl status odoo` Ã¢â‚¬â€ enabled, starts on boot
-- MySQL env: correct Aiken credentials (`manager`/`gren2803awb`/`192.168.21.206`) in systemd unit
-- nginx: HTTPS with Let's Encrypt cert (sartrouville.greenremarket.fr + go.greenremarket.fr, valid 2026-06-30, DNS challenge — no auto-renewal without DNS plugin)
-- Database: `greenremarket` restored from local savepoint, UTF-8 encoding (fr_FR.UTF-8 locale)
-- Filestore: `/opt/odoo/data/filestore/greenremarket` (copied from local)
-- Pending before go-live:
-  - Router port forward 80/443 ? 192.168.21.200
-  - `certbot --nginx -d sartrouville.greenremarket.fr` (or the target domain) for real SSL
-  - Install grm_website + grm_documents_project (`--init`)
-  - Fix EBICS bank account id=1: BBAN 00021148802 (currently IBAN)
-  - DNS cutover from odoo_sartrouville to odoo-grm
-  - Take Proxmox snapshot after smoke-test passes
-- Rollback: Proxmox snapshot or just point DNS back to odoo_sartrouville
+- Config: `/opt/odoo/odoo.conf` — db_name=greenremarket, proxy_mode=True, workers=4
+- Service: `systemctl status odoo` — enabled, active (running)
+- MySQL: awbc_db credentials in `/etc/systemd/system/odoo.service` Environment= (plaintext ⚠️)
+- nginx: HTTPS, Let's Encrypt cert for sartrouville.greenremarket.fr + go.greenremarket.fr, valid until 2026-06-30
+- Database: `greenremarket`, 131 MB, UTF-8
+- Filestore: `/opt/odoo/data/filestore/`, 861 MB, 2318 files
+- Cron: backup_to_cloud.sh (03:00), ebics_daily.py (01:00), ebics_watchdog.py (09:00)
+- EBICS keys: `/opt/odoo/ebics_keys/`
+- git HEAD: ff99f22 (main), **working tree DIRTY**
+
+### CT202 — odoo-test (⚠️ UNCONFIGURED STAGING)
+- Container ID: 202, hostname: odoo-test, IP: 192.168.21.202
+- SSH: `ssh odoo-test` (via ProxyJump odoo-grm)
+- ⚠️ **CT202 is a Proxmox snapshot clone of CT201. It currently has IDENTICAL DB, filestore, nginx config (same hostnames), and git HEAD as CT201. It is NOT safe for test use until differentiated.**
+- Required before use: give CT202 a distinct hostname (test.greenremarket.fr), separate dbfilter, and reset DB from checkpoint dump.
+- Rollback: Proxmox snapshot or NAT switch back to CT200
 ## Current operating model
 - Primary workflow is active/standby rotation for both database and filestore.
 - Active DB: `greenremarket` (gr_portal 17.0.1.1.0 installed, savepoint 7)
@@ -62,18 +71,30 @@ Last verified: 2026-04-01 (session 9, deployment fixes)
   - postgres superuser password: `postgres`
   - Odoo role: user `odoo`, password `odoo`, CREATEDB privilege
 
+## External MySQL dependency — awbc_db (CRITICAL)
+- Host: 192.168.21.206:3306, database: awbc_db, user: manager
+- Engine: MySQL 8.0.42, size: 352 MB
+- Purpose: ITAD/hardware refurbishment tracking (AWB Client platform). gr_project_inventory reads from it via PyMySQL to generate all hardware device reports.
+- Key tables: `Units` (7,447 devices), `Units_Devices` (133,654 component rows), `Lots` (149 batches), `Units_Pictures` (311 MB photos)
+- Report views consumed by Odoo: `Units_Reports`, `NEW_Units_Reports` (pivots CPU/RAM/STORAGE/LCD/BATTERY/COA/etc. per unit)
+- Connection injected via systemd Environment= vars on CT201 and CT202 ⚠️ credentials are plaintext
+- Only reachable from 192.168.21.x network (CT201/CT202). Local dev and CI cannot reach it without a tunnel.
+- Full schema: `audit_outputs/phase0_discovery_20260408_1410/55_mysql_awbc_dependency.json`
+
 ## Repository layout (all paths relative to repo root)
-- `odoo/` ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Odoo 17.0 community source: `git clone https://github.com/odoo/odoo --branch 17.0 --depth 1 odoo`
-- `enterprise/` ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Odoo 17.0 enterprise source: `git clone https://github.com/odoo/enterprise --branch 17.0 --depth 1 enterprise`
-- `modules/gr_project_inventory/` ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â GRM custom inventory module (git-tracked)
-- `modules/grm_documents_project/` ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â GRM documents module (git-tracked)
-- `modules/grm_website/` ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â GRM website module (git-tracked)
-- `third_party_modules/reporting-engine/` ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â OCA: `git clone https://github.com/OCA/reporting-engine --branch 17.0 --depth 1 third_party_modules/reporting-engine`
-- `third_party_modules/account_ebics_repo/` ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Noviat: `git clone https://github.com/Noviat/account_ebics --branch 17.0 --depth 1 third_party_modules/account_ebics_repo`
-- `third_party_modules/account_reconcile_repo/` ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â OCA: `git clone https://github.com/OCA/account-reconcile --branch 17.0 --depth 1 third_party_modules/account_reconcile_repo`
-- `third_party_modules/bank_statement_import_repo/` ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â OCA: `git clone https://github.com/OCA/bank-statement-import --branch 17.0 --depth 1 third_party_modules/bank_statement_import_repo`
-- `third_party_modules/l10n_france_repo/` ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â OCA: `git clone https://github.com/OCA/l10n-france --branch 17.0 --depth 1 third_party_modules/l10n_france_repo`
-- `ebics_keys/` ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â EBICS SSL keys (gitignored, machine-local ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â see `doc/DECISIONS/2026-03-31-ebics-keys-location.md`)
+- `odoo/` — Odoo 17.0 community source: `git clone https://github.com/odoo/odoo --branch 17.0 --depth 1 odoo`
+- `enterprise/` — Odoo 17.0 enterprise source: `git clone https://github.com/odoo/enterprise --branch 17.0 --depth 1 enterprise` (token required)
+- `modules/gr_project_inventory/` — main business module (git-tracked)
+- `modules/gr_portal/` — customer portal module (git-tracked)
+- `modules/grm_documents_project/` — **ABSORBED into gr_project_inventory. Folder deleted locally, still present on CT201/CT202 pending cleanup.**
+- `modules/grm_website/` — **ABSORBED into gr_portal. Folder deleted locally, still present on CT201/CT202 pending cleanup.**
+- `third_party_modules/reporting-engine/` — OCA: `git clone https://github.com/OCA/reporting-engine --branch 17.0 --depth 1 third_party_modules/reporting-engine`
+- `third_party_modules/account_ebics_repo/` — Noviat: `git clone https://github.com/Noviat/account_ebics --branch 17.0 --depth 1 third_party_modules/account_ebics_repo`
+- `third_party_modules/account_reconcile_repo/` — OCA: `git clone https://github.com/OCA/account-reconcile --branch 17.0 --depth 1 third_party_modules/account_reconcile_repo`
+- `third_party_modules/bank_statement_import_repo/` — OCA: `git clone https://github.com/OCA/bank-statement-import --branch 17.0 --depth 1 third_party_modules/bank_statement_import_repo`
+- `third_party_modules/l10n_france_repo/` — OCA: `git clone https://github.com/OCA/l10n-france --branch 17.0 --depth 1 third_party_modules/l10n_france_repo`
+- `ebics_keys/` — EBICS SSL keys (gitignored, machine-local — see `doc/DECISIONS/2026-03-31-ebics-keys-location.md`)
+- `audit_outputs/` — Phase 0 discovery audit outputs (2026-04-08)
 
 ## pip requirements (into .venv_odoo)
 1. `pip install -r odoo/requirements.txt`
